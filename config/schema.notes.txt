@@ -1,0 +1,5 @@
+psql postgres -- to boot psql
+create database asrtest owner tq_admin;
+requires tq_admin with a password
+to install
+psql asrtest -f asr-schema.sql
