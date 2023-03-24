@@ -7,7 +7,7 @@ package org.topicquests.newasr.test;
  * @author jackpark
  *
  */
-public class TestingFramework {
+public class SentenceTestingFramework {
 
 	/**
 	 * @param args

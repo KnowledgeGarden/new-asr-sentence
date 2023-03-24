@@ -17,5 +17,7 @@
 	<parameter name="DictServerPort" value="7878" /> <!-- coordinate with Dictionary Server -->
 	<parameter name="DictServerClientId" value = "changeme" /> <!-- coordinate with Dictionary Server -->
 	
+	<!--  kafka rewinging T or F -->
+	<parameter name="ConsumerRewind" value="T" />
 </properties>
 
