@@ -64,4 +64,53 @@ public class ASRSentence implements ISentence {
 		return data;
 	}
 
+	@Override
+	public void setSpacyData(String spacyJson) {
+		data.addProperty(ISentence.SPACY_FiELD, spacyJson);
+	}
+
+	@Override
+	public String getSpacyData() {
+		JsonElement je = data.get(ISentence.SPACY_FiELD);
+		if (je != null)
+			return je.getAsString();
+		return null;
+	}
+
+	@Override
+	public void addWikidataId(String wikidata) {
+		JsonArray dbp = getWikiData();
+		if (dbp == null)  {
+			dbp = new JsonArray();
+			data.add(ISentence.WD_FIELD, dbp);
+		}
+		dbp.add(wikidata);
+	}
+
+	@Override
+	public JsonArray getWikiData() {
+		JsonElement je = data.get(ISentence.WD_FIELD);
+		if (je != null)
+			return je.getAsJsonArray();
+		return null;
+	}
+
+	@Override
+	public void addDBpediaData(String dbpJson) {
+		JsonArray dbp = getDBpediaData();
+		if (dbp == null)  {
+			dbp = new JsonArray();
+			data.add(ISentence.DBP_FIELD, dbp);
+		}
+		dbp.add(dbpJson);
+	}
+
+	@Override
+	public JsonArray getDBpediaData() {
+		JsonElement je = data.get(ISentence.DBP_FIELD);
+		if (je != null)
+			return je.getAsJsonArray();
+		return null;
+	}
+
 }

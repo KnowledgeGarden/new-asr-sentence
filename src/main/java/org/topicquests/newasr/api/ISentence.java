@@ -13,7 +13,10 @@ import com.google.gson.JsonObject;
 public interface ISentence extends IAddressable {
 	public static final String
 		TEXT_FIELD		= "txt",
-		PRED_FIELD		= "preds";
+		PRED_FIELD		= "preds",
+		SPACY_FiELD		= "spacy",	//JSON blob from spacy POS
+		WD_FIELD		= "wd",		//Wikidata identities
+		DBP_FIELD		= "dbp"; 	//DBpedia blobs
 
 	JsonObject getData();
 	
@@ -27,4 +30,28 @@ public interface ISentence extends IAddressable {
 	 * @return
 	 */
 	JsonArray getPredicatePhrases();
+	
+	void setSpacyData(String spacyJson);
+	
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	String getSpacyData();
+	
+	void addWikidataId(String wikidata);
+	
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	JsonArray getWikiData();
+	
+	void addDBpediaData(String dbpJson);
+	
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	JsonArray getDBpediaData();
 }
