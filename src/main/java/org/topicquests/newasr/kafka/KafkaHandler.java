@@ -34,8 +34,8 @@ public class KafkaHandler {
 		environment = env;
 		String rw = environment.getStringProperty("ConsumerRewind");
 		isRewind = rw.equalsIgnoreCase("T");
-		CONSUMER_TOPIC = (String)environment.getKafkaTopicProperties().get("UnprocessedParagraph");
-		PRODUCER_TOPIC = (String)environment.getKafkaTopicProperties().get("ProcessedParagraph");
+		CONSUMER_TOPIC = (String)environment.getKafkaTopicProperties().get("ConsumerTopic");
+		PRODUCER_TOPIC = (String)environment.getKafkaTopicProperties().get("ProducerTopic");
 		consumer = new StringConsumer(environment, AGENT_GROUP,
 					CONSUMER_TOPIC, listener, isRewind, pollSeconds);
 		producer = new KafkaProducer(environment, AGENT_GROUP);
