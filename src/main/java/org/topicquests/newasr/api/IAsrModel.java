@@ -75,12 +75,14 @@ public interface IAsrModel {
 	/**
 	 * After spaCy processes a sentence
 	 * @param sentence
+	 * @return TODO
 	 */
-	void acceptSpacyResponse(JsonObject sentence);
+	boolean acceptSpacyResponse(JsonObject sentence);
 	
 	/**
 	 * From the paragraph agent
 	 * @param sentence
+	 * @return TODO
 	 */
-	void acceptNewSentence(JsonObject sentence);
+	boolean acceptNewSentence(JsonObject sentence);
 }

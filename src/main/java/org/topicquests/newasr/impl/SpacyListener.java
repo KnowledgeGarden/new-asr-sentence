@@ -8,6 +8,9 @@ import org.topicquests.backside.kafka.consumer.api.IMessageConsumerListener;
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IKafkaDispatcher;
+import org.topicquests.newasr.util.JsonUtil;
+
+import com.google.gson.JsonObject;
 
 /**
  * @author jackpark
@@ -16,6 +19,7 @@ import org.topicquests.newasr.api.IKafkaDispatcher;
 public class SpacyListener implements IMessageConsumerListener, IKafkaDispatcher {
 	private ASREnvironment environment;
 	private IAsrModel model;
+	private JsonUtil util;
 
 	/**
 	 * 
@@ -23,12 +27,25 @@ public class SpacyListener implements IMessageConsumerListener, IKafkaDispatcher
 	public SpacyListener(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		util = new JsonUtil();
 	}
 
 	@Override
 	public boolean acceptRecord(ConsumerRecord record) {
-		// TODO Auto-generated method stub
-		return false;
+		String json = (String)record.value();
+		environment.logDebug("SpacyListener.acceptRecord "+json);
+		boolean result = false;
+		if (json == null)
+			return result;
+		try {
+			JsonObject data = util.parse(json);
+			result = model.acceptSpacyResponse(data);
+		} catch (Exception e) {
+			environment.logError("SpacyListener: "+e.getMessage(), e);
+			e.printStackTrace();
+		}
+
+		return result;	
 	}
 
 }

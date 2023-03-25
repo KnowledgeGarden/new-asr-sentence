@@ -216,14 +216,14 @@ public class ASRModel implements IAsrModel {
 	}
 
 	@Override
-	public void acceptSpacyResponse(JsonObject sentence) {
+	public boolean acceptSpacyResponse(JsonObject sentence) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override
-	public void acceptNewSentence(JsonObject sentence) {
+	public boolean acceptNewSentence(JsonObject sentence) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 }
