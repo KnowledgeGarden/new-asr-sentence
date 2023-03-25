@@ -5,6 +5,7 @@ package org.topicquests.newasr.impl;
 
 
 import org.topicquests.newasr.ASREnvironment;
+import org.topicquests.newasr.SentenceEngine;
 import org.topicquests.newasr.api.IAsrDataProvider;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IConstants;
@@ -26,6 +27,8 @@ public class ASRModel implements IAsrModel {
 	private IDictionary dictionary;
 	private IAsrDataProvider database;
 	private WordGramCache cache;
+	private SentenceEngine sentenceEngine;
+
 	private final int CACHE_SIZE = 8192;
 
 	/**
@@ -225,5 +228,10 @@ public class ASRModel implements IAsrModel {
 	public boolean acceptNewSentence(JsonObject sentence) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void setSentenceEngine(SentenceEngine se) {
+		sentenceEngine = se;
 	}
 }

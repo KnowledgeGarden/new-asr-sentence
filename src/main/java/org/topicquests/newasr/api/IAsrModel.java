@@ -3,6 +3,7 @@
  */
 package org.topicquests.newasr.api;
 
+import org.topicquests.newasr.SentenceEngine;
 import org.topicquests.support.api.IResult;
 
 import com.google.gson.JsonObject;
@@ -13,6 +14,8 @@ import com.google.gson.JsonObject;
  */
 public interface IAsrModel {
 
+	void setSentenceEngine(SentenceEngine se);
+	
 	/**
 	 * Process a given {@code sentence}
 	 * @param sentenceId

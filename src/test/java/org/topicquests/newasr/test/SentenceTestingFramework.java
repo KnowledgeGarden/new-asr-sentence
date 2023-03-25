@@ -18,7 +18,8 @@ public class SentenceTestingFramework {
 		//new FirstNodeTest();
 		//new SecondNodeTest();
 		//new PredicateImportTest();
-		new FirstPredicateTest();
+		//new FirstPredicateTest();
+		new FirstSentenceTest();
 	}
 
 }

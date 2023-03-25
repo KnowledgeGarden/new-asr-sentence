@@ -18,6 +18,7 @@ import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
+import org.topicquests.newasr.kafka.SentenceProducer;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.wg.WordGramUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
@@ -43,9 +44,9 @@ public class ASREnvironment extends RootEnvironment {
 	private Map<String,Object>kafkaProps;
 	private IKafkaDispatcher sentenceListener;
 	private IKafkaDispatcher spacyListener;
-	private SpacyDriverEnvironment spacyServerEnvironment;
+	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceEngine sentenceEngine;
-
+	private SentenceProducer sentenceProducer;
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
@@ -65,30 +66,42 @@ public class ASREnvironment extends RootEnvironment {
 		sentenceListener = new SentenceListener(this);
 		spacyListener = new SpacyListener(this);
 		String cTopic = (String)kafkaProps.get("SentenceConsumerTopic");
-		String pTopic = (String)kafkaProps.get("SentenceProducerTopic");
 		sentenceConsumer = new KafkaHandler(this, (IMessageConsumerListener)sentenceListener, cTopic, AGENT_GROUP);
 		cTopic = (String)kafkaProps.get("SentenceSpacyConsumerTopic");
-		pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
+		//pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
+		sentenceProducer = new SentenceProducer(this, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
-		spacyServerEnvironment = new SpacyDriverEnvironment();
+		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
-		// firing up WordGramUtil bootstraps punctuation wordgram if not already there
-//		booter = new BootstrapEngine(this);
-//		predImporter = new PredicateImporter(this);
+		
+		sentenceEngine.startProcessing();
+		
+		// shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread()
+	    {
+	      public void run()
+	      {
+	        shutDown();
+	      }
+	    });
 	}
 	
 	public SentenceEngine getSentenceEngine() {
 		return sentenceEngine;
+	}
+	
+	public SentenceProducer getSentenceProducer() {
+		return sentenceProducer;
 	}
 	/**
 	 * There are two spaCy systems in the present code:
 	 * one is on an http service, the other is over kafka
 	 * @return
 	 */
-	public SpacyDriverEnvironment getSpacyServerEnvironment() {
-		return spacyServerEnvironment;
-	}
+	//public SpacyDriverEnvironment getSpacyServerEnvironment() {
+	//	return spacyServerEnvironment;
+	//}
 	
 	public KafkaHandler getSentenceConsumer () {
 		return sentenceConsumer;
