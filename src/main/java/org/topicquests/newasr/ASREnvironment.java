@@ -44,6 +44,7 @@ public class ASREnvironment extends RootEnvironment {
 	private IKafkaDispatcher sentenceListener;
 	private IKafkaDispatcher spacyListener;
 	private SpacyDriverEnvironment spacyServerEnvironment;
+	private SentenceEngine sentenceEngine;
 
 	public static final String AGENT_GROUP = "Sentence";
 
@@ -71,12 +72,15 @@ public class ASREnvironment extends RootEnvironment {
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
 		spacyServerEnvironment = new SpacyDriverEnvironment();
-
+		sentenceEngine = new SentenceEngine(this);
 		// firing up WordGramUtil bootstraps punctuation wordgram if not already there
 //		booter = new BootstrapEngine(this);
 //		predImporter = new PredicateImporter(this);
 	}
 	
+	public SentenceEngine getSentenceEngine() {
+		return sentenceEngine;
+	}
 	/**
 	 * There are two spaCy systems in the present code:
 	 * one is on an http service, the other is over kafka
@@ -118,6 +122,9 @@ public class ASREnvironment extends RootEnvironment {
 	@Override
 	public void shutDown() {
 		System.out.println("Shutting down");
+		sentenceEngine.shutDown();
+		sentenceConsumer.shutDown();
+		spacyConsumer.shutDown();
 
 	}
 
