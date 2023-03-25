@@ -5,6 +5,8 @@ package org.topicquests.newasr.api;
 
 import org.topicquests.support.api.IResult;
 
+import com.google.gson.JsonObject;
+
 /**
  * @author jackpark
  *
@@ -65,4 +67,20 @@ public interface IAsrModel {
 	IResult newDictionaryEntry(String term);
 	
 	IResult putWordGram(IWordGram newGram);
+	
+	////////////////////////////
+	// Kafka handling
+	////////////////////////////
+	
+	/**
+	 * After spaCy processes a sentence
+	 * @param sentence
+	 */
+	void acceptSpacyResponse(JsonObject sentence);
+	
+	/**
+	 * From the paragraph agent
+	 * @param sentence
+	 */
+	void acceptNewSentence(JsonObject sentence);
 }
