@@ -20,9 +20,11 @@ import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.wg.WordGramUtil;
+import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.pg.PostgresConnectionFactory;
 import org.topicquests.support.RootEnvironment;
 import org.topicquests.support.config.Configurator;
+
 
 /**
  * @author jackpark
@@ -41,6 +43,8 @@ public class ASREnvironment extends RootEnvironment {
 	private Map<String,Object>kafkaProps;
 	private IKafkaDispatcher sentenceListener;
 	private IKafkaDispatcher spacyListener;
+	private SpacyDriverEnvironment spacyServerEnvironment;
+
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
@@ -66,9 +70,20 @@ public class ASREnvironment extends RootEnvironment {
 		pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
+		spacyServerEnvironment = new SpacyDriverEnvironment();
+
 		// firing up WordGramUtil bootstraps punctuation wordgram if not already there
 //		booter = new BootstrapEngine(this);
 //		predImporter = new PredicateImporter(this);
+	}
+	
+	/**
+	 * There are two spaCy systems in the present code:
+	 * one is on an http service, the other is over kafka
+	 * @return
+	 */
+	public SpacyDriverEnvironment getSpacyServerEnvironment() {
+		return spacyServerEnvironment;
 	}
 	
 	public KafkaHandler getSentenceConsumer () {
