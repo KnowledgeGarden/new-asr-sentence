@@ -14,7 +14,8 @@ import org.topicquests.newasr.api.IKafkaDispatcher;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
 import org.topicquests.newasr.impl.ASRModel;
-import org.topicquests.newasr.impl.KafkaListener;
+import org.topicquests.newasr.impl.SentenceListener;
+import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
 import org.topicquests.newasr.pred.PredicateAssembler;
@@ -35,9 +36,13 @@ public class ASREnvironment extends RootEnvironment {
 	private IAsrDataProvider database;
 	private WordGramUtil wgUtil;
 	private PredicateAssembler predAssem;
-	private KafkaHandler consumer;
+	private KafkaHandler sentenceConsumer;
+	private KafkaHandler spacyConsumer;
 	private Map<String,Object>kafkaProps;
-	private IKafkaDispatcher kafkaListener;
+	private IKafkaDispatcher sentenceListener;
+	private IKafkaDispatcher spacyListener;
+	public static final String AGENT_GROUP = "Sentence";
+
 	/**
 	 * 
 	 */
@@ -52,14 +57,26 @@ public class ASREnvironment extends RootEnvironment {
 		model = new ASRModel(this);
 		wgUtil = new WordGramUtil(this);
 		kafkaProps = Configurator.getProperties("kafka-topics.xml");
-		kafkaListener = new KafkaListener(this);
-		consumer = new KafkaHandler(this, (IMessageConsumerListener)kafkaListener);
+		sentenceListener = new SentenceListener(this);
+		spacyListener = new SpacyListener(this);
+		String cTopic = (String)kafkaProps.get("SentenceConsumerTopic");
+		String pTopic = (String)kafkaProps.get("SentenceProducerTopic");
+		sentenceConsumer = new KafkaHandler(this, (IMessageConsumerListener)sentenceListener, cTopic, AGENT_GROUP);
+		cTopic = (String)kafkaProps.get("SentenceSpacyConsumerTopic");
+		pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
+		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
 		// firing up WordGramUtil bootstraps punctuation wordgram if not already there
 //		booter = new BootstrapEngine(this);
 //		predImporter = new PredicateImporter(this);
 	}
 	
+	public KafkaHandler getSentenceConsumer () {
+		return sentenceConsumer;
+	}
+	public KafkaHandler getSpacyConsumer () {
+		return spacyConsumer;
+	}
 	public PredicateAssembler getPredicateAssembler() {
 		return predAssem;
 	}

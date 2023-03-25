@@ -12,13 +12,13 @@ import org.topicquests.newasr.api.IKafkaDispatcher;
  * @author jackpark
  *
  */
-public class KafkaListener implements IKafkaDispatcher, IMessageConsumerListener {
+public class SpacyListener implements IMessageConsumerListener, IKafkaDispatcher {
 	private ASREnvironment environment;
 
 	/**
 	 * 
 	 */
-	public KafkaListener(ASREnvironment env) {
+	public SpacyListener(ASREnvironment env) {
 		environment =env;
 	}
 

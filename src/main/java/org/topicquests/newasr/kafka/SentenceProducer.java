@@ -13,12 +13,12 @@ import org.topicquests.support.api.IEnvironment;
  * @author park
  *
  */
-public class KafkaProducer extends MessageProducer {
+public class SentenceProducer extends MessageProducer {
 
   /**
    * @param env
    */
-  public KafkaProducer(IEnvironment env, String clientId) {
+  public SentenceProducer(IEnvironment env, String clientId) {
     super(env, clientId, true);
   }
 
@@ -28,7 +28,7 @@ public class KafkaProducer extends MessageProducer {
    * @param partition
    */
   public void sendMessage(String topic, String message, String key, Integer partition) {
-    environment.logDebug("TQElasticKSProducer "+message);
+    environment.logDebug("SentenceProducer "+message);
     super.sendMessage(topic, message, key, partition);
   }
 
