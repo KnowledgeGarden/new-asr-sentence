@@ -130,7 +130,8 @@ public class PredicateAssembler {
 	void processOnePredicate(ISentence sentence, JsonArray ants, JsonArray predicate, IResult result) {
 		System.out.println("ProcessOne "+predicate);
 		JsonArray ja=new JsonArray();
-		JsonObject jo = _processOnePredicate(ants,predicate);
+		String sent = sentence.getText();
+		JsonObject jo = _processOnePredicate(ants,predicate, sent);
 		ja.add(jo);
 		sentence.setPredicatePhrases(ja);
 	}
@@ -139,9 +140,11 @@ public class PredicateAssembler {
 	 * 
 	 * @param ants can be {@code null}
 	 * @param predicate
+	 * @param theSentence TODO
 	 * @return
 	 */
-	JsonObject _processOnePredicate(JsonArray ants, JsonArray predicate) {
+	JsonObject _processOnePredicate(JsonArray ants, JsonArray predicate, String theSentence) {
+		environment.logError("ProcessOne "+theSentence,null);
 		int plen = predicate.size();
 		JsonObject je, jx =null;
 		String thePred = "";
@@ -171,15 +174,20 @@ public class PredicateAssembler {
 			}
 		}
 		String predPhrase = theAnt+" "+thePred.trim();
+		boolean valid = this.checkPredicate(predPhrase, theSentence);
+		if (!valid)
+			environment.logError("NotValidPred "+predPhrase+"\n"+theSentence, null);
 		JsonObject jo = new JsonObject();
 		jo.add("strt", jx.get("strt"));
 		jo.addProperty("txt", predPhrase);
 		System.out.println("DID: "+jo);
+		environment.logError("DID: "+valid+" "+jo, null);
 		return jo;
 	}
 	
 	void processSeveralPredicates(ISentence sentence, JsonArray ants, JsonArray predicates, int predicateCount, IResult result) {
 		System.out.println("ProcessSeveral "+predicateCount+" "+predicates);
+		String sent = sentence.getText();
 		// Results go here
 		// They are to be JsonObjects with start location and predicate phrase txt
 		JsonArray results = new JsonArray();
@@ -253,18 +261,22 @@ public class PredicateAssembler {
 			if (where > -1) {
 				pMatch = antCluster.get(where).getAsJsonArray();
 				if (pMatch != null) {
-					je = this._processOnePredicate(pMatch, tx);
+					je = this._processOnePredicate(pMatch, tx, sent);
 					results.add(je);
 					//System.out.println("PREDMATCH-1\n"+je);
 				}
 			} else {
-				je = this._processOnePredicate(null, tx);
+				je = this._processOnePredicate(null, tx, sent);
 				results.add(je);
 				//System.out.println("PREDMATCH-2\n"+je);
 			} 
 			//System.out.println("PREDMATCH\n"+je+"\n"+pMatch);
 		}
 		//System.out.println("PS\n"+antCluster+"\n"+predCluster);
+	}
+	
+	boolean checkPredicate(String predicate, String sentence) {
+		return sentence.contains(predicate);
 	}
 	
 	int matchAntToPreds(int antEnd, JsonArray predClusters) {

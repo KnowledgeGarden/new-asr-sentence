@@ -31,7 +31,7 @@ public class SentenceEngine {
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceProducer sentenceProducer;
 	
-	private final String SENTENCE_TOPIC, SPACY_TOPIC;
+	private final String SENTENCE_TOPIC, SPACY_TOPIC, SPACY_KEY, SENTENCE_KEY;
 
 	/**
 	 * 
@@ -45,6 +45,8 @@ public class SentenceEngine {
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
+		SPACY_KEY = "data"; //TODO FIXME
+		SENTENCE_KEY = "data"; //TODO FIXME
 		pTopic = (String)environment.getKafkaTopicProperties().get("SentenceSpacyProducerTopic");
 		SPACY_TOPIC = pTopic;
 	}
@@ -76,6 +78,9 @@ public class SentenceEngine {
 		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
 		//First, send it to the spacy predicate server
 		System.out.println("ProcessSentence\n"+sentence.getData());
+		// gather predicates, wikidata and dbpedia stuff in the sentence object
+		sentenceProducer.sendMessage(SPACY_TOPIC, n)
+		
 		return result;
 				
 	}
