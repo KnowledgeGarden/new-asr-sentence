@@ -49,6 +49,7 @@ public interface ISentence extends IAddressable {
 	 */
 	JsonArray getPredicatePhrases();
 	
+	
 	void setSpacyData(String spacyJson);
 	
 	/**

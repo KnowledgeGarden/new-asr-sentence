@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.topicquests.newasr.api.IAsrModel;
+import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.kafka.SentenceProducer;
@@ -15,6 +16,7 @@ import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -93,10 +95,27 @@ public class SentenceEngine {
 	 */
 	public boolean acceptSpacyResponse(JsonObject sentence) {
 		boolean result = true; // default = success
+		ISentence sx = new ASRSentence(sentence);
+		JsonArray preds =sx.getPredicatePhrases();
+		if (preds == null) 
+			sendExpectationFailureEvent(IExpectationTypes.NO_PREDICATE_DETECTED, sentence.toString());
 		// TODO Auto-generated method stub
 		return result;
 	}
 
+	/**
+	 * General purpose expectation event creation
+	 * @param type -- the expectation type @see {@link IExpectationTypes}
+	 * @param cargo
+	 */
+	void sendExpectationFailureEvent(String type, String cargo) {
+		JsonObject jo = new JsonObject();
+		jo.addProperty("type", type);
+		jo.addProperty("cargo", cargo);
+		sentenceProducer.sendMessage(EXPECTATION_TOPIC, jo.toString(), SPACY_KEY, partition);
+	}
+	
+	
 	class SentenceThread extends Thread {
 		
 		public void run() {

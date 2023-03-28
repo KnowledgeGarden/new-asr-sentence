@@ -1,4 +1,5 @@
-SET ROLE tq_admin;
+SET ROLE tq_admin; 
+
 
 -- words in a wordgram
 CREATE TABLE IF NOT EXISTS public.node (
