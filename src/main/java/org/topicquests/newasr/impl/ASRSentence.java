@@ -21,6 +21,9 @@ public class ASRSentence implements ISentence {
 	 */
 	public ASRSentence() {
 		data = new JsonObject();
+		//defaults
+		setParagraphId(-1);
+		setDocumentId(-1);
 	}
 
 	public ASRSentence(JsonObject json) {
@@ -36,6 +39,25 @@ public class ASRSentence implements ISentence {
 		return data.get(IConstants.ID_KEY).getAsLong();
 	}
 
+	@Override
+	public void setParagraphId(long id) {
+		data.addProperty(ISentence.PARAGRAPH_ID, new Long(id));
+	}
+
+	@Override
+	public long getParagraphId() {
+		return data.get(ISentence.PARAGRAPH_ID).getAsLong();
+	}
+
+	@Override
+	public void setDocumentId(long id) {
+		data.addProperty(ISentence.DOCUMENT_ID, new Long(id));
+	}
+
+	@Override
+	public long getDocumentId() {
+		return data.get(ISentence.DOCUMENT_ID).getAsLong();
+	}
 	@Override
 	public void setText(String text) {
 		data.addProperty(ISentence.TEXT_FIELD, text);
@@ -112,5 +134,7 @@ public class ASRSentence implements ISentence {
 			return je.getAsJsonArray();
 		return null;
 	}
+
+	
 
 }

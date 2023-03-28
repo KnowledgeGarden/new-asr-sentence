@@ -12,6 +12,8 @@ import com.google.gson.JsonObject;
  */
 public interface ISentence extends IAddressable {
 	public static final String
+		PARAGRAPH_ID	= "para_id",
+		DOCUMENT_ID	= "doc_id",
 		TEXT_FIELD		= "txt",
 		PRED_FIELD		= "preds",
 		SPACY_FiELD		= "spacy",	//JSON blob from spacy POS
@@ -19,6 +21,22 @@ public interface ISentence extends IAddressable {
 		DBP_FIELD		= "dbp"; 	//DBpedia blobs
 
 	JsonObject getData();
+	
+	void setParagraphId(long id);
+	
+	/**
+	 * Default return is {@code -1}
+	 * @return
+	 */
+	long getParagraphId();
+	
+	void setDocumentId(long id);
+	
+	/**
+	 * Default return is {@code -1}
+	 * @return
+	 */
+	long getDocumentId();
 	
 	void setText(String text);
 	String getText();
