@@ -220,8 +220,7 @@ public class ASRModel implements IAsrModel {
 
 	@Override
 	public boolean acceptSpacyResponse(JsonObject sentence) {
-		// TODO Auto-generated method stub
-		return false;
+		return sentenceEngine.acceptSpacyResponse(sentence);
 	}
 
 	@Override

@@ -31,7 +31,8 @@ public class SentenceEngine {
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceProducer sentenceProducer;
 	
-	private final String SENTENCE_TOPIC, SPACY_TOPIC, SPACY_KEY, SENTENCE_KEY;
+	private final String SENTENCE_TOPIC, SPACY_TOPIC, EXPECTATION_TOPIC, SPACY_KEY, SENTENCE_KEY;
+	private final Integer partition;
 
 	/**
 	 * 
@@ -45,8 +46,10 @@ public class SentenceEngine {
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
-		SPACY_KEY = "data"; //TODO FIXME
-		SENTENCE_KEY = "data"; //TODO FIXME
+		EXPECTATION_TOPIC = (String)environment.getKafkaTopicProperties().get("ExpectationFailureTopic");
+		SPACY_KEY = "data"; 		//TODO FIXME
+		SENTENCE_KEY = "data"; 		//TODO FIXME
+		partition = new Integer(0);	//TODO FiXME
 		pTopic = (String)environment.getKafkaTopicProperties().get("SentenceSpacyProducerTopic");
 		SPACY_TOPIC = pTopic;
 	}
@@ -69,22 +72,31 @@ public class SentenceEngine {
 	}
 	
 	/**
-	 * Process a {@code sentence}
+	 * <p>Process a {@code sentence}</p>
 	 * @param sentence
-	 * @return
 	 */
-	public IResult processSentence(ISentence sentence) {
-		IResult result = new ResultPojo();
+	public void processSentence(ISentence sentence) {
 		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
 		//First, send it to the spacy predicate server
 		System.out.println("ProcessSentence\n"+sentence.getData());
 		// gather predicates, wikidata and dbpedia stuff in the sentence object
-		sentenceProducer.sendMessage(SPACY_TOPIC, n)
-		
-		return result;
-				
+		sentenceProducer.sendMessage(SPACY_TOPIC, sentence.getData().toString(), SPACY_KEY, partition);
+		//@see acceptSpacyResponse below				
 	}
 	
+	/**
+	 * <p>The workhorse: called by way of the model from kafka from spaCy</p>
+	 * <p>This is where we build wordgrams which prepare for the next agent, and ship
+	 * to Kafka for the next agent to process</p>
+	 * @param sentence
+	 * @return
+	 */
+	public boolean acceptSpacyResponse(JsonObject sentence) {
+		boolean result = true; // default = success
+		// TODO Auto-generated method stub
+		return result;
+	}
+
 	class SentenceThread extends Thread {
 		
 		public void run() {

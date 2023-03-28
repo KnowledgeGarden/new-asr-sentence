@@ -17,5 +17,8 @@
 	<!-- Producer Topic  which becomes a source topic for the next agent-->
 	<parameter name="SentenceSpacyProducerTopic" value="SentenceSpacyOut" />
 
+	<!-- Producer/consumer Topic  for expectation failure events-->
+	<parameter name="ExpectationFailureTopic" value="ExpectFailEvent" />
+
 	
 </properties>
