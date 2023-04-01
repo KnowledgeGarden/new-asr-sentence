@@ -13,6 +13,7 @@ import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.kafka.SentenceProducer;
+import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
@@ -34,6 +35,8 @@ public class SentenceEngine {
 	private boolean IS_RUNNING = true;
 	private SentenceThread runner;
 	//private SpacyDriverEnvironment spacyServerEnvironment;
+	private PredicateAssembler predAssem;
+
 	private SentenceProducer sentenceProducer;
 	private SpacyHttpClient spacy;
 	
@@ -46,6 +49,7 @@ public class SentenceEngine {
 	public SentenceEngine(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		predAssem = environment.getPredicateAssembler();
 		sentences = new ArrayList<JsonObject>();
 		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
@@ -91,8 +95,33 @@ public class SentenceEngine {
 		IResult r = spacy.processSentence(text);
 		String json = (String)r.getResultObject();
 		environment.logError("PS1 "+json, null);
+		JsonObject jo;
+		JsonArray ja;
+		try {
+			jo = util.parse(json);
+			ja = jo.get("data").getAsJsonArray();
+			// process the predicates
+			predAssem.processSentencePredicates(sentence, ja);
+			ja = jo.get("dbp").getAsJsonArray();
+			// process dbpedia
+			processDBpedia(sentence, ja);
+			ja = jo.get("wkd").getAsJsonArray();
+			// process wikidata
+			processWikidata(sentence, ja);
+
+		} catch (Exception e) {
+			environment.logError("SE-1: "+e.getMessage(), e);
+			e.printStackTrace();
+		}
 	}
 	
+	
+	void processDBpedia(ISentence sentence, JsonArray dbp) {
+		//TODO
+	}
+	void processWikidata(ISentence sentence, JsonArray wd) {
+		//TODO
+	}
 	/**
 	 * <p>The workhorse: called by way of the model from kafka from spaCy</p>
 	 * <p>This is where we build wordgrams which prepare for the next agent, and ship

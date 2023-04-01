@@ -117,6 +117,8 @@ public class PredicateAssembler {
 	 */
 	public IResult processSentencePredicates(ISentence sentence, JsonArray predicates) {
 		IResult result = new ResultPojo();
+		if (predicates == null)
+			return result;
 		JsonArray antecedents = predicates.get(_ANTECENDS).getAsJsonArray();
 		System.out.println("ANTS: "+antecedents);
 		JsonArray preds = predicates.get(_PREDICATES).getAsJsonArray();
