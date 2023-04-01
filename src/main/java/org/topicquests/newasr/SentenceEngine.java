@@ -24,6 +24,9 @@ import org.topicquests.support.api.IResult;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 /**
  * @author jackpark
  *
@@ -35,7 +38,7 @@ public class SentenceEngine {
 	private List<JsonObject> sentences;
 	private boolean IS_RUNNING = true;
 	private SentenceThread runner;
-	//private SpacyDriverEnvironment spacyServerEnvironment;
+	private SpacyDriverEnvironment spacyServerEnvironment;
 	private PredicateAssembler predAssem;
 	private WordGramBuilder builder;
 
@@ -56,7 +59,7 @@ public class SentenceEngine {
 		sentences = new ArrayList<JsonObject>();
 		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
-		//spacyServerEnvironment = environment.getSpacyServerEnvironment();
+		spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
@@ -100,6 +103,20 @@ public class SentenceEngine {
 		environment.logError("PS1 "+json, null);
 		JsonObject jo;
 		JsonArray ja;
+		JSONObject spacyObj;
+		// POS and more
+		String spacyData = sentence.getSpacyData();
+		//environment.logError("BIGJA "+spacyData, null);
+		if (spacyData == null) {
+			r = spacyServerEnvironment.processSentence(text);
+			spacyObj = (JSONObject)r.getResultObject();
+			//environment.logError("BIGJA-1 "+spacyObj, null);
+			JSONObject res = (JSONObject)spacyObj.get("results");
+			JSONArray spacyArray = (JSONArray)res.get("sentences");
+			res = (JSONObject)spacyArray.get(0);
+			//environment.logError("BIGJA-2 "+res, null);
+			sentence.setSpacyData(res.toJSONString());
+		}
 		try {
 			jo = util.parse(json);
 			ja = jo.get("data").getAsJsonArray();
@@ -124,10 +141,12 @@ public class SentenceEngine {
 	
 	
 	void processDBpedia(ISentence sentence, JsonArray dbp) {
-		//TODO
+		if (dbp != null)
+			sentence.setDBpediaData(dbp);
 	}
 	void processWikidata(ISentence sentence, JsonArray wd) {
-		//TODO
+		if (wd != null)
+			sentence.setWikiData(wd);
 	}
 	/**
 	 * <p>The workhorse: called by way of the model from kafka from spaCy</p>
@@ -186,3 +205,5 @@ public class SentenceEngine {
 		}
 	}
 }
+
+

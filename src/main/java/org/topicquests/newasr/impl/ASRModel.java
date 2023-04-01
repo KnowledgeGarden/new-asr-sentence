@@ -96,6 +96,7 @@ public class ASRModel implements IAsrModel {
 		return result;
 	}
 
+
 	@Override
 	public IResult getTermById(String id) {
 		IResult result = null;
@@ -235,4 +236,5 @@ public class ASRModel implements IAsrModel {
 	public void setSentenceEngine(SentenceEngine se) {
 		sentenceEngine = se;
 	}
+
 }
