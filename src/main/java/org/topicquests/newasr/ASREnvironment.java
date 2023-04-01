@@ -22,6 +22,7 @@ import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
 import org.topicquests.newasr.kafka.SentenceProducer;
 import org.topicquests.newasr.pred.PredicateAssembler;
+import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.newasr.wg.WordGramUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.pg.PostgresConnectionFactory;
@@ -41,6 +42,7 @@ public class ASREnvironment extends RootEnvironment {
 	private IAsrDataProvider database;
 	private WordGramUtil wgUtil;
 	private PredicateAssembler predAssem;
+	private WordGramBuilder builder;
 	private KafkaHandler sentenceConsumer;
 	private KafkaHandler spacyConsumer;
 	private Map<String,Object>kafkaProps;
@@ -74,6 +76,7 @@ public class ASREnvironment extends RootEnvironment {
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		sentenceProducer = new SentenceProducer(this, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
+		builder = new WordGramBuilder(this);
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
 		
@@ -89,6 +92,9 @@ public class ASREnvironment extends RootEnvironment {
 	    });
 	}
 	
+	public WordGramBuilder getWordGramBuilder() {
+		return builder;
+	}
 	public SentenceEngine getSentenceEngine() {
 		return sentenceEngine;
 	}

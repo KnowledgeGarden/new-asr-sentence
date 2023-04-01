@@ -16,6 +16,7 @@ import org.topicquests.newasr.kafka.SentenceProducer;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
+import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
@@ -36,6 +37,7 @@ public class SentenceEngine {
 	private SentenceThread runner;
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private PredicateAssembler predAssem;
+	private WordGramBuilder builder;
 
 	private SentenceProducer sentenceProducer;
 	private SpacyHttpClient spacy;
@@ -50,6 +52,7 @@ public class SentenceEngine {
 		environment =env;
 		model = environment.getModel();
 		predAssem = environment.getPredicateAssembler();
+		builder = environment.getWordGramBuilder();
 		sentences = new ArrayList<JsonObject>();
 		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
@@ -108,7 +111,11 @@ public class SentenceEngine {
 			ja = jo.get("wkd").getAsJsonArray();
 			// process wikidata
 			processWikidata(sentence, ja);
-
+			// and now, the wordgrams
+			r = builder.processSentence(sentence);
+			environment.logError("SentenceEngineDone\n"+sentence.getData(), null);
+			// and now, send the results on to the ne
+			//TODO
 		} catch (Exception e) {
 			environment.logError("SE-1: "+e.getMessage(), e);
 			e.printStackTrace();
