@@ -13,11 +13,13 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IDictionary;
 import org.topicquests.newasr.api.IDictionaryClient;
 import org.topicquests.newasr.api.IKafkaDispatcher;
+import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
 import org.topicquests.newasr.impl.ASRModel;
 import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
+import org.topicquests.newasr.impl.TripleModel;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
 import org.topicquests.newasr.kafka.SentenceProducer;
@@ -36,9 +38,11 @@ import org.topicquests.support.config.Configurator;
  */
 public class ASREnvironment extends RootEnvironment {
 	private PostgresConnectionFactory dbDriver = null;
+	private PostgresConnectionFactory tripleDriver = null;
 	private IDictionaryClient dictionarHttpyClient;
 	private IDictionary dictionary;
 	private IAsrModel model;
+	private ITripleModel tripleModel;
 	private IAsrDataProvider database;
 	private WordGramUtil wgUtil;
 	private PredicateAssembler predAssem;
@@ -61,6 +65,9 @@ public class ASREnvironment extends RootEnvironment {
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
+		schemaName=getStringProperty("TriplebaseName");
+		tripleDriver = new PostgresConnectionFactory(dbName, schemaName);
+
 		dictionarHttpyClient = new DictionaryHttpClient(this);
 		dictionary = new DictionaryClient(this);
 		database = new PostgresWordGramGraphProvider(this);
@@ -76,9 +83,11 @@ public class ASREnvironment extends RootEnvironment {
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		sentenceProducer = new SentenceProducer(this, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
+		tripleModel = new TripleModel(this);
 		builder = new WordGramBuilder(this);
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
+		
 		
 		sentenceEngine.startProcessing();
 		
@@ -92,6 +101,9 @@ public class ASREnvironment extends RootEnvironment {
 	    });
 	}
 	
+	public ITripleModel getTripleModel() {
+		return tripleModel;
+	}
 	public WordGramBuilder getWordGramBuilder() {
 		return builder;
 	}
@@ -139,7 +151,11 @@ public class ASREnvironment extends RootEnvironment {
 	public PostgresConnectionFactory getDatabaseDriver() {
 		return dbDriver;
 	}
-	
+
+	public PostgresConnectionFactory getTripleDatabaseDriver() {
+		return tripleDriver;
+	}
+
 	@Override
 	public void shutDown() {
 		System.out.println("Shutting down");

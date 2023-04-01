@@ -1,5 +1,7 @@
-/**
- * 
+/*
+ * Copyright 2023 TopicQuests Foundation
+ *  This source code is available under the terms of the Affero General Public License v3.
+ *  Please see LICENSE.txt for full license terms, including the availability of proprietary exceptions.
  */
 package org.topicquests.newasr.wg;
 
@@ -11,6 +13,7 @@ import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IPOS;
 import org.topicquests.newasr.api.ISentence;
+import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.api.IWordGram;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.support.ResultPojo;
@@ -27,6 +30,8 @@ import com.google.gson.JsonElement;
 public class WordGramBuilder {
 	private ASREnvironment environment;
 	private IAsrModel model;
+	private ITripleModel tripleModel;
+
 	private JsonUtil util;
 	private final String
 		NOUN 	= "NOUN";
@@ -36,6 +41,7 @@ public class WordGramBuilder {
 	public WordGramBuilder(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		tripleModel = environment.getTripleModel();
 		util = new JsonUtil();
 	}
 
@@ -185,6 +191,12 @@ public class WordGramBuilder {
 				}
 			}
 			environment.logError("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList,null);
+/*
+ [org.topicquests.newasr.impl.WordGram@6930790f, org.topicquests.newasr.impl.WordGram@19b2983a]
+[{"txt":"climate change","url":"http://dbpedia.org/resource/Global_warming"}, {"txt":"carbon dioxide","url":"http://dbpedia.org/resource/Carbon_dioxide"}]
+[org.topicquests.newasr.impl.WordGram@6f150423, org.topicquests.newasr.impl.WordGram@503a327c]
+[org.topicquests.newasr.impl.WordGram@3aa8d175, org.topicquests.newasr.impl.WordGram@37d6fd52, org.topicquests.newasr.impl.WordGram@7025c397]
+ */
 		} catch (Exception e) {
 			result.addErrorString(e.getMessage());
 			environment.logError("WGB-1 "+e.getMessage(), e);
