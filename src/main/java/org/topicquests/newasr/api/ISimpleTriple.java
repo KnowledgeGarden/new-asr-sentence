@@ -3,6 +3,8 @@
  */
 package org.topicquests.newasr.api;
 
+import com.google.gson.JsonArray;
+
 /**
  * @author jackpark
  *
@@ -24,5 +26,8 @@ public interface ISimpleTriple extends IAddressable {
 	long getObjectId();
 	void setObjectType(String type);
 	String getObjectType();
+	
+	void addSentenceId(long sentenceId);
+	JsonArray listSentenceIds();
 
 }

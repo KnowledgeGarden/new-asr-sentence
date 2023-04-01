@@ -5,6 +5,8 @@ package org.topicquests.newasr.impl;
 
 import org.topicquests.newasr.api.ISimpleTriple;
 
+import com.google.gson.JsonArray;
+
 /**
  * @author jackpark
  *
@@ -86,6 +88,18 @@ public class ASRSimpleTriple implements ISimpleTriple {
 
 	@Override
 	public String getObjectType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addSentenceId(long sentenceId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public JsonArray listSentenceIds() {
 		// TODO Auto-generated method stub
 		return null;
 	}
