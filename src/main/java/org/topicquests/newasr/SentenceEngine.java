@@ -13,6 +13,7 @@ import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.kafka.SentenceProducer;
+import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.support.ResultPojo;
@@ -34,8 +35,9 @@ public class SentenceEngine {
 	private SentenceThread runner;
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceProducer sentenceProducer;
+	private SpacyHttpClient spacy;
 	
-	private final String SENTENCE_TOPIC, SPACY_TOPIC, EXPECTATION_TOPIC, SPACY_KEY, SENTENCE_KEY;
+	private final String SENTENCE_TOPIC,  EXPECTATION_TOPIC, SENTENCE_KEY;
 	private final Integer partition;
 
 	/**
@@ -45,17 +47,16 @@ public class SentenceEngine {
 		environment =env;
 		model = environment.getModel();
 		sentences = new ArrayList<JsonObject>();
+		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
 		//spacyServerEnvironment = environment.getSpacyServerEnvironment();
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
 		EXPECTATION_TOPIC = (String)environment.getKafkaTopicProperties().get("ExpectationFailureTopic");
-		SPACY_KEY = "data"; 		//TODO FIXME
 		SENTENCE_KEY = "data"; 		//TODO FIXME
 		partition = new Integer(0);	//TODO FiXME
-		pTopic = (String)environment.getKafkaTopicProperties().get("SentenceSpacyProducerTopic");
-		SPACY_TOPIC = pTopic;
+
 	}
 
 	public void startProcessing() {
@@ -82,10 +83,14 @@ public class SentenceEngine {
 	public void processSentence(ISentence sentence) {
 		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
 		//First, send it to the spacy predicate server
+		String text = sentence.getText();
 		System.out.println("ProcessSentence\n"+sentence.getData());
 		// gather predicates, wikidata and dbpedia stuff in the sentence object
-		sentenceProducer.sendMessage(SPACY_TOPIC, sentence.getData().toString(), SPACY_KEY, partition);
-		//@see acceptSpacyResponse below				
+		//sentenceProducer.sendMessage(SPACY_TOPIC, sentence.getData().toString(), SPACY_KEY, partition);
+		//@see acceptSpacyResponse below	
+		IResult r = spacy.processSentence(text);
+		String json = (String)r.getResultObject();
+		environment.logError("PS1 "+json, null);
 	}
 	
 	/**
@@ -114,7 +119,7 @@ public class SentenceEngine {
 		JsonObject jo = new JsonObject();
 		jo.addProperty("type", type);
 		jo.addProperty("cargo", cargo);
-		sentenceProducer.sendMessage(EXPECTATION_TOPIC, jo.toString(), SPACY_KEY, partition);
+		sentenceProducer.sendMessage(EXPECTATION_TOPIC, jo.toString(), SENTENCE_KEY, partition);
 	}
 	
 	

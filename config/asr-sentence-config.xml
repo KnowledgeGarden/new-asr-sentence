@@ -4,6 +4,8 @@
 
 <properties>
 
+	<parameter name="SpacyURL" value = "http://127.0.0.1:8000" />  <!-- CHANGE ME -->
+
 	<!-- WordGram database -->
 	<parameter name="DatabaseName" value = "asrtest" />
 	<parameter name="DatabaseSchema" value = "public" />
