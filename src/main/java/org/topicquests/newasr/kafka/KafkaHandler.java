@@ -18,7 +18,7 @@ import net.minidev.json.JSONObject;
 public class KafkaHandler {
 	private ASREnvironment environment;
 	private StringConsumer consumer;
-//	private SentenceProducer producer;
+//	private CommonKafkaProducer producer;
 	private final boolean isRewind;
 	private final int pollSeconds = 2;
 	private final String
@@ -39,7 +39,7 @@ public class KafkaHandler {
 		//PRODUCER_TOPIC = pTopic;
 		consumer = new StringConsumer(environment, AGENT_GROUP,
 					CONSUMER_TOPIC, listener, isRewind, pollSeconds);
-//		producer = new SentenceProducer(environment, AGENT_GROUP);
+//		producer = new CommonKafkaProducer(environment, AGENT_GROUP);
 //		PRODUCER_KEY = AGENT_GROUP;
 	}
 	

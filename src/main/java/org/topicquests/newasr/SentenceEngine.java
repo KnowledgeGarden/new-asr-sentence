@@ -12,7 +12,7 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
-import org.topicquests.newasr.kafka.SentenceProducer;
+import org.topicquests.newasr.kafka.CommonKafkaProducer;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
@@ -42,11 +42,10 @@ public class SentenceEngine {
 	private PredicateAssembler predAssem;
 	private WordGramBuilder builder;
 
-	private SentenceProducer sentenceProducer;
+	private CommonKafkaProducer sentenceProducer;
 	private SpacyHttpClient spacy;
 	
-	private final String SENTENCE_TOPIC,  EXPECTATION_TOPIC, SENTENCE_KEY;
-	private final Integer partition;
+	private final String SENTENCE_TOPIC, SENTENCE_KEY;
 
 	/**
 	 * 
@@ -63,9 +62,7 @@ public class SentenceEngine {
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
-		EXPECTATION_TOPIC = (String)environment.getKafkaTopicProperties().get("ExpectationFailureTopic");
 		SENTENCE_KEY = "data"; 		//TODO FIXME
-		partition = new Integer(0);	//TODO FiXME
 
 	}
 
@@ -160,23 +157,11 @@ public class SentenceEngine {
 		ISentence sx = new ASRSentence(sentence);
 		JsonArray preds =sx.getPredicatePhrases();
 		if (preds == null) 
-			sendExpectationFailureEvent(IExpectationTypes.NO_PREDICATE_DETECTED, sentence.toString());
+			environment.sendExpectationFailureEvent(IExpectationTypes.NO_PREDICATE_DETECTED, sentence.toString());
 		// TODO Auto-generated method stub
 		return result;
 	}
 
-	/**
-	 * General purpose expectation event creation
-	 * @param type -- the expectation type @see {@link IExpectationTypes}
-	 * @param cargo
-	 */
-	void sendExpectationFailureEvent(String type, String cargo) {
-		JsonObject jo = new JsonObject();
-		jo.addProperty("type", type);
-		jo.addProperty("cargo", cargo);
-		sentenceProducer.sendMessage(EXPECTATION_TOPIC, jo.toString(), SENTENCE_KEY, partition);
-	}
-	
 	
 	class SentenceThread extends Thread {
 		

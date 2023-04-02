@@ -54,14 +54,13 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private IKafkaDispatcher spacyListener;
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceEngine sentenceEngine;
-	private SentenceProducer sentenceProducer;
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
 	 * 
 	 */
 	public ASREnvironment() {
-		super("asr-sentence-config.xml", null, "logger.properties");
+		super("asr-sentence-config.xml", "logger.properties");
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
@@ -81,7 +80,6 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		cTopic = (String)kafkaProps.get("SentenceSpacyConsumerTopic");
 		//pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
-		sentenceProducer = new SentenceProducer(this, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
 		tripleModel = new TripleModel(this);
 		builder = new WordGramBuilder(this);
@@ -112,9 +110,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		return sentenceEngine;
 	}
 	
-	public SentenceProducer getSentenceProducer() {
-		return sentenceProducer;
-	}
+	
 	/**
 	 * There are two spaCy systems in the present code:
 	 * one is on an http service, the other is over kafka
