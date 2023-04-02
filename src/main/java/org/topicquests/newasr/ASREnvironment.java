@@ -23,7 +23,6 @@ import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.TripleModel;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
-import org.topicquests.newasr.kafka.SentenceProducer;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.newasr.wg.WordGramUtil;
