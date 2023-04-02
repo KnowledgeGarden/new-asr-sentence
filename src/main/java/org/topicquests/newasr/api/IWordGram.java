@@ -15,6 +15,7 @@ import com.google.gson.JsonElement;
 public interface IWordGram extends IAddressable {
 	public static final String
 		ID_KEY			= "id",
+		SENT_EDGES_KEY	= "sedges",
 		LOX_KEY			= "lox", 	// locators
 		IN_KEY			= "inLinks", // {sentenceId, gramId}
 		OUT_KEY			= "outLinks", // {sentenceId, gramId}
@@ -38,12 +39,34 @@ public interface IWordGram extends IAddressable {
 	
 	void setWords(String words);
 	
-	JsonArray listInLinks();
-	JsonArray listOutLinks();
+	////////////////////////////////////
+	// Edges
+	//	They are now associated with SentenceId in a map
+	//  Here, we can indicate the tense (past, pressent,...) 
+	//	and the epistemic status,e.g. speculation - for that sentence
+	//	THIS applies only to when a canonical form or inverse is selected
+	/**
+	 * 
+	 * @param sentenceId
+	 * @param tense  can be {@code null}
+	 * @param epi    can be {@code null}
+	 */
+	void setSentenceId(long sentenceId, String tense, String epi);
+	
+	//JsonArray listInLinks();
+	//JsonArray listOutLinks();
+	
+	/**
+	 * Can return {@code null}
+	 * @param sentenceId
+	 * @return
+	 */
+	JsonObject getSentenceEdge(long sentenceId);
 	
 	void addInLink(long sentenceId, long gramId);
 	void addOutlink(long sentenceId, long gramId);
-	
+	//
+	////////////////////////////////////
 	/**
 	 * Can return {@code null}
 	 * @return
@@ -54,6 +77,10 @@ public interface IWordGram extends IAddressable {
 	
 	void setTopicLocators(JsonArray locators);
 	
+	/**
+	 * For predicates, indicates a <em>not</em>
+	 * @param isNeg
+	 */
 	void setNegation(boolean isNeg);
 	boolean getNegation();
 	

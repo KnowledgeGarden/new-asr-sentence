@@ -48,8 +48,8 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    try { //TODO Transaction?
 		      conn = dbDriver.getConnection();
 		      String sql = IQueries.PUT_NODE;
-		      //(id, words, pos, topicid, dbpedia wikidata, tense, negation, epi, active, cannon)
-		      Object [] vals = new Object[11];
+		      //(id, words, pos, topicid, dbpedia wikidata, negation, active, cannon)
+		      Object [] vals = new Object[9];
 		      vals[0] = new Long(objectId);			//id
 		      vals[1] = node.getWords();			//wods
 		      JsonArray x = node.listPOS();
@@ -60,17 +60,15 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		      vals[3] = ts;							//  locators
 		      vals[4] = node.getDBpedia();			// dbpedia
 		      vals[5] = node.getWikidata();			// wikidata
-		      vals[6] = node.getTense();			// tense
-		      vals[7] = node.getNegation();			// negation
-		      vals[8] = node.getEpistemicStatus();	// epistemic status
+		      vals[6] = node.getNegation();			// negation
 		      long inx  = -1;
 		      Long vx = null;
 		      if (node.hasInverseTerm())
 		    	  vx = new Long(node.getInverseTerm());
-		      vals[9] = vx;							//inverse predicate
+		      vals[7] = vx;							//inverse predicate
 		      if (node.hasCannonicalTerm())
 		    	  vx = new Long(node.getCannonTerm());
-		      vals[10] = vx;							//canonical term
+		      vals[8] = vx;							//canonical term
 		      IResult rx = conn.executeSQL(sql, vals);
 		      if (rx.hasError())
 				result.addErrorString(rx.getErrorString());

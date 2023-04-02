@@ -54,6 +54,45 @@ public class WordGram implements IWordGram {
 	}
 
 	@Override
+	public void setSentenceId(long sentenceId, String tense, String epi) {
+		JsonElement jo = data.get(IWordGram.SENT_EDGES_KEY);
+		JsonObject sentenceEdges;
+		if (jo == null) {
+			sentenceEdges = new JsonObject();
+			data.add(IWordGram.SENT_EDGES_KEY, sentenceEdges);
+		} else
+			sentenceEdges = jo.getAsJsonObject();
+		jo = sentenceEdges.get(Long.toString(sentenceId));
+		JsonObject edge;
+		if (jo == null)
+			edge = new JsonObject();
+		else
+			edge = jo.getAsJsonObject();
+		if (tense != null)
+			edge.addProperty(IWordGram.TENSE_KEY, tense);
+		if (epi != null)
+			edge.addProperty(IWordGram.EPI_KEY, epi);
+		
+	}
+	
+	/**
+	 * Can return {@code null}
+	 * @param sentenceId
+	 * @return
+	 */
+	@Override
+	public JsonObject getSentenceEdge(long sentenceId) {
+		JsonObject result = null;
+		JsonElement jo = data.get(IWordGram.SENT_EDGES_KEY);
+		if (jo == null) return null;
+		JsonObject sentenceEdges = jo.getAsJsonObject();
+		jo = sentenceEdges.get(Long.toString(sentenceId));
+		if (jo == null) return null;
+		result = jo.getAsJsonObject();
+	
+		return result;	
+	}
+	/*@Override
 	public JsonArray listInLinks() {
 		JsonElement jo = data.get(IWordGram.IN_KEY);
 		if (jo == null) return null;
@@ -65,14 +104,21 @@ public class WordGram implements IWordGram {
 		JsonElement jo = data.get(IWordGram.OUT_KEY);
 		if (jo == null) return null;
 		return jo.getAsJsonArray();
-	}
+	}*/
 
 	@Override
 	public void addInLink(long sentenceId, long gramId) {
-		JsonArray ja = listInLinks();
-		if (ja == null) {
-			ja = new JsonArray();
+		JsonObject sentenceEdge = getSentenceEdge(sentenceId);
+		if (sentenceEdge == null) {
+			System.out.println("WARNING: SentenceId not set");
+			this.setSentenceId(sentenceId, null, null);
+			sentenceEdge = getSentenceEdge(sentenceId);
 		}
+		sentenceEdge.addProperty(WordGram.IN_KEY, Long.toString(gramId));
+		//JsonArray ja = listInLinks();
+		//if (ja == null) {
+		//	ja = new JsonArray();
+		//}
 		//JsonObject jo = new JsonObject();
 		//jo.addProperty(Long.toString(sentenceId), gramId);
 		//ja.add(jo);
@@ -82,10 +128,18 @@ public class WordGram implements IWordGram {
 
 	@Override
 	public void addOutlink(long sentenceId, long gramId) {
-		JsonArray ja = listOutLinks();
-		if (ja == null) {
-			ja = new JsonArray();
+		JsonObject sentenceEdge = getSentenceEdge(sentenceId);
+		if (sentenceEdge == null) {
+			System.out.println("WARNING: SentenceId not set");
+			this.setSentenceId(sentenceId, null, null);
+			sentenceEdge = getSentenceEdge(sentenceId);
 		}
+		sentenceEdge.addProperty(WordGram.OUT_KEY, Long.toString(gramId));
+
+		//JsonArray ja = listOutLinks();
+		//if (ja == null) {
+		//	ja = new JsonArray();
+		//}
 		//JsonObject jo = new JsonObject();
 		//jo.addProperty(Long.toString(sentenceId), gramId);
 		//ja.add(jo);
@@ -309,7 +363,6 @@ public class WordGram implements IWordGram {
 			return false;
 		return je.getAsBoolean();
 	}
-
 
 
 }

@@ -58,14 +58,17 @@ public interface IQueries {
 	
 		GET_NODE =
 			"SELECT * FROM public.node where id=?",
-		GET_INLINKS =
+/*		GET_INLINKS =
 			"SELECT * FROM public.inlinks WHERE id=?",
 		GET_OUTLINKS =
 			"SELECT * FROM public.outlinks WHERE id=?",
+ */
+		GET_SENTENCE_EDGES =
+			"SELECT * FROM public.sentence_edges WHERE id=?",
  
 		PUT_NODE =
-			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, tense, negation, epi, active, cannon) "+
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, negation, active, cannon) "+
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		PUT_INlINK =	
 			"INSERT INTO public.inlinks (id, isentenceId, itargetId) VALUES (?, ?, ?)",
 		PUT_OUTlINK =	
