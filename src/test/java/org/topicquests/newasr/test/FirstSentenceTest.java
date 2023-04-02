@@ -14,6 +14,7 @@ import org.topicquests.newasr.impl.ASRSentence;
  */
 public class FirstSentenceTest extends TestingRoot {
 	private final String
+		S0  = "Carbon dioxide has been thought to cause climate change",
 		S1	="Greenhouse gasses have been thought to cause climate change",
 		S2  = "Christian Drosten works in Germany.",
 		S4	="Scientists have been thought to believe that climate change is caused by  carbon dioxide";
@@ -27,7 +28,7 @@ public class FirstSentenceTest extends TestingRoot {
 		super();
 		
 		sentence = new ASRSentence(); 
-		sentence.setText(S4);
+		sentence.setText(S0);
 		sentence.setId(System.currentTimeMillis());
 		sentenceEngine.acceptNewSentence(sentence.getData());
 		

@@ -13,6 +13,7 @@ import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IPOS;
 import org.topicquests.newasr.api.ISentence;
+import org.topicquests.newasr.api.ISimpleTriple;
 import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.api.IWordGram;
 import org.topicquests.newasr.util.JsonUtil;
@@ -191,6 +192,13 @@ public class WordGramBuilder {
 				}
 			}
 			environment.logError("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList,null);
+			//////////
+			// Test for triples
+			//////////
+			JsonArray triples = null;
+			if (predList.size() == 1) {
+				triples = this.lookForTriples(sentence, predList, dbpWgList, wdWgList, nounWgList);
+			}
 /*
  [org.topicquests.newasr.impl.WordGram@6930790f, org.topicquests.newasr.impl.WordGram@19b2983a]
 [{"txt":"climate change","url":"http://dbpedia.org/resource/Global_warming"}, {"txt":"carbon dioxide","url":"http://dbpedia.org/resource/Carbon_dioxide"}]
@@ -206,7 +214,186 @@ public class WordGramBuilder {
 		
 		return result;
 	}
+	///////////////////////////////
+	// We need to know where terms are relative to each other
+	// We also must pay attention to inverse predicates
+	/**
+	 * <p>Create triples if they can be created, and return in list</p>
+	 * <p>In theory, there will be one triple for each predicate</p>
+	 * @param sentence
+	 * @param predWordgrams
+	 * @param dbPediaWordgrams
+	 * @param wikidataWordgrams
+	 * @param nounWordgrams
+	 * @return can return an empty array
+	 */
+	JsonArray lookForTriples(ISentence sentence, 
+			List<IWordGram> predWordgrams,
+			List<IWordGram> dbPediaWordgrams,
+			List<IWordGram> wikidataWordgrams,
+			List<IWordGram> nounWordgrams) {
+		JsonArray result = new JsonArray();
+		String theSentence = sentence.getText();
+		IWordGram subj=null, pred=null, obj=null;
+		ISimpleTriple subjT, objT;
+		int lenP = predWordgrams.size();
+		int lenS1 = dbPediaWordgrams.size();
+		int lenS3 = wikidataWordgrams.size();
+		int lenS4 = nounWordgrams.size();
+		String txtA, txtB;
+		boolean hasInverseTerm;
+		long canonicalTermId = -1;
+		int wherePredicate = -1;
+		int whereOther = -1;
+		boolean subjectFound, objectFound;
+		// For each predicaate
+		for (int i=0;i<lenP;i++) {
+			subjectFound = false;
+			objectFound = false;
+			hasInverseTerm = false;
+			pred = predWordgrams.get(i);
+			txtA = pred.getWords();
+			hasInverseTerm = pred.hasInverseTerm();
+			wherePredicate = locateTermInSentence(theSentence, txtA);
+			//Look in dbpedia
+			for (int j=0;j<lenS1;j++) {
+				subj = dbPediaWordgrams.get(j);
+				txtB = subj.getWords();
+				whereOther = locateTermInSentence(theSentence, txtB);
+				if (whereOther > wherePredicate) {
+					subj = null;
+					break;
+				} else {
+					environment.logError("PPG-1 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+					// heuristic = mayte that's it
+					subjectFound = true;
+					break;
+				}
+			}
+			if (!subjectFound && lenS3 > 0) {
+				for (int j=0;j<lenS3;j++) {
+					subj = wikidataWordgrams.get(j);
+					txtB = subj.getWords();
+					whereOther = locateTermInSentence(theSentence, txtB);
+					if (whereOther > wherePredicate) {
+						subj = null;
+						break;
+					} else {
+						environment.logError("PPG-2 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						// heuristic = mayte that's it
+						subjectFound = true;
+						break;
+					}
+				}
+			}
+			if (!subjectFound && lenS4 > 0) {
+				for (int j=0;j<lenS4;j++) {
+					subj = nounWordgrams.get(j);
+					txtB = subj.getWords();
+					whereOther = locateTermInSentence(theSentence, txtB);
+					if (whereOther > wherePredicate) {
+						subj = null;
+						break;
+					} else {
+						environment.logError("PPG-3 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						// heuristic = mayte that's it
+						subjectFound = true;
+						break;
+					}
+				}
+			}
+			if (subjectFound)  {
+				//look for object
+				//Look in dbpedia
+				for (int j=0;j<lenS1;j++) {
+					obj = dbPediaWordgrams.get(j);
+					txtB = obj.getWords();
+					whereOther = locateTermInSentence(theSentence, txtB);
+					environment.logError("PPG-4a "+lenS1+" "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+					if (whereOther < wherePredicate) {
+						obj = null;
+						;
+					} else {
+						environment.logError("PPG-4 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						// heuristic = mayte that's it
+						objectFound = true;
+						break;
+					}
+				}
+				if (!objectFound && lenS3 > 0) {
+					for (int j=0;j<lenS3;j++) {
+						obj = wikidataWordgrams.get(j);
+						txtB = obj.getWords();
+						whereOther = locateTermInSentence(theSentence, txtB);
+						if (whereOther < wherePredicate) {
+							obj = null;
+							
+						} else {
+							environment.logError("PPG-5 "+txtA+" "+txtA+" "+wherePredicate+" "+whereOther, null);
+							// heuristic = mayte that's it
+							objectFound = true;
+							break;
+						}
+					}
+				}
+				if (!objectFound && lenS4 > 0) {
+					for (int j=0;j<lenS4;j++) {
+						obj = nounWordgrams.get(j);
+						txtB = obj.getWords();
+						whereOther = locateTermInSentence(theSentence, txtB);
+						if (whereOther < wherePredicate) {
+							obj = null;
+							;
+						} else {
+							environment.logError("PPG-6 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+							// heuristic = mayte that's it
+							objectFound = true;
+							break;
+						}
+					}
+				}				
+			}
+			if (subjectFound && objectFound) {
+				System.out.println("XX "+subj+"|"+pred+"|"+obj);
+				formTriple(subj, pred, obj);
+			}
+
+		}
+		return result;
+	}
+	
+	ISimpleTriple formTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
+		ISimpleTriple result = null;
+		long cannon= -1;
+		boolean hasInverse = predicate.hasInverseTerm();
+		IWordGram pred;
+		IResult r;
+		if (hasInverse) {
+			r = model.getThisTermById(Long.toString(predicate.getInverseTerm()));
+			pred = (IWordGram)r.getResultObject();
+		} else {
+			pred = predicate;
+		} 
+		if (cannon > -1) {
+			r = model.getThisTermById(Long.toString(cannon));
+			pred = (IWordGram)r.getResultObject();
+		}
+		//TODO check subject and object for predicates
+		String foo = subject.getWords()+" "+pred.getWords()+" "+object.getWords();
+		environment.logError("TheTriple: "+foo, null);
+		environment.logError("Pred: "+predicate.getData(), null);
+
+		return result;
+	}
+	
+	int locateTermInSentence(String sentence, String term) {
+		String SS = sentence.toLowerCase();
+		String TT = term.toLowerCase();
+		return SS.indexOf(TT);
+	}
+
 }
+
 /**
 A spacy sentence
 {
