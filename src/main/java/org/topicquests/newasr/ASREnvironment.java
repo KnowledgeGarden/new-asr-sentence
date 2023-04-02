@@ -16,6 +16,7 @@ import org.topicquests.newasr.api.IKafkaDispatcher;
 import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
+import org.topicquests.newasr.impl.ASRBaseEnvironment;
 import org.topicquests.newasr.impl.ASRModel;
 import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
@@ -28,7 +29,6 @@ import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.newasr.wg.WordGramUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.pg.PostgresConnectionFactory;
-import org.topicquests.support.RootEnvironment;
 import org.topicquests.support.config.Configurator;
 
 
@@ -36,7 +36,7 @@ import org.topicquests.support.config.Configurator;
  * @author jackpark
  *
  */
-public class ASREnvironment extends RootEnvironment {
+public class ASREnvironment extends ASRBaseEnvironment {
 	private PostgresConnectionFactory dbDriver = null;
 	private PostgresConnectionFactory tripleDriver = null;
 	private IDictionaryClient dictionarHttpyClient;
@@ -61,7 +61,7 @@ public class ASREnvironment extends RootEnvironment {
 	 * 
 	 */
 	public ASREnvironment() {
-		super("asr-sentence-config.xml", "logger.properties");
+		super("asr-sentence-config.xml", null, "logger.properties");
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
@@ -99,6 +99,7 @@ public class ASREnvironment extends RootEnvironment {
 	        shutDown();
 	      }
 	    });
+		logDebug("Hello World");
 	}
 	
 	public ITripleModel getTripleModel() {
