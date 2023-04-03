@@ -75,6 +75,18 @@ public class WordGram implements IWordGram {
 		
 	}
 	
+	@Override
+	public void setSentenceEdges(JsonObject edges) {
+		data.add(IWordGram.SENT_EDGES_KEY, edges);
+	}
+
+	public JsonObject getSentenceEdges() {
+		JsonElement je = data.get(IWordGram.SENT_EDGES_KEY);
+		if (je != null)
+			return je.getAsJsonObject();
+		return null;
+	}
+	
 	/**
 	 * Can return {@code null}
 	 * @param sentenceId

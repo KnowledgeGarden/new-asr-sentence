@@ -63,6 +63,18 @@ public interface IWordGram extends IAddressable {
 	 */
 	JsonObject getSentenceEdge(long sentenceId);
 	
+	/**
+	 * Called from database
+	 * @param edge
+	 */
+	void setSentenceEdges(JsonObject edges);
+	
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	JsonObject getSentenceEdges();
+	
 	void addInLink(long sentenceId, long gramId);
 	void addOutlink(long sentenceId, long gramId);
 	//

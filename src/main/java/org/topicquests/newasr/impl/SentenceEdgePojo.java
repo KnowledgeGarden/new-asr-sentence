@@ -73,8 +73,8 @@ public class SentenceEdgePojo implements ISentenceEdge {
 
 	@Override
 	public void setPredicateTense(String tense) {
-		// TODO Auto-generated method stub
-
+		if (tense != null)
+			data.addProperty(IWordGram.TENSE_KEY, tense);
 	}
 
 	@Override
@@ -87,8 +87,8 @@ public class SentenceEdgePojo implements ISentenceEdge {
 
 	@Override
 	public void setEpistemicStatus(String epi) {
-		// TODO Auto-generated method stub
-
+		if (epi != null)
+			data.addProperty(IWordGram.EPI_KEY, epi);
 	}
 
 	@Override

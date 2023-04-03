@@ -65,15 +65,16 @@ public interface IQueries {
  */
 		GET_SENTENCE_EDGES =
 			"SELECT * FROM public.sentence_edges WHERE id=?",
- 
+		PUT_NODE_EDGE =	
+			"INSERT INTO public.sentence_edges (id, inLink, outLink, tense, epi) VALUES (?, ?, ?, ?, ?)",
 		PUT_NODE =
 			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, negation, active, cannon) "+
 			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		PUT_INlINK =	
+/*		PUT_INlINK =	
 			"INSERT INTO public.inlinks (id, isentenceId, itargetId) VALUES (?, ?, ?)",
 		PUT_OUTlINK =	
 			"INSERT INTO public.outlinks (id, osentenceId, otargetId) VALUES (?, ?, ?)",
-
+*/
 		ADD_POS =
 			"UPDATE public.node SET pos = ? WHERE i?", //note array value
 		ADD_LOCATOR =

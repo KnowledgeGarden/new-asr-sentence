@@ -6,18 +6,17 @@
 package org.topicquests.newasr.impl;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.Iterator;
 
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrDataProvider;
-import org.topicquests.newasr.api.IConstants;
 import org.topicquests.newasr.api.IQueries;
 import org.topicquests.newasr.api.IWordGram;
 import org.topicquests.pg.PostgresConnectionFactory;
 import org.topicquests.pg.api.IPostgresConnection;
 import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
+import org.topicquests.newasr.api.ISentenceEdge;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -99,43 +98,30 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 
 	}
 	void putLinks(long nodeId, IWordGram wg, IPostgresConnection conn, IResult r )  {
-		JsonArray inL = wg.listInLinks();
-		JsonArray outL = wg.listOutLinks();
-		if (inL == null && outL == null) return;
-		//inLInks
-		String sql;
+		JsonObject sentenceEdges = wg.getSentenceEdges();
+		if (sentenceEdges == null)
+			return;
+		String sql= IQueries.PUT_NODE_EDGE;;
 		IResult rx;
-		Object [] obj = new Object[3];
+		Object [] obj = new Object[5];
 		obj [0] = Long.toString(nodeId);
-		Iterator<JsonElement> itr;
-		String theProp;
-		String [] px;
-		if (inL != null) {
-			sql = IQueries.PUT_INlINK;
-			//(id, isentenceId, itargetId)
-			itr =inL.iterator();
-			while (itr.hasNext()) {
-				theProp = itr.next().getAsString();
-				px = theProp.split(",");
-				obj[1] = px[0].trim();
-				obj[2] = px[1].trim();
-				rx = conn.executeSQL(sql, obj);
-				if (rx.hasError())
-					r.addErrorString(rx.getErrorString());
-			}
-		}
-		if (outL != null) {
-			sql = IQueries.PUT_OUTlINK;
-			itr =outL.iterator();
-			while (itr.hasNext()) {
-				theProp = itr.next().getAsString();
-				px = theProp.split(",");
-				obj[1] = px[0].trim();
-				obj[2] = px[1].trim();
-				rx = conn.executeSQL(sql, obj);
-				if (rx.hasError())
-					r.addErrorString(rx.getErrorString());
-			}
+		Iterator<String> itr =sentenceEdges.keySet().iterator();
+		String sentId;
+		JsonObject edge;
+		ISentenceEdge e;
+		//id, inLink, outLink, tense, epi
+		while (itr.hasNext()) {
+			sentId = itr.next();
+			edge = sentenceEdges.get(sentId).getAsJsonObject();
+			e = new SentenceEdgePojo(edge);
+			obj[1] = e.getInLink();
+			obj[2] = e.getOutLink();
+			obj[3]= e.getPredicateTense();
+			obj[4]= e.getpistemicStatus();
+			rx = conn.executeSQL(sql, obj);
+			if (rx.hasError())
+				r.addErrorString(rx.getErrorString());
+		
 		}
 		
 	}
@@ -317,27 +303,25 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		Object [] obj = new Object[1];
 		obj[0] = new Long(nodeId);
 		IResult rx;
-		String sql = IQueries.GET_INLINKS;
+		String sql = IQueries.GET_SENTENCE_EDGES;
 		rx = conn.executeSelect(sql, obj);
 		if (rx.hasError())
 			r.addErrorString(rx.getErrorString());
 		ResultSet rs = (ResultSet)rx.getResultObject();
 		if (rs != null) {
+			JsonObject sentenceEdges = new JsonObject();
+			ISentenceEdge edge;
+			long sentenceId;
 			while (rs.next()) {
-				wg.addInLink(Long.valueOf(rs.getString("isentenceId")), Long.valueOf(rs.getString("itargetId")));
+				edge = new SentenceEdgePojo();
+				sentenceId = rs.getLong("id");
+				edge.setInLink(rs.getLong("in_lnk"));
+				edge.setOutLink(rs.getLong("out_lnk"));
+				edge.setPredicateTense(rs.getString("tense"));
+				edge.setEpistemicStatus(rs.getString("epi"));
+				sentenceEdges.add(Long.toString(sentenceId), edge.getData());
 			}
-		}
-		
-		//outloinks
-		sql = IQueries.GET_OUTLINKS;
-		rx = conn.executeSelect(sql, obj);
-		if (rx.hasError())
-			r.addErrorString(rx.getErrorString());
-		rs = (ResultSet)rx.getResultObject();
-		if (rs != null) {
-			while (rs.next()) {
-				wg.addInLink(Long.valueOf(rs.getString("osentenceId")), Long.valueOf(rs.getString("otargetId")));
-			}
+			wg.setSentenceEdges(sentenceEdges);
 		}
 
 	}
