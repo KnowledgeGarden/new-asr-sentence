@@ -59,7 +59,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	 * 
 	 */
 	public ASREnvironment() {
-		super("asr-sentence-config.xml", "logger.properties");
+		super("asr-sentence-config.xml", "config/logconfig.xml");
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
