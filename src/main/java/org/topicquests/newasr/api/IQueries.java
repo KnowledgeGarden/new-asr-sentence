@@ -68,8 +68,8 @@ public interface IQueries {
 		PUT_NODE_EDGE =	
 			"INSERT INTO public.sentence_edges (id, inLink, outLink, tense, epi) VALUES (?, ?, ?, ?, ?)",
 		PUT_NODE =
-			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, negation, active, cannon) "+
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, tense, negation, epi, active, cannon) "+
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 /*		PUT_INlINK =	
 			"INSERT INTO public.inlinks (id, isentenceId, itargetId) VALUES (?, ?, ?)",
 		PUT_OUTlINK =	
