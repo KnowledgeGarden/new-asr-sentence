@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration name="NewASRt" status="DEBUG">
+ 
+    <!-- Logging Properties -->
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+        <!--  <Property name="APP_LOG_ROOT">logs/</Property>-->
+    </Properties>
+     
+    <Appenders>
+     
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT" >
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+         
+        <!-- File Appenders on need basis -->
+        <RollingFile name="frameworkLog" fileName="logs/app-framework.log"
+            filePattern="logs/app-framework-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+ 			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+	        <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="debugLog" fileName="logs/app-debug.log"
+            filePattern="logs/app-debug-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+ 			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="infoLog" fileName="logs/app-journal.log" 
+        		filePattern="app-info-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+ 			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="errorLog" fileName="logs/app-error.log"
+            	filePattern="logs/app-error-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+ 			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+             <DefaultRolloverStrategy max="10"/>
+       </RollingFile>
+         
+        <RollingFile name="perfLog" fileName="logs/app-perf.log"
+            filePattern="logs/app-perf-%d{yyyy-MM-dd}-%i.log" >
+             <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+ 			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+           <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="traceLog" fileName="logs/app-trace.log"
+            filePattern="logs/app-trace-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+  			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+				<TimeBasedTriggeringPolicy/>
+			</Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+    </Appenders>
+ 
+    <Loggers>
+         
+        <Logger name="org.topicquests" additivity="false" level="debug">
+            <AppenderRef ref="debugLog" level="debug"/>
+            <AppenderRef ref="errorLog"  level="error"/>
+            <AppenderRef ref="infoLog" level="info" />
+        </Logger>
+         
+      	<Root name="org.topicquests" level="trace">
+ 			<AppenderRef ref="Console" level="trace"/>
+		</Root>
+ 
+    </Loggers>
+ 
+</Configuration>

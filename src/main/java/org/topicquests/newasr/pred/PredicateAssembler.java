@@ -148,7 +148,7 @@ public class PredicateAssembler {
 	 * @return
 	 */
 	JsonObject _processOnePredicate(JsonArray ants, JsonArray predicate, String theSentence) {
-		environment.logError("ProcessOne "+theSentence,null);
+		environment.logDebug("ProcessOne "+theSentence);
 		int plen = predicate.size();
 		JsonObject je, jx =null;
 		String thePred = "";
@@ -185,7 +185,7 @@ public class PredicateAssembler {
 		jo.add("strt", jx.get("strt"));
 		jo.addProperty("txt", predPhrase);
 		System.out.println("DID: "+jo);
-		environment.logError("DID: "+valid+" "+jo, null);
+		environment.logDebug("DID: "+valid+" "+jo);
 		return jo;
 	}
 	

@@ -59,7 +59,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	 * 
 	 */
 	public ASREnvironment() {
-		super("asr-sentence-config.xml", "config/logconfig.xml");
+		super("asr-sentence-config.xml");
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
@@ -97,6 +97,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	      }
 	    });
 		logDebug("Hello World");
+		System.out.println("ENV BOOTED");
+		logError("SHIT ",null);
+		say("Just starting");
 	}
 	
 	public ITripleModel getTripleModel() {

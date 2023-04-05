@@ -191,7 +191,7 @@ public class WordGramBuilder {
 						nounWgList.add(wg);
 				}
 			}
-			environment.logError("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList,null);
+			environment.logDebug("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList);
 			//////////
 			// Test for triples
 			//////////
@@ -264,7 +264,7 @@ public class WordGramBuilder {
 					subj = null;
 					break;
 				} else {
-					environment.logError("PPG-1 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+					environment.logDebug("PPG-1 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 					// heuristic = mayte that's it
 					subjectFound = true;
 					break;
@@ -279,7 +279,7 @@ public class WordGramBuilder {
 						subj = null;
 						break;
 					} else {
-						environment.logError("PPG-2 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						environment.logDebug("PPG-2 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 						// heuristic = mayte that's it
 						subjectFound = true;
 						break;
@@ -295,7 +295,7 @@ public class WordGramBuilder {
 						subj = null;
 						break;
 					} else {
-						environment.logError("PPG-3 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						environment.logDebug("PPG-3 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 						// heuristic = mayte that's it
 						subjectFound = true;
 						break;
@@ -309,12 +309,12 @@ public class WordGramBuilder {
 					obj = dbPediaWordgrams.get(j);
 					txtB = obj.getWords();
 					whereOther = locateTermInSentence(theSentence, txtB);
-					environment.logError("PPG-4a "+lenS1+" "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+					environment.logDebug("PPG-4a "+lenS1+" "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 					if (whereOther < wherePredicate) {
 						obj = null;
 						;
 					} else {
-						environment.logError("PPG-4 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+						environment.logDebug("PPG-4 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 						// heuristic = mayte that's it
 						objectFound = true;
 						break;
@@ -329,7 +329,7 @@ public class WordGramBuilder {
 							obj = null;
 							
 						} else {
-							environment.logError("PPG-5 "+txtA+" "+txtA+" "+wherePredicate+" "+whereOther, null);
+							environment.logDebug("PPG-5 "+txtA+" "+txtA+" "+wherePredicate+" "+whereOther);
 							// heuristic = mayte that's it
 							objectFound = true;
 							break;
@@ -345,7 +345,7 @@ public class WordGramBuilder {
 							obj = null;
 							;
 						} else {
-							environment.logError("PPG-6 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther, null);
+							environment.logDebug("PPG-6 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 							// heuristic = mayte that's it
 							objectFound = true;
 							break;
@@ -380,8 +380,8 @@ public class WordGramBuilder {
 		}
 		//TODO check subject and object for predicates
 		String foo = subject.getWords()+" "+pred.getWords()+" "+object.getWords();
-		environment.logError("TheTriple: "+foo, null);
-		environment.logError("Pred: "+predicate.getData(), null);
+		environment.logDebug("TheTriple: "+foo);
+		environment.logDebug("Pred: "+predicate.getData());
 
 		return result;
 	}

@@ -241,7 +241,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	@Override
 	public IResult getNode(long nodeId) {
 		System.out.println("PGgetNode "+nodeId);
-		environment.logError("PGgetNode "+nodeId, null);
+		environment.logDebug("PGgetNode "+nodeId);
 		IResult result = new ResultPojo();
 		String sql = IQueries.GET_NODE;
 	    IPostgresConnection conn = null;
@@ -266,10 +266,6 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 			    		wg.setDBpedia(rs.getString("dbpedia"));
 			    	if (rs.getString("wikidata") != null)
 			    		wg.setWikidata(rs.getString("wikidata"));
-			    	if (rs.getString("tense") != null)
-			    		wg.setTense(rs.getString("tense"));
-			    	if (rs.getString("epi") != null)
-			    		wg.setEpistemicStatus(rs.getString("epi"));
 			    	if (rs.getString("active") != null)
 			    		wg.setInverseTerm(rs.getLong("active"));
 			    	if (rs.getString("cannon") != null)
@@ -341,7 +337,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	}
 	
 	JsonArray stringToJA(String commaDelimitedString) {
-		environment.logError("PWGPsplit "+commaDelimitedString, null);
+		environment.logDebug("PWGPsplit "+commaDelimitedString);
 		JsonArray  result = new JsonArray();
 		String [] foo = commaDelimitedString.split(",");
 		int len = foo.length;

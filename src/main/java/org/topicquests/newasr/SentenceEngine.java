@@ -97,7 +97,7 @@ public class SentenceEngine {
 		//@see acceptSpacyResponse below	
 		IResult r = spacy.processSentence(text);
 		String json = (String)r.getResultObject();
-		environment.logError("PS1 "+json, null);
+		environment.logDebug("PS1 "+json);
 		JsonObject jo;
 		JsonArray ja;
 		JSONObject spacyObj;
@@ -127,7 +127,7 @@ public class SentenceEngine {
 			processWikidata(sentence, ja);
 			// and now, the wordgrams
 			r = builder.processSentence(sentence);
-			environment.logError("SentenceEngineDone\n"+sentence.getData(), null);
+			environment.logDebug("SentenceEngineDone\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO
 		} catch (Exception e) {
