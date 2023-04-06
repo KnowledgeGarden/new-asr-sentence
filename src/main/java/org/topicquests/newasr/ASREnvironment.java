@@ -14,6 +14,7 @@ import org.topicquests.newasr.api.IDictionary;
 import org.topicquests.newasr.api.IDictionaryClient;
 import org.topicquests.newasr.api.IKafkaDispatcher;
 import org.topicquests.newasr.api.ITripleModel;
+import org.topicquests.newasr.bootstrap.PredicateImporter;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
 import org.topicquests.newasr.impl.ASRBaseEnvironment;
@@ -53,6 +54,8 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private IKafkaDispatcher spacyListener;
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceEngine sentenceEngine;
+	private PredicateImporter predImporter;
+
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
@@ -84,7 +87,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		builder = new WordGramBuilder(this);
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
-		
+		predImporter = new PredicateImporter(this);
 		
 		sentenceEngine.startProcessing();
 		
@@ -102,6 +105,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		say("Just starting");
 	}
 	
+	public PredicateImporter getPredicateImporter() {
+		return predImporter;
+	}
 	public ITripleModel getTripleModel() {
 		return tripleModel;
 	}
@@ -157,7 +163,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 
 	@Override
 	public void shutDown() {
-		System.out.println("Shutting down");
+		logDebug("ASREnvironment Shutting down");
 		sentenceEngine.shutDown();
 		sentenceConsumer.shutDown();
 		spacyConsumer.shutDown();

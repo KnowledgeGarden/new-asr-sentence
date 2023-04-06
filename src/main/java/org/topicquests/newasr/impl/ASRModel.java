@@ -157,6 +157,7 @@ public class ASRModel implements IAsrModel {
 	@Override
 	public IResult processPredicate(String term, String tense, String inverseTerm, String cannonicalTerm,
 			String epistemicStatus, boolean isNegative) {
+		environment.logDebug("PROCESSPRED "+term+" |"+tense+" |"+inverseTerm+" |"+cannonicalTerm+" |"+epistemicStatus+" |"+isNegative);
 		IResult result = new ResultPojo();
 		IResult r;
 		boolean exists =termExists(term); // in dictionary
@@ -164,11 +165,11 @@ public class ASRModel implements IAsrModel {
 		String id = (String)r.getResultObject();
 		String invId = null;
 		String canonId = null;
-		if (inverseTerm != null) {
+		if (inverseTerm != null && !inverseTerm.equals("")) {
 			r = dictionary.addTerm(inverseTerm);
 			invId = (String)r.getResultObject();
 		}
-		if (cannonicalTerm != null) {
+		if (cannonicalTerm != null && !cannonicalTerm.equals("")) {
 			r = dictionary.addTerm(cannonicalTerm);
 			canonId = (String)r.getResultObject();
 		}
@@ -212,8 +213,11 @@ public class ASRModel implements IAsrModel {
 			}
 		}
 		isInDB = termExistsInDB(id);
-		if (isInDB) {
+		environment.logDebug("PROCESSPRED-21 "+isInDB+" "+wg.getData()); 
+		if (!isInDB) {
+			environment.logDebug("PROCESSPRED-25 "); 
 			r = database.putNode(wg); 
+			environment.logDebug("PROCESSPRED-30 "+r.getErrorString()); 
 			if (r.hasError())
 				result.addErrorString(r.getErrorString());
 		}

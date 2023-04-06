@@ -39,6 +39,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	}
 	@Override
 	public IResult putNode(IWordGram node) {
+		environment.logDebug("PUTNODE "+node.getData());
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 	    JsonObject data = node.getData();
@@ -96,6 +97,8 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    } finally {
 	    	conn.closeConnection(result);
 	    }
+		environment.logDebug("PUTNODE+ "+result.getErrorString()+"\n"+node.getData());
+
 		return result;
 
 	}

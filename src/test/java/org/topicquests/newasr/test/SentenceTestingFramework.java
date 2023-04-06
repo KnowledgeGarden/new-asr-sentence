@@ -15,7 +15,7 @@ public class SentenceTestingFramework {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new BootTest();
+		//new BootTest();
 		//new BootstrapTest();
 		//new FirstNodeTest();
 		//new SecondNodeTest();
@@ -23,6 +23,7 @@ public class SentenceTestingFramework {
 		//new FirstPredicateTest();
 		//new FirstSentenceTest();
 		//new SpacyHttpTest();
+		new PredicateImportTest();
 	}
 
 }
