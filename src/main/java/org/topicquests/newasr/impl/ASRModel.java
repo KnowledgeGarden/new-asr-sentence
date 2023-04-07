@@ -243,45 +243,39 @@ public class ASRModel implements IAsrModel {
 
 	@Override
 	public IResult addPOS(long gramId, String value) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addPOS(gramId, value);
 	}
 
 	@Override
 	public IResult addWikidata(long gramId, String value) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addWikidata(gramId, value);
 	}
 
 	@Override
 	public IResult addDBpedia(long gramId, String value) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addDBpedia(gramId, value);
 	}
 
 	@Override
 	public IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense,
 			String epistemicStatus) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addSentenceEdge(gramId, inLinkTargetId, outlinkTargetId, tense, epistemicStatus);
 	}
 
 	@Override
 	public IResult addTopicLocator(long gramId, long topicLocator) {
 		// TODO Auto-generated method stub
-		return null;
+		return database.addTopicLocator(gramId, topicLocator);
 	}
 
 	@Override
 	public IResult addSynonymTerm(long gramId, long synonymTermId) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addSynonymTerm(gramId, synonymTermId);
 	}
 
 	@Override
 	public IResult addAntonymTerm(long gramId, long antonymTermId) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addAntonymTerm(gramId,antonymTermId);
 	}
 
 	@Override
@@ -292,8 +286,7 @@ public class ASRModel implements IAsrModel {
 
 	@Override
 	public IResult addHypernymTerm(long gramId, long hyperTermId) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.addHyponymTerm(gramId, hyperTermId);
 	}
 
 }
