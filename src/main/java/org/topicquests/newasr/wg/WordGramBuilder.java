@@ -82,6 +82,9 @@ public class WordGramBuilder {
 		JsonArray dbpedia = sentence.getDBpediaData();
 		JsonArray wikidata = sentence.getWikiData();
 		String spacyResults = sentence.getSpacyData();
+		JsonArray spacyNouns = sentence.getNouns();
+		JsonArray spacyProperNouns = sentence.getProperNouns();
+		JsonArray spacyVerbs = sentence.getVerbs();
 		Iterator<JsonElement> itr;
 		JsonObject jo;
 		JsonArray ja;
