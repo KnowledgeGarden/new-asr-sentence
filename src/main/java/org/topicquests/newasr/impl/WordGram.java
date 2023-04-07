@@ -120,19 +120,6 @@ public class WordGram implements IWordGram {
 	
 		return result;	
 	}
-	/*@Override
-	public JsonArray listInLinks() {
-		JsonElement jo = data.get(IWordGram.IN_KEY);
-		if (jo == null) return null;
-		return jo.getAsJsonArray();
-	}
-
-	@Override
-	public JsonArray listOutLinks() {
-		JsonElement jo = data.get(IWordGram.OUT_KEY);
-		if (jo == null) return null;
-		return jo.getAsJsonArray();
-	}*/
 
 	@Override
 	public void addInLink(long sentenceId, long gramId) {
@@ -292,6 +279,30 @@ public class WordGram implements IWordGram {
 		if (jo == null) return null;
 		return jo.getAsJsonArray();
 	}
+	
+	@Override
+	public void addHyponymTerm(long hypoTermId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public JsonArray listHyponyms() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addHypernymTerm(long hyperTermId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public JsonArray listHypernyms() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public boolean hasInverseTerm() {
@@ -391,6 +402,8 @@ public class WordGram implements IWordGram {
 			return false;
 		return je.getAsBoolean();
 	}
+
+
 
 
 }

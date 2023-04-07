@@ -91,4 +91,39 @@ public interface IAsrModel {
 	 * @return TODO
 	 */
 	boolean acceptNewSentence(JsonObject sentence);
+	
+	/////////////////////
+	// Live wordgram object support]
+	////////////////////
+	
+	
+	IResult addPOS(long gramId, String value);
+	
+	IResult addWikidata(long gramId, String value);
+	
+	IResult addDBpedia(long gramId, String value);
+	
+	
+	/**
+	 * Add a sentence edge to this wordgram
+	 * @param gramId
+	 * @param inLinkTargetId can be {@code -1}
+	 * @param outlinkTargetId can be {@code -1}
+	 * @param tense can be {@code null}
+	 * @param epistemicStatus can be {@code null}
+	 * @return
+	 */
+	IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense, String epistemicStatus);
+	
+	IResult addTopicLocator(long gramId, long topicLocator);
+
+	IResult addSynonymTerm(long gramId, long synonymTermId);
+	
+	IResult addAntonymTerm(long gramId, long antonymTermId);
+	
+	IResult addHyponymTerm(long gramId, long hypoTermId);
+	
+	IResult addHypernymTerm(long gramId, long hyperTermId);
+
+
 }

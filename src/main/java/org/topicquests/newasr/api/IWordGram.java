@@ -36,18 +36,22 @@ public interface IWordGram extends IAddressable, ILiveObject {
 	JsonObject getData();
 	
 	/**
-	 * 
+	 * <p>If {@code languageCode} == {@code null}, defaults to {@code en}<p>
+	 * <p>If nothing is available for a specified {@code languageCode}returns {@code null}
 	 * @param languageCodea 2 or 3-letter code - can be {@code null}
 	 * @return
 	 */
 	String getWords(String languageCode);
 	
 	/**
-	 * 
+	 * <p>Setting {@code words} means you can give this wordgram its wordsin
+	 *  any language</p>
 	 * @param words
 	 * @param languageCode a 2 or 3-letter code - can be {@code null}
 	 */
 	void setWords(String words, String languageCode);
+	
+	
 	
 	////////////////////////////////////
 	// Edges
@@ -171,6 +175,20 @@ public interface IWordGram extends IAddressable, ILiveObject {
 	 * @return
 	 */
 	JsonArray listAntonyms();
+	
+	void addHyponymTerm(long hypoTermId);
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	JsonArray listHyponyms();
+	
+	void addHypernymTerm(long hyperTermId);
+	/**
+	 * Can return {@code null}
+	 * @return
+	 */
+	JsonArray listHypernyms();
 	
 	/**
 	 * Predicate tense,e.g.past

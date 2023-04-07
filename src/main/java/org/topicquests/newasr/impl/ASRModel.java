@@ -241,4 +241,59 @@ public class ASRModel implements IAsrModel {
 		sentenceEngine = se;
 	}
 
+	@Override
+	public IResult addPOS(long gramId, String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addWikidata(long gramId, String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addDBpedia(long gramId, String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense,
+			String epistemicStatus) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addTopicLocator(long gramId, long topicLocator) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addSynonymTerm(long gramId, long synonymTermId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addAntonymTerm(long gramId, long antonymTermId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addHyponymTerm(long gramId, long hypoTermId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IResult addHypernymTerm(long gramId, long hyperTermId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
