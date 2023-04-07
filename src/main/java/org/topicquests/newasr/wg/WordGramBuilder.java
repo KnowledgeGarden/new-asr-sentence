@@ -96,6 +96,11 @@ public class WordGramBuilder {
 		List<IWordGram> wdWgList = new ArrayList<IWordGram>();
 		List<IWordGram> nounWgList = new ArrayList<IWordGram>();
 		///////////////////
+		// We need to assemble all the nouns and verbs found by spaCy
+		///////////////////
+		List<String> nouns = new ArrayList<String>();
+		List<String> verbs = new ArrayList<String>();
+		///////////////////
 		// Process the predicates
 		///////////////////
 		if (predicates != null) {
@@ -103,6 +108,8 @@ public class WordGramBuilder {
 			while (itr.hasNext()) {
 				jo = itr.next().getAsJsonObject();
 				snippet = jo.get("txt").getAsString();
+				if (!verbs.contains(snippet))
+					verbs.add(snippet);
 				r = model.processTerm(snippet, IPOS.VERB_POS);
 				if (r.hasError())
 					result.addErrorString(r.getErrorString());
@@ -123,6 +130,8 @@ public class WordGramBuilder {
 				ja = itr.next().getAsJsonArray();
 				jo =new JsonObject();
 				snippet = ja.get(0).getAsString();
+				if (!nouns.contains(snippet))
+					nouns.add(snippet);
 				jo.addProperty("txt", snippet);
 				jo.addProperty("url", ja.get(1).getAsString());
 				dbpList.add(jo);
@@ -147,6 +156,8 @@ public class WordGramBuilder {
 				ja = itr.next().getAsJsonArray();
 				jo =new JsonObject();
 				snippet = ja.get(0).getAsString();
+				if (!nouns.contains(snippet))
+					nouns.add(snippet);
 				jo.addProperty("txt", snippet);
 				jo.addProperty("id", ja.get(1).getAsString());
 				jo.addProperty("type", ja.get(2).getAsString());

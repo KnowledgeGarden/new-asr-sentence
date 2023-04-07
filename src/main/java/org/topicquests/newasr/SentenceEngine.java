@@ -99,7 +99,7 @@ public class SentenceEngine {
 		String json = (String)r.getResultObject();
 		environment.logDebug("PS1 "+json);
 		JsonObject jo;
-		JsonArray ja;
+		JsonArray ja, jax;
 		JSONObject spacyObj;
 		// POS and more
 		String spacyData = sentence.getSpacyData();
@@ -114,6 +114,7 @@ public class SentenceEngine {
 			sentence.setSpacyData(res.toJSONString());
 		}
 		try {
+			// spacy predicates, dbp, nouns, etc
 			jo = util.parse(json);
 			ja = jo.get("data").getAsJsonArray();
 			// process the predicates
@@ -124,6 +125,22 @@ public class SentenceEngine {
 			ja = jo.get("wkd").getAsJsonArray();
 			// process wikidata
 			processWikidata(sentence, ja);
+			// process nouns
+			if (jo.get("nns") != null) {
+				ja = jo.get("nns").getAsJsonArray();
+				processNoun(sentence, ja);
+			}
+			// process propernouns
+			if (jo.get("pnns") != null) {
+				ja = jo.get("pnns").getAsJsonArray();
+				processProperNoun(sentence, ja);
+			}
+			// process verbs
+			if (jo.get("vrbs") != null) {
+				ja = jo.get("vrbs").getAsJsonArray();
+				processVerb(sentence, ja);
+			}
+
 			// and now, the wordgrams
 			r = builder.processSentence(sentence);
 			environment.logDebug("SentenceEngineDone\n"+sentence.getData());
@@ -144,6 +161,19 @@ public class SentenceEngine {
 		if (wd != null)
 			sentence.setWikiData(wd);
 	}
+	void processNoun(ISentence sentence, JsonArray noun) {
+		if (noun != null)
+			sentence.setNoun(noun);
+	}
+	void processProperNoun(ISentence sentence, JsonArray noun) {
+		if (noun != null)
+			sentence.setProperNoun(noun);
+	}
+	void processVerb(ISentence sentence, JsonArray verb) {
+		if (verb != null)
+			sentence.setVerb(verb);
+	}
+
 	/**
 	 * <p>The workhorse: called by way of the model from kafka from spaCy</p>
 	 * <p>This is where we build wordgrams which prepare for the next agent, and ship
