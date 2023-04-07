@@ -12,7 +12,7 @@ import com.google.gson.JsonElement;
  * @author jackpark
  *
  */
-public interface IWordGram extends IAddressable {
+public interface IWordGram extends IAddressable, ILiveObject {
 	public static final String
 		ID_KEY			= "id",
 		SENT_EDGES_KEY	= "sedges",
