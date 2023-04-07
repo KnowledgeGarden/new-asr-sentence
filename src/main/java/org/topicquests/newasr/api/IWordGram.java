@@ -35,9 +35,19 @@ public interface IWordGram extends IAddressable, ILiveObject {
 	
 	JsonObject getData();
 	
-	String getWords();
+	/**
+	 * 
+	 * @param languageCodea 2 or 3-letter code - can be {@code null}
+	 * @return
+	 */
+	String getWords(String languageCode);
 	
-	void setWords(String words);
+	/**
+	 * 
+	 * @param words
+	 * @param languageCode a 2 or 3-letter code - can be {@code null}
+	 */
+	void setWords(String words, String languageCode);
 	
 	////////////////////////////////////
 	// Edges

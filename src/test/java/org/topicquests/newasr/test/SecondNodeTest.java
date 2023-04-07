@@ -31,10 +31,10 @@ public class SecondNodeTest extends TestingRoot {
 		IResult r = model.newDictionaryEntry(TERM);
 		String id = (String)r.getResultObject();
 		System.out.println("A "+id);
-		IWordGram g = new WordGram();
+		IWordGram g = new WordGram(environment);
 		g.setId(Long.valueOf(id));
 		g.addTopicLosator(TOPIC_LOX);
-		g.setWords(TERM);
+		g.setWords(TERM, null);
 		r = model.putWordGram(g);
 		System.out.println("B "+g.getData());
 		System.out.println("C "+r.getErrorString());

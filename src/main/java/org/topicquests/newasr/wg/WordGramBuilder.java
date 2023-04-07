@@ -272,13 +272,13 @@ public class WordGramBuilder {
 			objectFound = false;
 			hasInverseTerm = false;
 			pred = predWordgrams.get(i);
-			txtA = pred.getWords();
+			txtA = pred.getWords(null);
 			hasInverseTerm = pred.hasInverseTerm();
 			wherePredicate = locateTermInSentence(theSentence, txtA);
 			//Look in dbpedia
 			for (int j=0;j<lenS1;j++) {
 				subj = dbPediaWordgrams.get(j);
-				txtB = subj.getWords();
+				txtB = subj.getWords(null);
 				whereOther = locateTermInSentence(theSentence, txtB);
 				if (whereOther > wherePredicate) {
 					subj = null;
@@ -293,7 +293,7 @@ public class WordGramBuilder {
 			if (!subjectFound && lenS3 > 0) {
 				for (int j=0;j<lenS3;j++) {
 					subj = wikidataWordgrams.get(j);
-					txtB = subj.getWords();
+					txtB = subj.getWords(null);
 					whereOther = locateTermInSentence(theSentence, txtB);
 					if (whereOther > wherePredicate) {
 						subj = null;
@@ -309,7 +309,7 @@ public class WordGramBuilder {
 			if (!subjectFound && lenS4 > 0) {
 				for (int j=0;j<lenS4;j++) {
 					subj = nounWordgrams.get(j);
-					txtB = subj.getWords();
+					txtB = subj.getWords(null);
 					whereOther = locateTermInSentence(theSentence, txtB);
 					if (whereOther > wherePredicate) {
 						subj = null;
@@ -327,7 +327,7 @@ public class WordGramBuilder {
 				//Look in dbpedia
 				for (int j=0;j<lenS1;j++) {
 					obj = dbPediaWordgrams.get(j);
-					txtB = obj.getWords();
+					txtB = obj.getWords(null);
 					whereOther = locateTermInSentence(theSentence, txtB);
 					environment.logDebug("PPG-4a "+lenS1+" "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
 					if (whereOther < wherePredicate) {
@@ -343,7 +343,7 @@ public class WordGramBuilder {
 				if (!objectFound && lenS3 > 0) {
 					for (int j=0;j<lenS3;j++) {
 						obj = wikidataWordgrams.get(j);
-						txtB = obj.getWords();
+						txtB = obj.getWords(null);
 						whereOther = locateTermInSentence(theSentence, txtB);
 						if (whereOther < wherePredicate) {
 							obj = null;
@@ -359,7 +359,7 @@ public class WordGramBuilder {
 				if (!objectFound && lenS4 > 0) {
 					for (int j=0;j<lenS4;j++) {
 						obj = nounWordgrams.get(j);
-						txtB = obj.getWords();
+						txtB = obj.getWords(null);
 						whereOther = locateTermInSentence(theSentence, txtB);
 						if (whereOther < wherePredicate) {
 							obj = null;
@@ -399,7 +399,7 @@ public class WordGramBuilder {
 			pred = (IWordGram)r.getResultObject();
 		}
 		//TODO check subject and object for predicates
-		String foo = subject.getWords()+" "+pred.getWords()+" "+object.getWords();
+		String foo = subject.getWords(null)+" "+pred.getWords(null)+" "+object.getWords(null);
 		environment.logDebug("TheTriple: "+foo);
 		environment.logDebug("Pred: "+predicate.getData());
 

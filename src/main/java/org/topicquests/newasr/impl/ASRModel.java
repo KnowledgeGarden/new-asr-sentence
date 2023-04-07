@@ -81,9 +81,9 @@ public class ASRModel implements IAsrModel {
 		if (!isInDB) {
 			r = getTermById(id);
 			if (r.getResultObject() == null) {
-				IWordGram wg = new WordGram();
+				IWordGram wg = new WordGram(environment);
 				wg.setId(idl);
-				wg.setWords(term);
+				wg.setWords(term, null);
 				JsonObject jo = new JsonObject();
 				if (pos != null)
 					wg.addPOS(pos);
@@ -105,7 +105,7 @@ public class ASRModel implements IAsrModel {
 			result = database.getNode(new Long(id).longValue());
 			JsonObject jo = (JsonObject)result.getResultObject();
 			if (jo != null) {
-				wg = new WordGram(jo);
+				wg = new WordGram(jo, environment);
 				cache.add(id,wg);
 				result.setResultObject(wg);
 			}
@@ -173,9 +173,9 @@ public class ASRModel implements IAsrModel {
 			r = dictionary.addTerm(cannonicalTerm);
 			canonId = (String)r.getResultObject();
 		}
-		IWordGram wg = new WordGram();
+		IWordGram wg = new WordGram(environment);
 		wg.setId(Long.parseLong(id));
-		wg.setWords(term);
+		wg.setWords(term, null);
 		wg.setTense(tense);
 		wg.setNegation(isNegative);
 		wg.addPOS(IPOS.VERB_POS);
@@ -191,10 +191,10 @@ public class ASRModel implements IAsrModel {
 		if (invId !=  null) {
 			isInDB = termExistsInDB(invId);
 			if (!isInDB) {
-				nwg = new WordGram();
+				nwg = new WordGram(environment);
 				nwg.setId(Long.parseLong(invId));
 				nwg.addPOS(IPOS.VERB_POS);
-				nwg.setWords(inverseTerm);
+				nwg.setWords(inverseTerm, null);
 				r = database.putNode(nwg);
 				if (r.hasError())
 					result.addErrorString(r.getErrorString());
@@ -203,10 +203,10 @@ public class ASRModel implements IAsrModel {
 		if (canonId !=  null) {
 			isInDB = termExistsInDB(canonId);
 			if (!isInDB) {
-				nwg = new WordGram();
+				nwg = new WordGram(environment);
 				nwg.setId(Long.parseLong(canonId));
 				nwg.addPOS(IPOS.VERB_POS);
-				nwg.setWords(cannonicalTerm);
+				nwg.setWords(cannonicalTerm, null);
 				r = database.putNode(nwg);
 				if (r.hasError())
 					result.addErrorString(r.getErrorString());

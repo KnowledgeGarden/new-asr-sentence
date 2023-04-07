@@ -51,7 +51,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		      //(id, words, pos, topicid, dbpedia wikidata, tense, negation, epi, active, cannon)
 		      Object [] vals = new Object[11];
 		      vals[0] = new Long(objectId);			//id
-		      vals[1] = node.getWords();			//wods
+		      vals[1] = node.getWords(null);			//wods
 		      JsonArray x = node.listPOS();
 		      String ts = jsonArrayToCommaString(x);
 		      vals[2] = ts; 						// pos might be null;
@@ -262,10 +262,10 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 			System.out.println("PGgetNode-1 "+nodeId+" "+rs);
 		    if (rs != null) {
 		    	if (rs.next()) {
-			    	wg = new WordGram();
+			    	wg = new WordGram(environment);
 			    	result.setResultObject(wg);
 			    	wg.setId(nodeId);
-			    	wg.setWords(rs.getString("words"));
+			    	wg.setWords(rs.getString("words"), null);
 			    	wg.setNegation(rs.getBoolean("negation"));
 			    	if (rs.getString("dbpedia") != null)
 			    		wg.setDBpedia(rs.getString("dbpedia"));

@@ -5,6 +5,8 @@
  */
 package org.topicquests.newasr.impl;
 
+import org.topicquests.newasr.ASREnvironment;
+import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IWordGram;
 
 import com.google.gson.JsonArray;
@@ -17,15 +19,29 @@ import com.google.gson.JsonElement;
  */
 public class WordGram implements IWordGram {
 	private JsonObject data;
+	private ASREnvironment environment;
+	private IAsrModel model;
+	private boolean isLive = false;
+
 	/**
+	 * @param env TODO
 	 * 
 	 */
-	public WordGram() {
+	public WordGram(ASREnvironment env) {
+		environment = env;
+		model = environment.getModel();
 		data = new JsonObject();
+		/**
+		 * When {@code true} updates go to the database
+		 */
+		isLive = false;
 	}
 	
-	public WordGram(JsonObject d) {
+	public WordGram(JsonObject d, ASREnvironment env) {
+		environment = env;
+		model = environment.getModel();
 		data = d;
+		isLive = true;
 	}
 
 	@Override
@@ -44,12 +60,12 @@ public class WordGram implements IWordGram {
 	}
 
 	@Override
-	public String getWords() {
+	public String getWords(String languageCode) {
 		return data.get(IWordGram.WORDS_KEY).getAsString();
 	}
 
 	@Override
-	public void setWords(String words) {
+	public void setWords(String words, String languageCode) {
 		data.addProperty(IWordGram.WORDS_KEY, words);
 	}
 
