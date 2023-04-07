@@ -446,5 +446,60 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		// TODO Auto-generated method stub
 		return result;
 	}
+	@Override
+	public IResult addPOS(long gramId, String value) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addWikidata(long gramId, String value) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addDBpedia(long gramId, String value) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense,
+			String epistemicStatus) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addTopicLocator(long gramId, long topicLocator) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addSynonymTerm(long gramId, long synonymTermId) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addAntonymTerm(long gramId, long antonymTermId) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addHyponymTerm(long gramId, long hypoTermId) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
+	@Override
+	public IResult addHypernymTerm(long gramId, long hyperTermId) {
+		IResult result = new ResultPojo();
+		// TODO Auto-generated method stub
+		return result;
+	}
 
 }
