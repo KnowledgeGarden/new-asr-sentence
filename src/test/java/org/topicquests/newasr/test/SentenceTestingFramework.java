@@ -19,11 +19,11 @@ public class SentenceTestingFramework {
 		//new BootstrapTest();
 		//new FirstNodeTest();
 		//new SecondNodeTest();
-		//new PredicateImportTest();
 		//new FirstPredicateTest();
 		//new FirstSentenceTest();
 		//new SpacyHttpTest();
-		new PredicateImportTest();
+		//new PredicateImportTest();
+		new SecondPredicateTest();
 	}
 
 }

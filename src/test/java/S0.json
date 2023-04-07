@@ -1,0 +1,172 @@
+{
+	"nodes": [{
+		"pos": "NOUN",
+		"start": 0,
+		"i": 0,
+		"lemma": "carbon",
+		"tag": "NN",
+		"text": "Carbon",
+		"dep": "compound"
+	}, {
+		"concepts": {
+			"concepts": ["http:\/\/localhost\/plosthes.2017-1#1123", "http:\/\/purl.bioontology.org\/ontology\/LNC\/LP15150-3", "http:\/\/purl.bioontology.org\/ontology\/LNC\/MTHU002535", "http:\/\/purl.bioontology.org\/ontology\/MESH\/D002245", "http:\/\/purl.jp\/bio\/11\/msv\/carbonDioxideConcentration"],
+			"text": "Carbon dioxide"
+		},
+		"pos": "NOUN",
+		"start": 7,
+		"i": 1,
+		"lemma": "dioxide",
+		"tag": "NN",
+		"text": "dioxide",
+		"dep": "nsubjpass"
+	}, {
+		"pos": "AUX",
+		"start": 15,
+		"i": 2,
+		"lemma": "have",
+		"tag": "VBZ",
+		"text": "has",
+		"dep": "aux"
+	}, {
+		"pos": "AUX",
+		"start": 19,
+		"i": 3,
+		"lemma": "be",
+		"tag": "VBN",
+		"text": "been",
+		"dep": "auxpass"
+	}, {
+		"pos": "VERB",
+		"start": 24,
+		"i": 4,
+		"lemma": "think",
+		"tag": "VBN",
+		"text": "thought",
+		"dep": "ROOT"
+	}, {
+		"pos": "PART",
+		"start": 32,
+		"i": 5,
+		"lemma": "to",
+		"tag": "TO",
+		"text": "to",
+		"dep": "aux"
+	}, {
+		"pos": "VERB",
+		"start": 35,
+		"i": 6,
+		"lemma": "cause",
+		"tag": "VB",
+		"text": "cause",
+		"dep": "xcomp"
+	}, {
+		"pos": "NOUN",
+		"start": 41,
+		"i": 7,
+		"lemma": "climate",
+		"tag": "NN",
+		"text": "climate",
+		"dep": "compound"
+	}, {
+		"concepts": {
+			"concepts": ["http:\/\/purl.obolibrary.org\/obo\/ExO_0000014", "http:\/\/purl.obolibrary.org\/obo\/ENVO_01000629"],
+			"text": "climate change"
+		},
+		"pos": "NOUN",
+		"start": 49,
+		"i": 8,
+		"lemma": "change",
+		"tag": "NN",
+		"text": "change",
+		"dep": "dobj"
+	}],
+	"tree": {
+		"left": [{
+			"concepts": {
+				"concepts": ["http:\/\/localhost\/plosthes.2017-1#1123", "http:\/\/purl.bioontology.org\/ontology\/LNC\/LP15150-3", "http:\/\/purl.bioontology.org\/ontology\/LNC\/MTHU002535", "http:\/\/purl.bioontology.org\/ontology\/MESH\/D002245", "http:\/\/purl.jp\/bio\/11\/msv\/carbonDioxideConcentration"],
+				"text": "Carbon dioxide"
+			},
+			"left": [{
+				"pos": "NOUN",
+				"start": 0,
+				"i": 0,
+				"lemma": "carbon",
+				"tag": "NN",
+				"text": "Carbon",
+				"dep": "compound"
+			}],
+			"pos": "NOUN",
+			"start": 7,
+			"i": 1,
+			"lemma": "dioxide",
+			"tag": "NN",
+			"text": "dioxide",
+			"dep": "nsubjpass"
+		}, {
+			"pos": "AUX",
+			"start": 15,
+			"i": 2,
+			"lemma": "have",
+			"tag": "VBZ",
+			"text": "has",
+			"dep": "aux"
+		}, {
+			"pos": "AUX",
+			"start": 19,
+			"i": 3,
+			"lemma": "be",
+			"tag": "VBN",
+			"text": "been",
+			"dep": "auxpass"
+		}],
+		"pos": "VERB",
+		"start": 24,
+		"i": 4,
+		"lemma": "think",
+		"right": [{
+			"left": [{
+				"pos": "PART",
+				"start": 32,
+				"i": 5,
+				"lemma": "to",
+				"tag": "TO",
+				"text": "to",
+				"dep": "aux"
+			}],
+			"pos": "VERB",
+			"start": 35,
+			"i": 6,
+			"lemma": "cause",
+			"right": [{
+				"concepts": {
+					"concepts": ["http:\/\/purl.obolibrary.org\/obo\/ExO_0000014", "http:\/\/purl.obolibrary.org\/obo\/ENVO_01000629"],
+					"text": "climate change"
+				},
+				"left": [{
+					"pos": "NOUN",
+					"start": 41,
+					"i": 7,
+					"lemma": "climate",
+					"tag": "NN",
+					"text": "climate",
+					"dep": "compound"
+				}],
+				"pos": "NOUN",
+				"start": 49,
+				"i": 8,
+				"lemma": "change",
+				"tag": "NN",
+				"text": "change",
+				"dep": "dobj"
+			}],
+			"tag": "VB",
+			"text": "cause",
+			"dep": "xcomp"
+		}],
+		"tag": "VBN",
+		"text": "thought",
+		"dep": "ROOT"
+	},
+	"id": "s_0",
+	"text": "Carbon dioxide has been thought to cause climate change"
+}

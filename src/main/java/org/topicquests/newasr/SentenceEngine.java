@@ -107,11 +107,10 @@ public class SentenceEngine {
 		if (spacyData == null) {
 			r = spacyServerEnvironment.processSentence(text);
 			spacyObj = (JSONObject)r.getResultObject();
-			//environment.logError("BIGJA-1 "+spacyObj, null);
 			JSONObject res = (JSONObject)spacyObj.get("results");
 			JSONArray spacyArray = (JSONArray)res.get("sentences");
 			res = (JSONObject)spacyArray.get(0);
-			//environment.logError("BIGJA-2 "+res, null);
+			environment.logDebug("SentenceEngine-1 "+res);
 			sentence.setSpacyData(res.toJSONString());
 		}
 		try {

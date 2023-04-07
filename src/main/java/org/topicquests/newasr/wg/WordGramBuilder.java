@@ -62,6 +62,12 @@ public class WordGramBuilder {
 	 ]
 	 Wikidata - when it will be available
 	 ["Germany", "Q1206012", "LOC", ["country in Central Europe"]]
+	 Nouns
+	 'nns': [{'strt': 0, 'txt': 'Scientists'}, {'strt': 3, 'txt': 'climate'}, {'strt': 4, 'txt': 'change'}, {'strt': 8, 'txt': 'carbon'}, {'strt': 9, 'txt': 'dioxide'}], 
+	 ProperNouns
+	 'pnns': [], 
+	 Verbs
+	 'vrbs': [{'strt': 1, 'txt': 'believe'}, {'strt': 6, 'txt': 'caused'}]
 	 ********************/
 	/**
 	 * Build the WordGram graph for the given {@code sentence}
