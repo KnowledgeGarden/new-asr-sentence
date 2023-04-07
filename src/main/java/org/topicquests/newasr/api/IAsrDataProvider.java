@@ -55,13 +55,14 @@ IResult addPOS(long gramId, String value);
 	/**
 	 * Add a sentence edge to this wordgram
 	 * @param gramId
+	 * @param sentenceId TODO
 	 * @param inLinkTargetId can be {@code -1}
 	 * @param outlinkTargetId can be {@code -1}
 	 * @param tense can be {@code null}
 	 * @param epistemicStatus can be {@code null}
 	 * @return
 	 */
-	IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense, String epistemicStatus);
+	IResult addSentenceEdge(long gramId, long sentenceId, long inLinkTargetId, long outlinkTargetId, String tense, String epistemicStatus);
 	
 	IResult addTopicLocator(long gramId, long topicLocator);
 

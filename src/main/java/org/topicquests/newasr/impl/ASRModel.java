@@ -257,9 +257,9 @@ public class ASRModel implements IAsrModel {
 	}
 
 	@Override
-	public IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense,
-			String epistemicStatus) {
-		return database.addSentenceEdge(gramId, inLinkTargetId, outlinkTargetId, tense, epistemicStatus);
+	public IResult addSentenceEdge(long gramId, long sentenceId, long inLinkTargetId, long outlinkTargetId,
+			String tense, String epistemicStatus) {
+		return database.addSentenceEdge(gramId, sentenceId, inLinkTargetId, outlinkTargetId, tense, epistemicStatus);
 	}
 
 	@Override

@@ -6,6 +6,9 @@
 package org.topicquests.newasr.api;
 
 import com.google.gson.JsonObject;
+
+import org.topicquests.support.api.IResult;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 /**
@@ -30,6 +33,8 @@ public interface IWordGram extends IAddressable, ILiveObject {
 		CANNON_KEY		= "cannon",	// canonical NER
 		SYNONYM_KEY		= "synon",	// synonyms
 		ANTONYM_KEY		= "anton",	// antonyms
+		HYPONYM_KEY		= "hypon",
+		HYPERNYM_KEY	= "hypern",
 		EXTENSION_KEY	= "extns";	// for extension properties	
 	
 	
@@ -76,6 +81,24 @@ public interface IWordGram extends IAddressable, ILiveObject {
 	 * @return
 	 */
 	JsonObject getSentenceEdge(long sentenceId);
+	
+	
+	/**
+	 * <p>For live object updating</p>
+	 * <p>A sentence edge is constructed from a new sentence impacting a wordgram.
+	 * Since the wordgram might have come from an active-passive or speculative situation,
+	 * we have the ability to mirror the tense and epistemicStatus of that wordgram in this
+	 * sentence edge</p>
+	 * @param sentenceId TODO
+	 * @param inLinkTargetId
+	 * @param outlinkTargetId
+	 * @param tense
+	 * @param epistemicStatus
+	 * @return returns {@code null} if not used on alive object
+	 */
+	IResult addSentenceEdge(long sentenceId, long inLinkTargetId, long outlinkTargetId,
+			String tense, String epistemicStatus);
+
 	
 	/**
 	 * Called from database

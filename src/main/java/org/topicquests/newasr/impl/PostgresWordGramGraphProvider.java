@@ -465,8 +465,8 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		return result;
 	}
 	@Override
-	public IResult addSentenceEdge(long gramId, long inLinkTargetId, long outlinkTargetId, String tense,
-			String epistemicStatus) {
+	public IResult addSentenceEdge(long gramId, long sentenceId, long inLinkTargetId, long outlinkTargetId,
+			String tense, String epistemicStatus) {
 		IResult result = new ResultPojo();
 		// TODO Auto-generated method stub
 		return result;

@@ -8,6 +8,7 @@ package org.topicquests.newasr.impl;
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IWordGram;
+import org.topicquests.support.api.IResult;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -80,9 +81,10 @@ public class WordGram implements IWordGram {
 			sentenceEdges = jo.getAsJsonObject();
 		jo = sentenceEdges.get(Long.toString(sentenceId));
 		JsonObject edge;
-		if (jo == null)
+		if (jo == null) {
 			edge = new JsonObject();
-		else
+			sentenceEdges.add(Long.toString(sentenceId), edge);
+		} else
 			edge = jo.getAsJsonObject();
 		if (tense != null)
 			edge.addProperty(IWordGram.TENSE_KEY, tense);
@@ -90,7 +92,35 @@ public class WordGram implements IWordGram {
 			edge.addProperty(IWordGram.EPI_KEY, epi);
 		
 	}
-	
+	@Override
+	public IResult addSentenceEdge(long sentenceId, long inLinkTargetId, long outlinkTargetId, String tense, String epistemicStatus) {
+		JsonElement jo = data.get(IWordGram.SENT_EDGES_KEY);
+		JsonObject sentenceEdges;
+		if (jo == null) {
+			sentenceEdges = new JsonObject();
+			data.add(IWordGram.SENT_EDGES_KEY, sentenceEdges);
+		} else
+			sentenceEdges = jo.getAsJsonObject();
+		jo = sentenceEdges.get(Long.toString(sentenceId));
+		JsonObject edge;
+		if (jo == null){
+			edge = new JsonObject();
+			sentenceEdges.add(Long.toString(sentenceId), edge);
+		} else
+			edge = jo.getAsJsonObject();
+		if (tense != null)
+			edge.addProperty(IWordGram.TENSE_KEY, tense);
+		if (epistemicStatus != null)
+			edge.addProperty(IWordGram.EPI_KEY, epistemicStatus);
+		if (inLinkTargetId > -1)
+			edge.addProperty(IWordGram.IN_KEY, inLinkTargetId);
+		if (outlinkTargetId > -1)
+			edge.addProperty(IWordGram.OUT_KEY, outlinkTargetId);
+		if (isLive)
+			return model.addSentenceEdge(getId(), sentenceId, inLinkTargetId, outlinkTargetId, tense, epistemicStatus);
+		else
+			return null;
+	}
 	@Override
 	public void setSentenceEdges(JsonObject edges) {
 		data.add(IWordGram.SENT_EDGES_KEY, edges);
@@ -282,8 +312,7 @@ public class WordGram implements IWordGram {
 	
 	@Override
 	public void addHyponymTerm(long hypoTermId) {
-		// TODO Auto-generated method stub
-		
+		data.addProperty(IWordGram.HYPONYM_KEY, hypoTermId);
 	}
 
 	@Override
@@ -294,8 +323,7 @@ public class WordGram implements IWordGram {
 
 	@Override
 	public void addHypernymTerm(long hyperTermId) {
-		// TODO Auto-generated method stub
-		
+		data.addProperty(IWordGram.HYPERNYM_KEY, hyperTermId);
 	}
 
 	@Override
@@ -402,6 +430,8 @@ public class WordGram implements IWordGram {
 			return false;
 		return je.getAsBoolean();
 	}
+
+	
 
 
 
