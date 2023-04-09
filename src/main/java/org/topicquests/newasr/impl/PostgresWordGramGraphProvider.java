@@ -106,7 +106,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 		JsonObject sentenceEdges = wg.getSentenceEdges();
 		if (sentenceEdges == null)
 			return;
-		String sql= IQueries.PUT_NODE_EDGE;;
+		String sql= IQueries.PUT_SENTENCE_EDGE;;
 		IResult rx;
 		Object [] obj = new Object[5];
 		obj [0] = Long.toString(nodeId);
@@ -449,57 +449,139 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	@Override
 	public IResult addPOS(long gramId, String value) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
 		return result;
 	}
 	@Override
 	public IResult addWikidata(long gramId, String value) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addDBpedia(long gramId, String value) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	    return result;
 	}
 	@Override
 	public IResult addSentenceEdge(long gramId, long sentenceId, long inLinkTargetId, long outlinkTargetId,
 			String tense, String epistemicStatus) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addTopicLocator(long gramId, long topicLocator) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addSynonymTerm(long gramId, long synonymTermId) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addAntonymTerm(long gramId, long antonymTermId) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addHyponymTerm(long gramId, long hypoTermId) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 	@Override
 	public IResult addHypernymTerm(long gramId, long hyperTermId) {
 		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+	    try {
+	      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return result;
-	}
+	    } catch (Exception e) {
+	    	result.addErrorString("GetNode "+e.getMessage());
+	    	environment.logError(e.getMessage(), e);
+	    } finally {
+	    	conn.closeConnection(result);
+	    }
+	      
+		return result;	}
 
 }

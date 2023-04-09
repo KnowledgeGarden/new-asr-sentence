@@ -200,13 +200,15 @@ public class WordGram implements IWordGram {
 	}
 
 	@Override
-	public void addTopicLosator(String locator) {
+	public void addTopicLocator(long locator) {
 		JsonArray ja = listTopicLocators();
 		if (ja == null) {
 			ja = new JsonArray();
 		}
 		ja.add(locator);
 		data.add(IWordGram.LOX_KEY, ja);
+		if (isLive)
+			model.addTopicLocator(getId(), locator);
 	}
 	@Override
 	public void setTopicLocators(JsonArray locators) {
@@ -254,6 +256,8 @@ public class WordGram implements IWordGram {
 		}
 		ja.add(pos);
 		data.add(IWordGram.POS_KEY, ja);
+		if (isLive)
+			model.addPOS(getId(), pos);
 	}
 	
 	@Override
@@ -289,6 +293,8 @@ public class WordGram implements IWordGram {
 	@Override
 	public void addSynonymTerm(long synonymTermId) {
 		data.addProperty(IWordGram.SYNONYM_KEY, synonymTermId);
+		if (isLive)
+			model.addSynonymTerm(getId(), synonymTermId);
 	}
 
 	@Override
@@ -301,6 +307,8 @@ public class WordGram implements IWordGram {
 	@Override
 	public void addAntonymTerm(long antonymTermId) {
 		data.addProperty(IWordGram.ANTONYM_KEY, antonymTermId);
+		if (isLive)
+			model.addAntonymTerm(getId(), antonymTermId);
 	}
 
 	@Override
@@ -313,23 +321,29 @@ public class WordGram implements IWordGram {
 	@Override
 	public void addHyponymTerm(long hypoTermId) {
 		data.addProperty(IWordGram.HYPONYM_KEY, hypoTermId);
+		if (isLive)
+			model.addHyponymTerm(getId(), hypoTermId);
 	}
 
 	@Override
 	public JsonArray listHyponyms() {
-		// TODO Auto-generated method stub
-		return null;
+		JsonElement jo = data.get(IWordGram.HYPONYM_KEY);
+		if (jo == null) return null;
+		return jo.getAsJsonArray();
 	}
 
 	@Override
 	public void addHypernymTerm(long hyperTermId) {
 		data.addProperty(IWordGram.HYPERNYM_KEY, hyperTermId);
+		if (isLive)
+			model.addHypernymTerm(getId(), hyperTermId);
 	}
 
 	@Override
 	public JsonArray listHypernyms() {
-		// TODO Auto-generated method stub
-		return null;
+		JsonElement jo = data.get(IWordGram.HYPERNYM_KEY);
+		if (jo == null) return null;
+		return jo.getAsJsonArray();
 	}
 
 	@Override

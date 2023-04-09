@@ -122,7 +122,7 @@ public interface IWordGram extends IAddressable, ILiveObject {
 	 */
 	JsonArray listTopicLocators();
 	
-	void addTopicLosator(String locator);
+	void addTopicLocator(long locator);
 	
 	void setTopicLocators(JsonArray locators);
 	

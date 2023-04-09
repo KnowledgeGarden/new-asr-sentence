@@ -18,8 +18,9 @@ public class SecondNodeTest extends TestingRoot {
 		TERM		= "My favorite phrase revisited again more",
 		SENTENCE_ID	= "101",
 		IN_ID		= "999",
-		OUT_ID		= "12898",
-		TOPIC_LOX	= "23323";
+		OUT_ID		= "12898";
+	public final long
+		TOPIC_LOX	= 23323;
 	
 	/**
 	 * 
@@ -33,7 +34,7 @@ public class SecondNodeTest extends TestingRoot {
 		System.out.println("A "+id);
 		IWordGram g = new WordGram(environment);
 		g.setId(Long.valueOf(id));
-		g.addTopicLosator(TOPIC_LOX);
+		g.addTopicLocator(TOPIC_LOX);
 		g.setWords(TERM, null);
 		r = model.putWordGram(g);
 		System.out.println("B "+g.getData());
