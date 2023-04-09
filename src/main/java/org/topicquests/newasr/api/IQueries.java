@@ -26,7 +26,8 @@ public interface IQueries {
 		GET_WIKIDATA =
 			"SELECT topiclocator FROM public.node WHERE id=?",
 
-			
+		GET_POS =
+			"SELECT pos FROM public.node WHERE id=?",
 	
 		GET_NODE =
 			"SELECT * FROM public.node where id=?",
@@ -38,21 +39,21 @@ public interface IQueries {
 			"INSERT INTO public.node (id, words, pos, topicid, dbpedia, wikidata, tense, negation, epi, active, cannon) "+
 			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		ADD_POS =
-			"UPDATE public.node SET pos = ? WHERE i?", //note array value
+			"UPDATE public.node SET pos = ? WHERE id=?", //note array value
 		ADD_LOCATOR =
-			"UPDATE public.node SET topicid = ? WHERE i?", //note array value
+			"UPDATE public.node SET topicid = ? WHERE id=?", //note array value
 		ADD_DBPEDIA =
-			"UPDATE public.node SET dbpedia = ? WHERE i?", //note array value
+			"UPDATE public.node SET dbpedia = ? WHERE id=?", //note array value
 		ADD_WIKIDATA =
-			"UPDATE public.node SET wikidata = ? WHERE i?", //note array value
+			"UPDATE public.node SET wikidata = ? WHERE id=?", //note array value
 //		ADD_SYNONYM =
 //			"UPDATE public.node SET synonym = ? WHERE i?", //note array value
 //		ADD_ANTONYM =
 //			"UPDATE public.node SET antonym = ? WHERE i?", //note array value
 		SET_ACTIVE =
-			"UPDATE public.node SET active = ? WHERE i?",
+			"UPDATE public.node SET active = ? WHERE id=?",
 		SET_CANNON =
-			"UPDATE public.node SET cannon = ? WHERE i?",
+			"UPDATE public.node SET cannon = ? WHERE id=?",
 
 		PUT_PROPERTY =
 			"INSERT INTO public.properties (id, _key, _val) VALUES (?, ?, ?)",

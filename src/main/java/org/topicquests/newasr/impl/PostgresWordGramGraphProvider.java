@@ -453,9 +453,32 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    IPostgresConnection conn = null;
 	    try {
 	      conn = dbDriver.getConnection();
-		// TODO Auto-generated method stub
+	      String sql= IQueries.GET_POS;
+	      IResult rx;
+	      Object [] obj = new Object[1];
+	      obj[0] = Long.toString(gramId);
+	      rx = conn.executeSelect(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());
+	      ResultSet rs = (ResultSet)rx.getResultObject();
+	      String thePOS = null;
+	      if (rs != null) {
+	    	  if (rs.next())
+	    		  thePOS = rs.getString("pos");
+	      }
+	      if (thePOS == null)
+	    	  thePOS = value;
+	      else
+	    	  thePOS += ", "+value;
+	      sql = IQueries.ADD_POS;
+	      obj = new Object[2];
+	      obj[0] = thePOS;
+	      obj[1] = Long.toString(gramId);
+	      rx = conn.executeSQL(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());	    
 	    } catch (Exception e) {
-	    	result.addErrorString("GetNode "+e.getMessage());
+	    	result.addErrorString("addPOS "+e.getMessage());
 	    	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
@@ -469,9 +492,15 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    IPostgresConnection conn = null;
 	    try {
 	      conn = dbDriver.getConnection();
-		// TODO Auto-generated method stub
+	      String sql = IQueries.ADD_WIKIDATA;
+	      Object []obj = new Object[2];
+	      obj[0] = value;
+	      obj[1] = Long.toString(gramId);
+	      IResult rx = conn.executeSQL(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());	      
 	    } catch (Exception e) {
-	    	result.addErrorString("GetNode "+e.getMessage());
+	    	result.addErrorString("addWikidata "+e.getMessage());
 	    	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
@@ -484,9 +513,15 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    IPostgresConnection conn = null;
 	    try {
 	      conn = dbDriver.getConnection();
-		// TODO Auto-generated method stub
+	      String sql = IQueries.ADD_DBPEDIA;
+	      Object []obj = new Object[2];
+	      obj[0] = value;
+	      obj[1] = Long.toString(gramId);
+	      IResult rx = conn.executeSQL(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());	      
 	    } catch (Exception e) {
-	    	result.addErrorString("GetNode "+e.getMessage());
+	    	result.addErrorString("addDBpedia "+e.getMessage());
 	    	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
@@ -514,7 +549,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	      if (rx.hasError())
 			result.addErrorString(rx.getErrorString());	      
 	    } catch (Exception e) {
-    	result.addErrorString("GetNode "+e.getMessage());
+    	result.addErrorString("addSentenceEdge "+e.getMessage());
     	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
@@ -524,12 +559,38 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	@Override
 	public IResult addTopicLocator(long gramId, long topicLocator) {
 		IResult result = new ResultPojo();
+		if (topicLocator == -1)
+			return result;
 	    IPostgresConnection conn = null;
 	    try {
 	      conn = dbDriver.getConnection();
-		// TODO Auto-generated method stub
+	      String sql= IQueries.GET_LOCATOR;
+	      IResult rx;
+	      Object [] obj = new Object[1];
+	      obj[0] = Long.toString(gramId);
+	      rx = conn.executeSelect(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());
+	      ResultSet rs = (ResultSet)rx.getResultObject();
+	      String theLocators = null;
+	      if (rs != null) {
+	    	  if (rs.next())
+	    		  theLocators = rs.getString("topicid");
+	      }
+	      if (theLocators == null)
+	    	  theLocators = Long.toString(topicLocator);
+	      else
+	    	  theLocators += ", "+Long.toString(topicLocator);
+	      sql = IQueries.ADD_LOCATOR;
+	      obj = new Object[2];
+	      obj[0] = theLocators;
+	      obj[1] = Long.toString(gramId);
+	      rx = conn.executeSQL(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());
+	      
 	    } catch (Exception e) {
-	    	result.addErrorString("GetNode "+e.getMessage());
+	    	result.addErrorString("addTopicLocator "+e.getMessage());
 	    	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
