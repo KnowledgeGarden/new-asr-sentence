@@ -108,7 +108,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 			return;
 		String sql= IQueries.PUT_SENTENCE_EDGE;;
 		IResult rx;
-		Object [] obj = new Object[5];
+		Object [] obj = new Object[6];
 		obj [0] = Long.toString(nodeId);
 		Iterator<String> itr =sentenceEdges.keySet().iterator();
 		String sentId;
@@ -119,10 +119,11 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 			sentId = itr.next();
 			edge = sentenceEdges.get(sentId).getAsJsonObject();
 			e = new SentenceEdgePojo(edge);
-			obj[1] = e.getInLink();
-			obj[2] = e.getOutLink();
-			obj[3]= e.getPredicateTense();
-			obj[4]= e.getpistemicStatus();
+			obj[1] = sentId;
+			obj[2] = e.getInLink();
+			obj[3] = e.getOutLink();
+			obj[4]= e.getPredicateTense();
+			obj[5]= e.getpistemicStatus();
 			rx = conn.executeSQL(sql, obj);
 			if (rx.hasError())
 				r.addErrorString(rx.getErrorString());
@@ -315,7 +316,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 			long sentenceId;
 			while (rs.next()) {
 				edge = new SentenceEdgePojo();
-				sentenceId = rs.getLong("id");
+				sentenceId = rs.getLong("sent_id");
 				edge.setInLink(rs.getLong("in_lnk"));
 				edge.setOutLink(rs.getLong("out_lnk"));
 				edge.setPredicateTense(rs.getString("tense"));
@@ -499,10 +500,22 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    IPostgresConnection conn = null;
 	    try {
 	      conn = dbDriver.getConnection();
-		// TODO Auto-generated method stub
+	      String sql= IQueries.PUT_SENTENCE_EDGE;
+	      //id, sent_id, inLink, outLink, tense, epi
+	      IResult rx;
+	      Object [] obj = new Object[6];
+	      obj[0] = Long.toString(gramId);
+	      obj[1] = Long.toString(sentenceId);
+	      obj[2] = Long.toString(inLinkTargetId);
+	      obj[3] = Long.toString(outlinkTargetId);
+	      obj[4] = tense;
+	      obj[5] = epistemicStatus;
+	      rx = conn.executeSQL(sql, obj);
+	      if (rx.hasError())
+			result.addErrorString(rx.getErrorString());	      
 	    } catch (Exception e) {
-	    	result.addErrorString("GetNode "+e.getMessage());
-	    	environment.logError(e.getMessage(), e);
+    	result.addErrorString("GetNode "+e.getMessage());
+    	environment.logError(e.getMessage(), e);
 	    } finally {
 	    	conn.closeConnection(result);
 	    }
