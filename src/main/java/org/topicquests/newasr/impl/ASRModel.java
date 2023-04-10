@@ -289,4 +289,23 @@ public class ASRModel implements IAsrModel {
 		return database.addHyponymTerm(gramId, hyperTermId);
 	}
 
+	@Override
+	public IResult processTerm(String term, String pos, long sentenceId, long inTargetId, long outTargetId,
+			String tense, String epi) {
+		IResult result = new ResultPojo();
+		IResult r = this.processTerm(term, pos);
+		if (r.hasError())
+			result.addErrorString(r.getErrorString());
+		String ix = (String)r.getResultObject();
+		//long gramId = Long.parseLong(ix);
+		r = this.getThisTermById(ix);
+		if (r.hasError())
+			result.addErrorString(r.getErrorString());
+		IWordGram wg = (IWordGram)r.getResultObject();
+		if (sentenceId > -1)
+			wg.addSentenceEdge(sentenceId, inTargetId, outTargetId, tense, epi);
+		result.setResultObject(ix);
+		return result;
+	}
+
 }

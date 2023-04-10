@@ -35,6 +35,19 @@ public interface IAsrModel {
 	 */
 	IResult processTerm(String term, String pos);
 	
+	/**
+	 * 
+	 * @param term
+	 * @param pos 			can be {@coe null}
+	 * @param sentenceId 	can be {@code -1}
+	 * @param inTargetId	can be {@code -1}
+	 * @param outTargetId	can be {@code -1}
+	 * @param tense			can be {@coe null}
+	 * @param epi			can be {@coe null}
+	 * @return
+	 */
+	IResult processTerm(String term, String pos, long sentenceId, long inTargetId, long outTargetId, String tense, String epi);
+	
 	
 	/**
 	 * <p>For importing predicates from csv files<p>
