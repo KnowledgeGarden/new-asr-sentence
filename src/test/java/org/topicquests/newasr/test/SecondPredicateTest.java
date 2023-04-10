@@ -27,7 +27,7 @@ public class SecondPredicateTest extends TestingRoot {
 	public SecondPredicateTest() {
 		super();
 		spacy = new SpacyHttpClient(environment);
-		IResult r = spacy.processSentence(S2);
+		IResult r = spacy.processSentence(S0);
 		System.out.println("A "+r.getErrorString());
 		System.out.println("B\n"+r.getResultObject());
 		
@@ -52,4 +52,7 @@ A
 B
 {"data":[[{"strt":2,"enx":6,"txt":"have been thought to"}],[{"strt":6,"enx":7,"txt":"cause"}]],"dbp":[["climate change","http://dbpedia.org/resource/Global_warming","0.9999890286064247"]],"wkd":[],"trips":[]}
  
+ 20230409
+ {"data":[[],[{"strt":2,"enx":3,"txt":"causes"}]],"dbp":[{"strt":"Carbon dioxide","kid":"http://dbpedia.org/resource/Carbon_dioxide","dbp":"0.9999915009793696"},{"strt":"climate change","kid":"http://dbpedia.org/resource/Global_warming","dbp":"0.9999843424086222"}],"wkd":[],"nns":[{"strt":0,"txt":"Carbon"},{"strt":1,"txt":"dioxide"},{"strt":3,"txt":"climate"},{"strt":4,"txt":"change"}],"pnns":[],"vrbs":[{"strt":2,"txt":"causes"}]}
+
  */

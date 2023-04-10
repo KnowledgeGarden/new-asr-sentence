@@ -116,6 +116,7 @@ public class PredicateAssembler {
 	 * @return
 	 */
 	public IResult processSentencePredicates(ISentence sentence, JsonArray predicates) {
+		environment.logDebug("PredAssem\n"+predicates);
 		IResult result = new ResultPojo();
 		if (predicates == null)
 			return result;

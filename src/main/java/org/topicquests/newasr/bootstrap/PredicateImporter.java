@@ -41,8 +41,9 @@ public class PredicateImporter {
 		while ((line = h.readNextLine()) != null)  {
 			neg= null;
 			isNeg =false;
-			if (line.trim().length() > 3)  {
+			if (line.trim().length() > 7)  {
 				System.out.println("PRED: "+line);
+				//PRED: ,,,,,,,
 				vals = line.split(",");
 				len=vals.length;
 				environment.logDebug("BOOTING "+len+" "+line);

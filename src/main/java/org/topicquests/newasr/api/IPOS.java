@@ -23,6 +23,7 @@ public interface IPOS {
 		DET_POS		= "det",
 		NG_POS		= "gernd", 	// gerund can be noun or verb THIS DOES NOT MATCH a bootstrap file path name
 		NOUN_POS	= "noun",
+		PROPNOUN_POS	= "propn", // proper noun
 		PREP_POS	= "prp",  	// preposition --> adb is cover for preposition and postposition terms
 		ADP_POS		= "adp",
 		SCONJ_POS	= "sconj",

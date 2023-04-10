@@ -105,6 +105,7 @@ public class SentenceEngine {
 		String spacyData = sentence.getSpacyData();
 		//environment.logError("BIGJA "+spacyData, null);
 		if (spacyData == null) {
+			//This is the big spaCy full parse, etc
 			r = spacyServerEnvironment.processSentence(text);
 			spacyObj = (JSONObject)r.getResultObject();
 			JSONObject res = (JSONObject)spacyObj.get("results");
@@ -140,7 +141,7 @@ public class SentenceEngine {
 				ja = jo.get("vrbs").getAsJsonArray();
 				processVerb(sentence, ja);
 			}
-
+			resolveNouns(sentence);
 			// and now, the wordgrams
 			r = builder.processSentence(sentence);
 			environment.logDebug("SentenceEngineDone\n"+sentence.getData());
@@ -152,6 +153,117 @@ public class SentenceEngine {
 		}
 	}
 	
+	void resolveNouns(ISentence sentence) {
+		JsonArray result = new JsonArray();
+		JsonArray nouns = sentence.getNouns();
+		JsonArray pNouns = sentence.getProperNouns();
+		JsonArray dbp = sentence.getDBpediaData();
+		environment.logDebug("RESOLVING\n"+dbp);
+		int len, len2;
+		JsonObject jo, jx;
+		if ((nouns != null) && (pNouns != null)) {
+			len = pNouns.size();
+			for (int i=0;i<len;i++) {
+				jo = pNouns.get(i).getAsJsonObject();
+				if (!nouns.contains(jo))
+					nouns.add(jo);
+			}
+		}
+		// isolate DBpedia objects first
+		String txt;
+		JsonObject match;
+		JsonArray toRemove = new JsonArray();
+		if (dbp != null) {
+			len = dbp.size();
+			for (int i=0;i<len;i++) {
+				jo = dbp.get(i).getAsJsonObject();
+				txt = jo.get("strt").getAsString();
+				IResult rx = match(txt, nouns);
+				environment.logDebug("RESOLVING-1 "+rx+"\n"+jo);
+				if (rx != null) {
+					match = (JsonObject)rx.getResultObject();
+					JsonArray droppers = (JsonArray)rx.getResultObjectA();
+					if (match != null)
+						result.add(match);
+					if (droppers != null) {
+						int lx = droppers.size();
+						for (int j = 0;j<lx;j++)
+							toRemove.add(droppers.get(j));
+					}
+				}
+				
+			}
+		}
+		environment.logDebug("RESOLVING-1a\n"+toRemove);
+		len = toRemove.size();
+		for (int i=0;i<len;i++)
+			nouns.remove(toRemove.get(i));
+		// Add what's left
+		environment.logDebug("RESOLVING-2\n"+result);
+		len = nouns.size();
+		for (int i=0;i<len;i++) {
+			jo = nouns.get(i).getAsJsonObject();
+			if (!result.contains(jo))
+				result.add(jo);
+		}
+		environment.logDebug("RESOLVING+\n"+result);
+		sentence.setResolvedNouns(result);
+	}
+	
+	IResult match(String txt, JsonArray nouns) {
+		IResult output = new ResultPojo();
+		JsonObject result = new JsonObject();
+		JsonArray droppers = new JsonArray();
+		output.setResultObject(result);
+		output.setResultObjectA(droppers);
+		String comp = txt.toLowerCase().trim();
+		int len = nouns.size();
+		JsonObject temp;
+		String label;
+		String [] textC = txt.split(" ");
+		int numWords = textC.length;
+		JsonObject jo;
+		int strt = 0;
+		for (int i=0;i<len;i++) {
+			temp = nouns.get(i).getAsJsonObject();
+			environment.logDebug("MATCHING "+txt+"\n"+temp);
+			label = temp.get("txt").getAsString().toLowerCase();
+			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
+			// exact match
+			if (label.equals(comp)) {
+				result.addProperty("strt", Integer.toString(strt));
+				result.addProperty("txt", txt);
+				return output;
+			} else { // speculative check - are the next words compatible?
+				if (comp.contains(label)) {
+					boolean found = true;
+					droppers.add(temp);
+					for (int j = 1; j<numWords;j++) {
+						jo = nouns.get(++i).getAsJsonObject();
+						environment.logDebug("MATCHING-2 "+txt+"\n"+jo);
+						label = jo.get("txt").getAsString().toLowerCase();
+						environment.logDebug("MATCHING-3 "+txt+" "+label);
+						droppers.add(jo);
+						if (!comp.contains(label)) {
+							environment.logDebug("MATCHING-4 ");
+							found = false;
+							break;
+						}
+
+					}
+					if (found) {
+						result.addProperty("strt", Integer.toString(strt));
+						result.addProperty("txt", txt);
+						return output;
+					} else
+						return null;
+				}
+			}
+		}
+		environment.logDebug("MATCHING+ ");
+
+		return null;
+	}
 	
 	void processDBpedia(ISentence sentence, JsonArray dbp) {
 		if (dbp != null)

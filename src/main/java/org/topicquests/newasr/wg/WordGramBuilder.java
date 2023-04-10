@@ -16,6 +16,7 @@ import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.api.ISimpleTriple;
 import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.api.IWordGram;
+import org.topicquests.newasr.trip.TripleAnalyzer;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
@@ -32,6 +33,7 @@ public class WordGramBuilder {
 	private ASREnvironment environment;
 	private IAsrModel model;
 	private ITripleModel tripleModel;
+	private TripleAnalyzer analyzer;
 
 	private JsonUtil util;
 	private final String
@@ -43,6 +45,7 @@ public class WordGramBuilder {
 		environment =env;
 		model = environment.getModel();
 		tripleModel = environment.getTripleModel();
+		analyzer = new TripleAnalyzer(environment);
 		util = new JsonUtil();
 	}
 
@@ -85,6 +88,7 @@ public class WordGramBuilder {
 		JsonArray spacyNouns = sentence.getNouns();
 		JsonArray spacyProperNouns = sentence.getProperNouns();
 		JsonArray spacyVerbs = sentence.getVerbs();
+		JsonArray resolvedNouns = sentence.getResolvedNouns();
 		Iterator<JsonElement> itr;
 		JsonObject jo;
 		JsonArray ja;
@@ -127,16 +131,18 @@ public class WordGramBuilder {
 		///////////////////
 		// Process DBpedia
 		///////////////////
+		JsonElement foo;
+		JsonObject wo;
 		if (dbpedia != null) {
 			itr = dbpedia.iterator();
 			while (itr.hasNext()) {
-				ja = itr.next().getAsJsonArray();
+				wo = itr.next().getAsJsonObject();
 				jo =new JsonObject();
-				snippet = ja.get(0).getAsString();
+				snippet = wo.get("strt").getAsString();
 				if (!nouns.contains(snippet))
 					nouns.add(snippet);
 				jo.addProperty("txt", snippet);
-				jo.addProperty("url", ja.get(1).getAsString());
+				jo.addProperty("url", wo.get("kid").getAsString());
 				dbpList.add(jo);
 				r = model.processTerm(snippet, IPOS.NOUN_POS);
 				if (r.hasError())
@@ -146,7 +152,8 @@ public class WordGramBuilder {
 				if (r.hasError())
 					result.addErrorString(r.getErrorString());
 				wg = (IWordGram)r.getResultObject();
-				dbpWgList.add(wg);
+				if (!dbpWgList.contains(wg))
+					dbpWgList.add(wg);
 
 			}
 		}
@@ -174,9 +181,80 @@ public class WordGramBuilder {
 				if (r.hasError())
 					result.addErrorString(r.getErrorString());
 				wg = (IWordGram)r.getResultObject();
-				dbpWgList.add(wg);
+				if (!wdWgList.contains(wg))
+					wdWgList.add(wg);
 			}
 		}
+		///////////////////
+		// Process the nouns
+		// { start, txt
+		///////////////////
+		if (spacyProperNouns != null) {
+			int len = spacyProperNouns.size();
+			JsonObject theNoun;
+			for (int i=0;i<len;i++) {
+				theNoun = spacyProperNouns.get(i).getAsJsonObject();
+				snippet = theNoun.get("txt").getAsString();
+				if (!nouns.contains(snippet))
+					nouns.add(snippet);
+				r = model.processTerm(snippet, IPOS.PROPNOUN_POS);
+				if (r.hasError())
+					result.addErrorString(r.getErrorString());
+				idx = (String)r.getResultObject();
+				r = model.getThisTermById(idx);
+				if (r.hasError())
+					result.addErrorString(r.getErrorString());
+				wg = (IWordGram)r.getResultObject();
+				if (!nounWgList.contains(wg))
+					nounWgList.add(wg);
+			}
+		}
+		if (spacyNouns != null){
+			int len = spacyNouns.size();
+			JsonObject theNoun;
+			for (int i=0;i<len;i++) {
+				theNoun = spacyNouns.get(i).getAsJsonObject();
+				snippet = theNoun.get("txt").getAsString();
+				if (!nouns.contains(snippet)) {
+					nouns.add(snippet);
+					r = model.processTerm(snippet, IPOS.NOUN_POS);
+					if (r.hasError())
+						result.addErrorString(r.getErrorString());
+					idx = (String)r.getResultObject();
+					r = model.getThisTermById(idx);
+					if (r.hasError())
+						result.addErrorString(r.getErrorString());
+					wg = (IWordGram)r.getResultObject();
+					if (!nounWgList.contains(wg))
+						nounWgList.add(wg);
+				}
+			}
+		}
+		environment.logDebug("WGB-X\n"+nouns+"\n"+verbs);
+		///////////////////
+		// Process the verbs
+		///////////////////
+		if (spacyVerbs != null){
+			int len = spacyVerbs.size();
+			JsonObject theNoun;
+			for (int i=0;i<len;i++) {
+				theNoun = spacyVerbs.get(i).getAsJsonObject();
+				snippet = theNoun.get("txt").getAsString();
+				if (!nouns.contains(snippet))
+					nouns.add(snippet);
+				r = model.processTerm(snippet, IPOS.VERB_POS);
+				if (r.hasError())
+					result.addErrorString(r.getErrorString());
+				idx = (String)r.getResultObject();
+				r = model.getThisTermById(idx);
+				if (r.hasError())
+					result.addErrorString(r.getErrorString());
+				wg = (IWordGram)r.getResultObject();
+				if (!predList.contains(wg))
+					predList.add(wg);
+			}
+		}
+		JsonObject ta = analyzer.bigDamnAnalyze(predicates, resolvedNouns);
 		///////////////////
 		// At this point, we may have:
 		//	* Predicate phrases and their wordgrams
@@ -198,7 +276,9 @@ public class WordGramBuilder {
 					conc = jo.get("concepts").getAsJsonObject().get("text").getAsString();
 				else
 					conc = null;
-				if (pos.equals(NOUN) && conc != null) {
+				/* spacyAlready did this
+				 if (pos.equals(NOUN) && conc != null) {
+				 
 					r = model.processTerm(txt, IPOS.NOUN_POS);  // should we use lemma?
 					if (r.hasError())
 						result.addErrorString(r.getErrorString());
@@ -210,6 +290,7 @@ public class WordGramBuilder {
 					if (!(dbpWgList.contains(wg) || wdWgList.contains(wg)))
 						nounWgList.add(wg);
 				}
+				*/
 			}
 			environment.logDebug("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList);
 			//////////
