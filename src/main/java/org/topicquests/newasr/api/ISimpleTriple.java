@@ -15,21 +15,47 @@ public interface ISimpleTriple extends IAddressable {
 	public static final String
 		WORDGRAM_TYPE		= "wgt",
 		TRIPLE_TYPE			= "tplt";
+	public static final String
+		SUBJ_KEY			= "subj",
+		SUBJ_TYP_KEY		= "subjT",
+		PRED_KEY			= "pred",
+		OBJ_KEY				= "obj",
+		OBJ_TYP_KEY			= "objT",
+		PSI_KEY				= "psi",
+		NORMALIZED_ID_KEY	= "norm";
 	
-	void setSubjectId(long id);
-	long getSubjectId();
-	void setSubjectType(String type);
-	String getSubjectType9()
+	/**
+	 * 
+	 * @param subj
+	 * @param type can not be {@code null}
+	 */
+	void setSubject(Object subj, String type);
+	
+	/**
+	 * Must use object type to cast result
+	 * @return
+	 */
+	Object getSubject();
+	String getSubjectType()
 ;	
 	long setPredicateId(long id);
 	long getPredicateId();
 	
-;	void setObjectId(long id);
-	long getObjectId();
-	void setObjectType(String type);
+;	void setObject(Object obj, String type);
+	Object getObject();
 	String getObjectType();
 	
 	void addSentenceId(long sentenceId);
 	JsonArray listSentenceIds();
+	
+	void setPSI(String psi);
+	String getPSI();
+	
+	void setNormalizedTripleId(long id);
+	/**
+	 * Can return {@code -1}
+	 * @return
+	 */
+	long getNormalizedTripleId();
 
 }

@@ -8,18 +8,24 @@ package org.topicquests.newasr.impl;
 import org.topicquests.newasr.api.ISimpleTriple;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * @author jackpark
  *
  */
 public class ASRSimpleTriple implements ISimpleTriple {
-
+	private JsonObject data;
 	/**
 	 * 
 	 */
 	public ASRSimpleTriple() {
-		// TODO Auto-generated constructor stub
+		data = new JsonObject();
+		this.setNormalizedTripleId(-1); // set default
+	}
+	
+	public ASRSimpleTriple(JsonObject d) {
+		data = d;
 	}
 
 	@Override
@@ -35,25 +41,22 @@ public class ASRSimpleTriple implements ISimpleTriple {
 	}
 
 	@Override
-	public void setSubjectId(long id) {
+	public void setSubject(Object subj, String type) {
+		if (type == null)
+			throw new RuntimeException("Missing Subject Type");
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public long getSubjectId() {
+	public Object getSubject() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	@Override
-	public void setSubjectType(String type) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
-	public String getSubjectType9() {
+	public String getSubjectType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -71,22 +74,19 @@ public class ASRSimpleTriple implements ISimpleTriple {
 	}
 
 	@Override
-	public void setObjectId(long id) {
+	public void setObject(Object obj, String type) {
+		if (type == null)
+			throw new RuntimeException("Missing Object Type");
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public long getObjectId() {
+	public Object getObject() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	@Override
-	public void setObjectType(String type) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public String getObjectType() {
@@ -106,4 +106,27 @@ public class ASRSimpleTriple implements ISimpleTriple {
 		return null;
 	}
 
+	@Override
+	public void setPSI(String psi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getPSI() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setNormalizedTripleId(long id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public long getNormalizedTripleId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
