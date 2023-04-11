@@ -13,6 +13,7 @@ import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.kafka.CommonKafkaProducer;
+import org.topicquests.newasr.noun.NounAssembler;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
@@ -26,6 +27,7 @@ import com.google.gson.JsonObject;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 
 /**
  * @author jackpark
@@ -40,6 +42,7 @@ public class SentenceEngine {
 	private SentenceThread runner;
 	private SpacyDriverEnvironment spacyServerEnvironment;
 	private PredicateAssembler predAssem;
+	private NounAssembler nounAssem;
 	private WordGramBuilder builder;
 
 	private CommonKafkaProducer sentenceProducer;
@@ -54,6 +57,7 @@ public class SentenceEngine {
 		environment =env;
 		model = environment.getModel();
 		predAssem = environment.getPredicateAssembler();
+		nounAssem = new NounAssembler(environment);
 		builder = environment.getWordGramBuilder();
 		sentences = new ArrayList<JsonObject>();
 		spacy = new SpacyHttpClient(environment);
@@ -101,20 +105,26 @@ public class SentenceEngine {
 		JsonObject jo;
 		JsonArray ja, jax;
 		JSONObject spacyObj;
+		
 		// POS and more
 		String spacyData = sentence.getSpacyData();
 		//environment.logError("BIGJA "+spacyData, null);
-		if (spacyData == null) {
-			//This is the big spaCy full parse, etc
-			r = spacyServerEnvironment.processSentence(text);
-			spacyObj = (JSONObject)r.getResultObject();
-			JSONObject res = (JSONObject)spacyObj.get("results");
+		try {
+			JSONObject res = null;
+			if (spacyData == null) {
+				//This is the big spaCy full parse, etc
+				r = spacyServerEnvironment.processSentence(text);
+				spacyObj = (JSONObject)r.getResultObject();
+			} else {
+				JSONParser p = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+				spacyObj = (JSONObject)p.parse(spacyData);
+			}
+			res = (JSONObject)spacyObj.get("results");
 			JSONArray spacyArray = (JSONArray)res.get("sentences");
 			res = (JSONObject)spacyArray.get(0);
 			environment.logDebug("SentenceEngine-1 "+res);
 			sentence.setSpacyData(res.toJSONString());
-		}
-		try {
+			JsonArray concepts = findConcepts(res);
 			// spacy predicates, dbp, nouns, etc
 			jo = util.parse(json);
 			ja = jo.get("data").getAsJsonArray();
@@ -151,6 +161,33 @@ public class SentenceEngine {
 			environment.logError("SE-1: "+e.getMessage(), e);
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * 
+	 * @param data
+	 * @return
+	 */
+	JsonArray findConcepts(JSONObject data) {
+		JsonArray result = new JsonArray();
+		if (data == null)
+			return result;
+		JSONArray nodes = (JSONArray)data.get("nodes");
+		environment.logDebug("SentenceEngineFindConcept-1\n"+nodes);
+		JSONObject jo, conc;
+		int len = nodes.size();
+		int conlen = 0;
+		JSONObject theCon;
+		JSONArray them;
+		for (int i=0;i<len;i++) {
+			jo = (JSONObject)nodes.get(i);
+			conc = (JSONObject)jo.get("concepts");
+			if (conc != null) {
+				theCon = (JSONObject)conc.get("concepts");
+			}
+		}
+		
+		return result;
 	}
 	
 	void resolveNouns(ISentence sentence) {

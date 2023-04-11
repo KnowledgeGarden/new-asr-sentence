@@ -57,11 +57,51 @@ public class TripleAnalyzer {
 			if (construct[i] != null)
 				things.add(construct[i]);
 		}
+		///////////////////////////
+		// normalize the list
+		///////////////////////////
 		//if (predicates.size() == 1)
-		environment.logDebug("BigDamAnalysis+\n"+things);
+		result = makeTriple(0, 0, things, predicates);
+		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
+				
 		return result;
 	}
+	
+	/**
+	 * Recursive
+	 * @param predlocs
+	 * @param index
+	 * @param things
+	 * @return
+	 */
+	JsonObject makeTriple(int index, int predIndex, List<JsonObject> things, JsonArray preds) {
+		int pointer = index;
+		if (index > 0) {
+			// we are looking for the next subject
+			// first pass you jump over subj,pred
+			// second pass you jump over subj,pred,obj,pred
+			pointer = 2*index;
+		}
+			
+		JsonObject result = new JsonObject();
+		int predLength = preds.size();
+		environment.logDebug("FooBar "+predLength+" "+predIndex+"\n"+result);
+		result.add("subj", things.get(pointer));
+		result.add("pred", preds.get(predIndex));
+		environment.logDebug("FooBar-1 "+predLength+" "+predIndex+"\n"+result);
+		if (predLength ==1 || predIndex == predLength-1)
+			result.add("obj", things.get(pointer+2));
+		else {
+			environment.logDebug("FooBar-2 "+predLength+" "+predIndex+"\n"+result);
+			if (predIndex >= predLength-1)
+				return result;
+			JsonObject jo = makeTriple(index+1, predIndex+1, things,preds);
+			result.add("obj", jo);
+		}
+		environment.logDebug("FooBar+\n"+result);
 
+		return result;
+	}
 	JsonObject simpleTriple(List<JsonObject> sentence, JsonObject pred, JsonArray nouns) {
 		JsonObject result= new JsonObject();
 		

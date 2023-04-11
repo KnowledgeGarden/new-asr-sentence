@@ -20,7 +20,9 @@ public class FirstSentenceTest extends TestingRoot {
 		S4	="Scientists have been thought to believe that climate change is caused by  carbon dioxide",
 		S5  ="Climate change is not caused by elephants",
 		S6  = "Greenhouse gasses cause climate change",
-		S7  = "Greenhouse gas causes climate change";
+		S7  = "Greenhouse gas causes climate change",
+		S8  = "Some scientists believe that other scientists believe that carbon dioxide causes climate change",
+		S9  = "Elephant shit encourages flies";
 
 	private ISentence sentence;
 
@@ -31,7 +33,7 @@ public class FirstSentenceTest extends TestingRoot {
 		super();
 		
 		sentence = new ASRSentence(); 
-		sentence.setText(S4);
+		sentence.setText(S9);
 		sentence.setId(System.currentTimeMillis());
 		sentenceEngine.acceptNewSentence(sentence.getData());
 		
