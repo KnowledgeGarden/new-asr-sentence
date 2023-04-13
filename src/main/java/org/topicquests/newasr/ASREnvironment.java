@@ -13,7 +13,6 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IDictionary;
 import org.topicquests.newasr.api.IDictionaryClient;
 import org.topicquests.newasr.api.IKafkaDispatcher;
-import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.bootstrap.PredicateImporter;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
@@ -21,7 +20,6 @@ import org.topicquests.newasr.impl.ASRBaseEnvironment;
 import org.topicquests.newasr.impl.ASRModel;
 import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
-import org.topicquests.newasr.impl.TripleModel;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
 import org.topicquests.newasr.pred.PredicateAssembler;
@@ -42,7 +40,6 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private IDictionaryClient dictionarHttpyClient;
 	private IDictionary dictionary;
 	private IAsrModel model;
-	private ITripleModel tripleModel;
 	private IAsrDataProvider database;
 	private WordGramUtil wgUtil;
 	private PredicateAssembler predAssem;
@@ -83,7 +80,6 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		//pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
-		tripleModel = new TripleModel(this);
 		builder = new WordGramBuilder(this);
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
@@ -101,16 +97,14 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	    });
 		logDebug("Hello World");
 		System.out.println("ENV BOOTED");
-		logError("SHIT ",null);
-		say("Just starting");
+		//logError("SHIT ",null);
+		//say("Just starting");
 	}
 	
 	public PredicateImporter getPredicateImporter() {
 		return predImporter;
 	}
-	public ITripleModel getTripleModel() {
-		return tripleModel;
-	}
+
 	public WordGramBuilder getWordGramBuilder() {
 		return builder;
 	}

@@ -32,7 +32,6 @@ import com.google.gson.JsonElement;
 public class WordGramBuilder {
 	private ASREnvironment environment;
 	private IAsrModel model;
-	private ITripleModel tripleModel;
 	private TripleAnalyzer analyzer;
 
 	private JsonUtil util;
@@ -44,7 +43,6 @@ public class WordGramBuilder {
 	public WordGramBuilder(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
-		tripleModel = environment.getTripleModel();
 		analyzer = new TripleAnalyzer(environment);
 		util = new JsonUtil();
 	}

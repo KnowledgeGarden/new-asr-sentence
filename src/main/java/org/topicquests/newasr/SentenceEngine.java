@@ -24,6 +24,7 @@ import org.topicquests.support.api.IResult;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -92,235 +93,58 @@ public class SentenceEngine {
 	 * @param sentence
 	 */
 	public void processSentence(ISentence sentence) {
-		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
-		//First, send it to the spacy predicate server
-		String text = sentence.getText();
-		System.out.println("ProcessSentence\n"+sentence.getData());
-		// gather predicates, wikidata and dbpedia stuff in the sentence object
-		//sentenceProducer.sendMessage(SPACY_TOPIC, sentence.getData().toString(), SPACY_KEY, partition);
-		//@see acceptSpacyResponse below	
-		IResult r = spacy.processSentence(text);
-		String json = (String)r.getResultObject();
-		environment.logDebug("PS1 "+json);
-		JsonObject jo;
-		JsonArray ja, jax;
-		JSONObject spacyObj;
-		
-		// POS and more
+		JsonObject jo;		
 		String spacyData = sentence.getSpacyData();
-		//environment.logError("BIGJA "+spacyData, null);
+		String text = sentence.getText();
+		JsonArray ja;
 		try {
+			IResult r = spacy.processSentence(text);
+			String json = (String)r.getResultObject();
+			environment.logDebug("PS1 "+json);
+			JsonObject spcy = util.parse(json);
+			JSONObject spacyObj;
 			JSONObject res = null;
 			if (spacyData == null) {
 				//This is the big spaCy full parse, etc
-				r = spacyServerEnvironment.processSentence(text);
+				r = spacyServerEnvironment.processParagraph(text);
 				spacyObj = (JSONObject)r.getResultObject();
 			} else {
-				JSONParser p = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
-				spacyObj = (JSONObject)p.parse(spacyData);
+				spacyObj = util.parseJsonObject(spacyData);
 			}
-			res = (JSONObject)spacyObj.get("results");
-			JSONArray spacyArray = (JSONArray)res.get("sentences");
-			res = (JSONObject)spacyArray.get(0);
-			environment.logDebug("SentenceEngine-1 "+res);
-			sentence.setSpacyData(res.toJSONString());
-			JsonArray concepts = findConcepts(res);
-			// spacy predicates, dbp, nouns, etc
-			jo = util.parse(json);
-			ja = jo.get("data").getAsJsonArray();
-			// process the predicates
-			predAssem.processSentencePredicates(sentence, ja);
-			ja = jo.get("dbp").getAsJsonArray();
-			// process dbpedia
-			processDBpedia(sentence, ja);
-			ja = jo.get("wkd").getAsJsonArray();
-			// process wikidata
-			processWikidata(sentence, ja);
-			// process nouns
-			if (jo.get("nns") != null) {
-				ja = jo.get("nns").getAsJsonArray();
-				processNoun(sentence, ja);
-			}
-			// process propernouns
-			if (jo.get("pnns") != null) {
-				ja = jo.get("pnns").getAsJsonArray();
-				processProperNoun(sentence, ja);
-			}
+			//Object foo = spacyObj.get("sentences");
+			environment.logDebug("SentenceEngine- "+spacyObj);
+			//{"nodes":[{"pos":"NOUN","star
+			//res = (JSONObject)spacyObj.get("results");
+			//environment.logDebug("SentenceEngine-0 "+res);
+			//JSONArray spacyArray = (JSONArray)res.get("sentences");
+			//res = (JSONObject)spacyArray.get(0);
+			//environment.logDebug("SentenceEngine-1 "+foo);
+			//{"text":"Elephant shit encourages flies","results":{"c
+			sentence.setSpacyData(spacyObj.toJSONString());
+
+			r = nounAssem.bigDamnAnalyze(sentence, spacyObj, spcy);
 			// process verbs
-			if (jo.get("vrbs") != null) {
-				ja = jo.get("vrbs").getAsJsonArray();
+			if (spcy.get("vrbs") != null) {
+				ja = spcy.get("vrbs").getAsJsonArray();
 				processVerb(sentence, ja);
 			}
-			resolveNouns(sentence);
+
+			
 			// and now, the wordgrams
-			r = builder.processSentence(sentence);
+			//r = builder.processSentence(sentence);
 			environment.logDebug("SentenceEngineDone\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO
-		} catch (Exception e) {
-			environment.logError("SE-1: "+e.getMessage(), e);
-			e.printStackTrace();
+		} catch(Exception e) {
+			
 		}
 	}
 	
-	/**
-	 * 
-	 * @param data
-	 * @return
-	 */
-	JsonArray findConcepts(JSONObject data) {
-		JsonArray result = new JsonArray();
-		if (data == null)
-			return result;
-		JSONArray nodes = (JSONArray)data.get("nodes");
-		environment.logDebug("SentenceEngineFindConcept-1\n"+nodes);
-		JSONObject jo, conc;
-		int len = nodes.size();
-		int conlen = 0;
-		JSONObject theCon;
-		JSONArray them;
-		for (int i=0;i<len;i++) {
-			jo = (JSONObject)nodes.get(i);
-			conc = (JSONObject)jo.get("concepts");
-			if (conc != null) {
-				theCon = (JSONObject)conc.get("concepts");
-			}
-		}
-		
-		return result;
-	}
-	
-	void resolveNouns(ISentence sentence) {
-		JsonArray result = new JsonArray();
-		JsonArray nouns = sentence.getNouns();
-		JsonArray pNouns = sentence.getProperNouns();
-		JsonArray dbp = sentence.getDBpediaData();
-		environment.logDebug("RESOLVING\n"+dbp);
-		int len, len2;
-		JsonObject jo, jx;
-		if ((nouns != null) && (pNouns != null)) {
-			len = pNouns.size();
-			for (int i=0;i<len;i++) {
-				jo = pNouns.get(i).getAsJsonObject();
-				if (!nouns.contains(jo))
-					nouns.add(jo);
-			}
-		}
-		// isolate DBpedia objects first
-		String txt;
-		JsonObject match;
-		JsonArray toRemove = new JsonArray();
-		if (dbp != null) {
-			len = dbp.size();
-			for (int i=0;i<len;i++) {
-				jo = dbp.get(i).getAsJsonObject();
-				txt = jo.get("strt").getAsString();
-				IResult rx = match(txt, nouns);
-				environment.logDebug("RESOLVING-1 "+rx+"\n"+jo);
-				if (rx != null) {
-					match = (JsonObject)rx.getResultObject();
-					JsonArray droppers = (JsonArray)rx.getResultObjectA();
-					if (match != null)
-						result.add(match);
-					if (droppers != null) {
-						int lx = droppers.size();
-						for (int j = 0;j<lx;j++)
-							toRemove.add(droppers.get(j));
-					}
-				}
-				
-			}
-		}
-		environment.logDebug("RESOLVING-1a\n"+toRemove);
-		len = toRemove.size();
-		for (int i=0;i<len;i++)
-			nouns.remove(toRemove.get(i));
-		// Add what's left
-		environment.logDebug("RESOLVING-2\n"+result);
-		len = nouns.size();
-		for (int i=0;i<len;i++) {
-			jo = nouns.get(i).getAsJsonObject();
-			if (!result.contains(jo))
-				result.add(jo);
-		}
-		environment.logDebug("RESOLVING+\n"+result);
-		sentence.setResolvedNouns(result);
-	}
-	
-	IResult match(String txt, JsonArray nouns) {
-		IResult output = new ResultPojo();
-		JsonObject result = new JsonObject();
-		JsonArray droppers = new JsonArray();
-		output.setResultObject(result);
-		output.setResultObjectA(droppers);
-		String comp = txt.toLowerCase().trim();
-		int len = nouns.size();
-		JsonObject temp;
-		String label;
-		String [] textC = txt.split(" ");
-		int numWords = textC.length;
-		JsonObject jo;
-		int strt = 0;
-		for (int i=0;i<len;i++) {
-			temp = nouns.get(i).getAsJsonObject();
-			environment.logDebug("MATCHING "+txt+"\n"+temp);
-			label = temp.get("txt").getAsString().toLowerCase();
-			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
-			// exact match
-			if (label.equals(comp)) {
-				result.addProperty("strt", Integer.toString(strt));
-				result.addProperty("txt", txt);
-				return output;
-			} else { // speculative check - are the next words compatible?
-				if (comp.contains(label)) {
-					boolean found = true;
-					droppers.add(temp);
-					for (int j = 1; j<numWords;j++) {
-						jo = nouns.get(++i).getAsJsonObject();
-						environment.logDebug("MATCHING-2 "+txt+"\n"+jo);
-						label = jo.get("txt").getAsString().toLowerCase();
-						environment.logDebug("MATCHING-3 "+txt+" "+label);
-						droppers.add(jo);
-						if (!comp.contains(label)) {
-							environment.logDebug("MATCHING-4 ");
-							found = false;
-							break;
-						}
 
-					}
-					if (found) {
-						result.addProperty("strt", Integer.toString(strt));
-						result.addProperty("txt", txt);
-						return output;
-					} else
-						return null;
-				}
-			}
-		}
-		environment.logDebug("MATCHING+ ");
-
-		return null;
-	}
-	
-	void processDBpedia(ISentence sentence, JsonArray dbp) {
-		if (dbp != null)
-			sentence.setDBpediaData(dbp);
-	}
-	void processWikidata(ISentence sentence, JsonArray wd) {
-		if (wd != null)
-			sentence.setWikiData(wd);
-	}
-	void processNoun(ISentence sentence, JsonArray noun) {
-		if (noun != null)
-			sentence.setNoun(noun);
-	}
-	void processProperNoun(ISentence sentence, JsonArray noun) {
-		if (noun != null)
-			sentence.setProperNoun(noun);
-	}
 	void processVerb(ISentence sentence, JsonArray verb) {
 		if (verb != null)
 			sentence.setVerb(verb);
+		predAssem.processSentencePredicates(sentence, verb);
 	}
 
 	/**

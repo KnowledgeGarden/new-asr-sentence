@@ -17,14 +17,12 @@ import com.google.gson.JsonObject;
 public class TripleAnalyzer {
 	private ASREnvironment environment;
 	private IAsrModel model;
-	private ITripleModel tripleModel;
 	/**
 	 * 
 	 */
 	public TripleAnalyzer(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
-		tripleModel = environment.getTripleModel();
 		// TODO Auto-generated constructor stub
 	}
 	
