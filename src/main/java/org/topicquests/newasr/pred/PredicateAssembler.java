@@ -121,9 +121,9 @@ public class PredicateAssembler {
 		if (predicates == null)
 			return result;
 		JsonArray antecedents = predicates.get(_ANTECENDS).getAsJsonArray();
-		System.out.println("ANTS: "+antecedents);
+		environment.logDebug("PredAssemANTS"+antecedents);
 		JsonArray preds = predicates.get(_PREDICATES).getAsJsonArray();
-		System.out.println("PREDS: "+preds);
+		environment.logDebug("PredAssemPREDS"+preds);
 		int predCount = countPredicates(preds);
 		if (predCount == 1) 
 			processOnePredicate(sentence, antecedents,preds, result);
@@ -149,7 +149,7 @@ public class PredicateAssembler {
 	 * @return
 	 */
 	JsonObject _processOnePredicate(JsonArray ants, JsonArray predicate, String theSentence) {
-		environment.logDebug("ProcessOne "+theSentence);
+		environment.logDebug("ProcessOne "+theSentence+"|"+ants+"|"+predicate);
 		int plen = predicate.size();
 		JsonObject je, jx =null;
 		String thePred = "";

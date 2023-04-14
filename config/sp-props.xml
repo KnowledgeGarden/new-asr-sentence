@@ -8,6 +8,6 @@
 <!--	<parameter name="ServerURl" value="192.168.8.7" />   coordinate with project -->
 <!--	<parameter name="ServerPort" value="5000" />  coordinate with project -->
 
-	<parameter name="ServerURL" value="https://fuseki.conversence.com/analyze/" />
+	<parameter name="ServerURL" value="https://fuseki.conversence.com/analyze" />
 </properties>
 

@@ -41,7 +41,7 @@ public class NounAssembler {
 
 	}
 
-	public IResult bigDamnAnalyze(ISentence sentence, JSONObject spacyObj, JsonObject spcy) {
+	public IResult bigDamnAnalyze(ISentence sentence, JsonObject spacyObj, JsonObject spcy) {
 		IResult result = new ResultPojo();;
 		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
 		//First, send it to the spacy predicate server
@@ -57,14 +57,9 @@ public class NounAssembler {
 
 		//environment.logError("BIGJA "+spacyData, null);
 		try {
-			JSONObject res = (JSONObject)spacyObj.get("results");
-			environment.logDebug("NounAssembler-0 "+res);
-
-			JSONArray spacyArray = (JSONArray)res.get("sentences");
-			res = (JSONObject)spacyArray.get(0);
-			environment.logDebug("NounAssembler-1 "+res);
 			
-			JsonArray concepts = findConcepts(res);
+			
+			JsonArray concepts = findConcepts(spacyObj);
 			// spacy predicates, dbp, nouns, etc
 			
 			ja = spcy.get("dbp").getAsJsonArray();
@@ -99,25 +94,30 @@ public class NounAssembler {
 	 * @param data
 	 * @return
 	 */
-	JsonArray findConcepts(JSONObject data) {
+	JsonArray findConcepts(JsonObject data) {
+		environment.logDebug("NounAssemblerFC\n"+data);
 		JsonArray result = new JsonArray();
 		if (data == null)
 			return result;
-		JSONArray nodes = (JSONArray)data.get("nodes");
+		JsonArray sentences = data.get("sentences").getAsJsonArray();
+		JsonObject theSentence = sentences.get(0).getAsJsonObject();
+		JsonArray nodes = theSentence.get("nodes").getAsJsonArray();;
 		environment.logDebug("NounAssembler-1\n"+nodes);
-		JSONObject jo, conc;
+		JsonObject jo, conc;
 		int len = nodes.size();
 		int conlen = 0;
-		JSONObject theCon;
-		JSONArray them;
+		JsonObject theCon;
+		JsonArray them;
 		String theConceptText;
 		String jsonCon;
 		JsonObject cx;
+		JsonElement je;
 		for (int i=0;i<len;i++) {
-			jo = (JSONObject)nodes.get(i);
-			conc = (JSONObject)jo.get("concepts");
-			if (conc != null) {
-				theConceptText =conc.getAsString("text");
+			jo = nodes.get(i).getAsJsonObject();
+			je = jo.get("concepts");
+			if (je != null) {
+				conc = je.getAsJsonObject();
+				theConceptText = conc.get("text").getAsString();
 				environment.logDebug("NounAssembler-3 "+theConceptText);
 				cx = new JsonObject();
 				cx.addProperty("strt", Integer.toString(i));
