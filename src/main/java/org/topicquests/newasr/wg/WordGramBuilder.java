@@ -69,7 +69,47 @@ public class WordGramBuilder {
 	 'pnns': [], 
 	 Verbs
 	 'vrbs': [{'strt': 1, 'txt': 'believe'}, {'strt': 6, 'txt': 'caused'}]
+	 
+	 
+	 
+	 
+	 A WorkingTuple will come from this triple
+	 {
+		"subj": {
+			"strt": "0",
+			"txt": "Scientists"
+		},
+		"pred": {
+			"strt": 5,
+			"txt": " believe"
+		},
+		"obj": {
+			"subj": {
+				"strt": "8",
+				"txt": "climate change",
+				"dbp": {
+					"strt": "climate change",
+					"kid": "http://dbpedia.org/resource/Global_warming",
+					"dbp": "0.9999928412462271"
+				}
+			},
+			"pred": {
+				"strt": 9,
+				"txt": "is caused by"
+			},
+			"obj": {
+				"strt": "13",
+				"txt": "carbon dioxide",
+				"dbp": {
+					"strt": "carbon dioxide",
+					"kid": "http://dbpedia.org/resource/Carbon_dioxide",
+					"dbp": "0.9993317763086826"
+				}
+			}
+		}
+	}
 	 ********************/
+	
 	/**
 	 * Build the WordGram graph for the given {@code sentence}
 	 * @param sentence
