@@ -93,7 +93,7 @@ public class SentenceEngine {
 	public void processSentence(ISentence sentence) {
 		environment.logDebug("SentenceEngineStarting\n"+sentence.getData());
 		JsonObject jo;		
-		JsonObject spacyData = sentence.getSpacyData();
+		JsonArray spacyData = sentence.getSpacyData();
 		String text = sentence.getText();
 		JsonArray ja;
 		try {
@@ -105,33 +105,32 @@ public class SentenceEngine {
 			//"nns":[{"strt":1,"txt":"shit"},{"strt":3,"txt":"flies"}],"pnns":[],
 			//"vrbs":[{"strt":2,"txt":"encourages"}]}
 			JsonObject spcy = util.parse(json);
-			JsonObject spacyObj;
-			JsonArray sentences;
+			//JsonObject spacyObj;
+			//JsonArray sentences =null;
 			JSONObject res = null;
 			if (spacyData == null) {
 				environment.logDebug("SentenceEngine-x ");
 			//This is the big spaCy full parse, etc
 				r = spacyServerEnvironment.processParagraph(text);
 				environment.logDebug("SentenceEngine-y\n"+r.getResultObject());
-				sentences = (JsonArray)r.getResultObject();
+				
+				spacyData = (JsonArray)r.getResultObject();
+				sentence.setSpacyData(spacyData);
+				
 				////////////////////////////////
 				// NOTE
 				// sentences theoretically contains a dozen sentence objects,
 				// one for each model
 				// IF spaCy fails, it will be empty
 				////////////////////////////////
-				if (sentences.size() > 0)
-					spacyObj = sentences.get(0).getAsJsonObject();
-				else
-					spacyObj = null;
+				
 				//spacyObj is a sentence object
-				environment.logDebug("SentenceEngine-yy\n"+spacyObj);
-			} else {
-				spacyObj = spacyData;
-			}
+				environment.logDebug("SentenceEngine-yy\n"+spacyData);
+			} 
+			//spacyData ==> [ {concepts, sentences}, {concepts, sentences},...]
 			
 			//Object foo = spacyObj.get("sentences");
-			environment.logDebug("SentenceEngine-z "+spacyObj);
+			environment.logDebug("SentenceEngine-z "+spacyData);
 			//{"nodes":[{"pos":"NOUN","star
 			//res = (JSONObject)spacyObj.get("results");
 			//environment.logDebug("SentenceEngine-0 "+res);
@@ -139,9 +138,8 @@ public class SentenceEngine {
 			//res = (JSONObject)spacyArray.get(0);
 			//environment.logDebug("SentenceEngine-1 "+foo);
 			//{"text":"Elephant shit encourages flies","results":{"c
-			sentence.setSpacyData(spacyObj);
 			JsonArray preds = spcy.get("data").getAsJsonArray();
-			r = nounAssem.bigDamnAnalyze(sentence, spacyObj, spcy);
+			r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
 			// process verbs
 			if (spcy.get("vrbs") != null) {
 				ja = spcy.get("vrbs").getAsJsonArray();
@@ -151,7 +149,7 @@ public class SentenceEngine {
 
 			
 			// and now, the wordgrams
-			//r = builder.processSentence(sentence);
+			r = builder.processSentence(sentence);
 			environment.logDebug("SentenceEngineDone\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO

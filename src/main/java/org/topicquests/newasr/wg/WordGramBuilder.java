@@ -82,7 +82,7 @@ public class WordGramBuilder {
 		JsonArray predicates = sentence.getPredicatePhrases();
 		JsonArray dbpedia = sentence.getDBpediaData();
 		JsonArray wikidata = sentence.getWikiData();
-		JsonObject spacyResults = sentence.getSpacyData();
+		JsonArray spacyResults = sentence.getSpacyData();
 		JsonArray spacyNouns = sentence.getNouns();
 		JsonArray spacyProperNouns = sentence.getProperNouns();
 		JsonArray spacyVerbs = sentence.getVerbs();
@@ -262,7 +262,9 @@ public class WordGramBuilder {
 		///////////////////
 		String txt, conc, pos, lemma;
 		try {
-			JsonObject spacyParse = spacyResults;
+			// this plucks just the first model - not necessarily the one we want.
+			// TODO we must assemble a parse from all models;
+			JsonObject spacyParse = spacyResults.get(0).getAsJsonObject().get("sentences").getAsJsonArray().get(0).getAsJsonObject().get("nodes").getAsJsonObject();;
 			JsonArray nodes = spacyParse.get("nodes").getAsJsonArray();
 			int len = nodes.size();
 			for (int i=0; i<len; i++) {

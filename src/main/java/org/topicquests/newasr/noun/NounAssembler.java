@@ -8,6 +8,7 @@ package org.topicquests.newasr.noun;
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.ISentence;
+import org.topicquests.newasr.json.JsonSet;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
@@ -30,6 +31,7 @@ public class NounAssembler {
 	private ASREnvironment environment;
 	private IAsrModel model;
 	private JsonUtil util;
+	private JsonSet set;
 
 	/**
 	 * 
@@ -38,10 +40,17 @@ public class NounAssembler {
 		environment =env;
 		model = environment.getModel();
 		util =new JsonUtil();
-
+		set = new JsonSet();
 	}
 
-	public IResult bigDamnAnalyze(ISentence sentence, JsonObject spacyObj, JsonObject spcy) {
+	/**
+	 * 
+	 * @param sentence
+	 * @param spacyData  [ {concepts, sentences}, {concepts, sentences},...]
+	 * @param spcy
+	 * @return
+	 */
+	public IResult bigDamnAnalyze(ISentence sentence, JsonArray spacyData, JsonObject spcy) {
 		IResult result = new ResultPojo();;
 		//In theory, sentence arrives as a string and sentenceId with spacy POS parsing, etc
 		//First, send it to the spacy predicate server
@@ -53,13 +62,13 @@ public class NounAssembler {
 		IResult r = null; //spacy.processSentence(text);
 		JsonObject jo;
 		JsonArray ja, jax;
-		environment.logDebug("NounAssembler-\n"+spacyObj);
+		environment.logDebug("NounAssembler-\n"+spacyData);
 
 		//environment.logError("BIGJA "+spacyData, null);
 		try {
 			
 			
-			JsonArray concepts = findConcepts(spacyObj);
+			JsonArray concepts = findConcepts(spacyData);
 			// spacy predicates, dbp, nouns, etc
 			
 			ja = spcy.get("dbp").getAsJsonArray();
@@ -94,14 +103,24 @@ public class NounAssembler {
 	 * @param data
 	 * @return
 	 */
-	JsonArray findConcepts(JsonObject data) {
-		environment.logDebug("NounAssemblerFC\n"+data);
+	JsonArray findConcepts(JsonArray sentences) {
+		environment.logDebug("NounAssemblerFC\n"+sentences);
 		JsonArray result = new JsonArray();
-		if (data == null)
-			return result;
-		JsonArray sentences = data.get("sentences").getAsJsonArray();
-		JsonObject theSentence = sentences.get(0).getAsJsonObject();
-		JsonArray nodes = theSentence.get("nodes").getAsJsonArray();;
+		int len = sentences.size();
+		JsonObject jo;
+		JsonElement je;
+		for (int i=0;i<len;i++) {
+			je = sentences.get(i);
+			environment.logDebug("NounAssemblerFCF\n"+je);
+			jo =je.getAsJsonObject();
+			_findCons(jo.get("sentences").getAsJsonArray(), result);
+		}
+		return result;
+	}
+	void _findCons(JsonArray theSentence, JsonArray result) {
+		if (theSentence == null)
+			return;
+		JsonArray nodes = theSentence.get(0).getAsJsonObject().get("nodes").getAsJsonArray();;
 		environment.logDebug("NounAssembler-1\n"+nodes);
 		JsonObject jo, conc;
 		int len = nodes.size();
@@ -129,7 +148,6 @@ public class NounAssembler {
 
 		environment.logDebug("NounAssembler+ "+result);
 		//[{"strt":"1","txt":"Elephant shit"},{"strt":"3","txt":"flies"}]
-		return result;
 	}
 	
 
@@ -138,139 +156,88 @@ public class NounAssembler {
 		JsonArray result = new JsonArray();
 		JsonArray nouns = sentence.getNouns();
 		environment.logDebug("resolveNouns-1\n"+nouns);
+		//[{"strt":0,"txt":"Scientists"},{"strt":7,"txt":"climate"},{"strt":8,"txt":"change"},{"strt":12,"txt":"carbon"},{"strt":13,"txt":"dioxide"}]
+
 		JsonArray pNouns = sentence.getProperNouns();
 		environment.logDebug("resolveNouns-2\n"+pNouns);
 		JsonArray dbp = sentence.getDBpediaData();
 		environment.logDebug("resolveNouns-3\n"+dbp);
 		//[[],[{"strt":2,"enx":3,"txt":"encourages"}]]
 
+		/////////////////////////////////////
+		// We should assume that proper nouns, if available, are bound to be longer than
+		// ordinary nouns.We should therefore add nouns to pnouns.
+		////////////////////////////////////
 		int len, len2;
 		JsonObject jo, jx;
 		JsonArray ja;
 		if ((nouns != null) && (pNouns != null)) {
 			len = pNouns.size();
 			for (int i=0;i<len;i++) {
-				jo = pNouns.get(i).getAsJsonObject();
-				if (!nouns.contains(jo))
-					nouns.add(jo);
+				jo = nouns.get(i).getAsJsonObject();
+				if (!pNouns.contains(jo))
+					pNouns.add(jo);
 			}
 		}
+		/////////////////////////////////////
+		// Then set that backto nouns
+		/////////////////////////////////////
+		nouns = pNouns;
+		set.newSet();
+		/////////////////////////////////////
+		// Add concepts to a JsonSet
+		/////////////////////////////////////
 		if (concepts != null) {
 			len = concepts.size();
 			for (int i=0;i<len;i++) {
 				jo = concepts.get(i).getAsJsonObject();
-				if (!nouns.contains(jo))
-					nouns.add(jo);
+				set.addTriple(jo);
 			}
 		}
-		// isolate DBpedia objects first
+		//////////////////////////////////////
+		// now merge nouns into that JsonSet
+		//////////////////////////////////////
+		environment.logDebug("NOUNS-1\n"+nouns);
+		environment.logDebug("NOUNS-2\n"+set.getData());
+		if (nouns!= null) {
+			len = pNouns.size();
+			for (int i=0;i<len;i++) {
+				jo = pNouns.get(i).getAsJsonObject();
+				set.addTriple(jo);
+			}
+		}
+		JsonArray fudge = set.getData();
+		environment.logDebug("NOUNS-3\n"+fudge);
+		//[{"strt":"0","txt":"Scientists"},{"strt":"8","txt":"climate change"},{"strt":"13","txt":"carbon dioxide"}]
+		// JsonSet works!!!
+		nouns = fudge;
+		//////////////////////////////////
+		// now update nouns with DBpedia - if any
+		//////////////////////////////////
 		String txt;
 		JsonObject match;
 		JsonArray toRemove = new JsonArray();
 		if (dbp != null) {
 			len = dbp.size();
+			JsonArray droppers;
 			for (int i=0;i<len;i++) {
 				Object ox = dbp.get(i);
 				environment.logDebug("RESOLVING-X "+ox);
 				jo = dbp.get(i).getAsJsonObject();
 				txt = jo.get("strt").getAsString();
-				IResult rx = match(txt, nouns);
+				// match dbpedia in nouns
+				IResult rx = match(txt, jo, nouns);
 				environment.logDebug("RESOLVING-1 "+rx+"\n"+jo);
-				if (rx != null) {
-					match = (JsonObject)rx.getResultObject();
-					JsonArray droppers = (JsonArray)rx.getResultObjectA();
-					if (match != null)
-						result.add(match);
-					if (droppers != null) {
-						int lx = droppers.size();
-						for (int j = 0;j<lx;j++)
-							toRemove.add(droppers.get(j));
-					}
-				}
 				
 			}
 		}
-		environment.logDebug("RESOLVING-1a\n"+toRemove);
-		len = toRemove.size();
-		for (int i=0;i<len;i++)
-			nouns.remove(toRemove.get(i));
-		// Add what's left
-		environment.logDebug("RESOLVING-2\n"+result);
-		len = nouns.size();
-		Set<JsonElement> thingies = new HashSet<JsonElement>();
-		for (int i=0;i<len;i++) {
-			jo = nouns.get(i).getAsJsonObject();
-			thingies.add(jo);
-		}
-		if (!thingies.isEmpty()) {
-			Iterator<JsonElement> itr = thingies.iterator();
-			while (itr.hasNext())
-				result.add(itr.next());
-		}
-		environment.logDebug("RESOLVING+\n"+result);
-		//[{"strt":1,"txt":"shit"},{"strt":3,"txt":"flies"},{"strt":"1","txt":"Elephant shit"},{"strt":"3","txt":"flies"}]
-		// after adding set
-		//[{"strt":"3","txt":"flies"},{"strt":1,"txt":"shit"},{"strt":3,"txt":"flies"},{"strt":"1","txt":"Elephant shit"}]
-		// no clue why set didn't capture "flies"
-		// TODO need to cleanup that list
-		result = burp(result);
-		environment.logDebug("RESOLVING++\n"+result);
-		sentence.setResolvedNouns(result);
-	}
-	
-	JsonArray burp(JsonArray hits) {
-		JsonArray result = new JsonArray();
-		if (hits == null || hits.isEmpty())
-			return result;
-		JsonArray larger = new JsonArray();
-		JsonObject hit, hit2;
-		String txt, txt2;
-		String [] smiggles;
-		int where1, where2;
-		int len = hits.size();
-		for (int i=0;i<len;i++) {
-			hit = hits.get(i).getAsJsonObject();
-			txt = hit.get("txt").getAsString();
-			smiggles = txt.split(" ");
-			if (smiggles.length > 1)
-				larger.add(hit);
-		}
-		environment.logDebug("SMIGGLE+\n"+larger);
-		//[{"strt":"1","txt":"Elephant shit"}]
-		int len2 = larger.size();
-		boolean same = false;
-		for (int i=0;i<len;i++) {
-			same = false;
-			len2 = larger.size();
-			hit = hits.get(i).getAsJsonObject();
-			txt = hit.get("txt").getAsString();
-			where1 = hit.get("strt").getAsJsonPrimitive().getAsInt();
-			//environment.logDebug("SMIGGLE-0 "+len2+" "+txt+"\n"+larger);
-			for (int j=0;j<len2;j++) {
-				hit2 = larger.get(j).getAsJsonObject();
-				txt2 = hit2.get("txt").getAsString();
-				where2 = hit2.get("strt").getAsJsonPrimitive().getAsInt();
-				//environment.logDebug("SMIGGLE-1 "+where1+" "+where2+" | "+txt+" | "+txt2+"\n"+larger);
-				if (where1 == where2) {
-					if (txt.equals(txt2) ||txt2.contains(txt)) {
-						//environment.logDebug("SMIGGLE-2 "+where1+" "+where2+" | "+txt+" | "+txt2+"\n"+larger);
-						same = true;
-						break;
-					}
-					//environment.logDebug("SMIGGLE-4 "+where1+" "+where2+" | "+txt+" | "+txt2);
-				}
-			}
-			if (!same)
-				larger.add(hit);
-		}
-		environment.logDebug("SMIGGLE2+\n"+larger);
-		//[{"strt":"1","txt":"Elephant shit"},{"strt":"3","txt":"flies"}]
-
-		return larger;
+		sentence.setResolvedNouns(nouns);
 	}
 	
 	
-	IResult match(String txt, JsonArray nouns) {
+	
+	IResult match(String txt, JsonObject dbp, JsonArray nouns) {
+		environment.logDebug("MATCHING "+txt+"\n"+nouns);
 		IResult output = new ResultPojo();
 		JsonObject result = new JsonObject();
 		JsonArray droppers = new JsonArray();
@@ -286,13 +253,14 @@ public class NounAssembler {
 		int strt = 0;
 		for (int i=0;i<len;i++) {
 			temp = nouns.get(i).getAsJsonObject();
-			environment.logDebug("MATCHING "+txt+"\n"+temp);
+			environment.logDebug("MATCHING-1 "+txt+"\n"+temp);
 			label = temp.get("txt").getAsString().toLowerCase();
 			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
 			// exact match
 			if (label.equals(comp)) {
-				result.addProperty("strt", Integer.toString(strt));
-				result.addProperty("txt", txt);
+				temp.add("dbp", dbp);
+				//result.addProperty("strt", Integer.toString(strt));
+				//result.addProperty("txt", txt);
 				return output;
 			} else { // speculative check - are the next words compatible?
 				if (comp.contains(label)) {
