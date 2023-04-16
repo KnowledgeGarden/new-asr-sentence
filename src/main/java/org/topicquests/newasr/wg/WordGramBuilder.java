@@ -227,7 +227,7 @@ public class WordGramBuilder {
 		// Process the nouns
 		// { start, txt
 		///////////////////
-		if (spacyProperNouns != null) {
+	/*	if (spacyProperNouns != null) {
 			int len = spacyProperNouns.size();
 			JsonObject theNoun;
 			for (int i=0;i<len;i++) {
@@ -330,7 +330,7 @@ public class WordGramBuilder {
 					if (!(dbpWgList.contains(wg) || wdWgList.contains(wg)))
 						nounWgList.add(wg);
 				}
-				*/
+				* /
 			}
 			environment.logDebug("BUILDER1 "+sentenceId+"\n"+predList+"\n"+dbpList+"\n"+dbpWgList+"\n"+nounWgList);
 			//////////
@@ -339,18 +339,18 @@ public class WordGramBuilder {
 			JsonArray triples = null;
 			if (predList.size() == 1) {
 				triples = this.lookForTriples(sentence, predList, dbpWgList, wdWgList, nounWgList);
-			}
+			}*/
 /*
  [org.topicquests.newasr.impl.WordGram@6930790f, org.topicquests.newasr.impl.WordGram@19b2983a]
 [{"txt":"climate change","url":"http://dbpedia.org/resource/Global_warming"}, {"txt":"carbon dioxide","url":"http://dbpedia.org/resource/Carbon_dioxide"}]
 [org.topicquests.newasr.impl.WordGram@6f150423, org.topicquests.newasr.impl.WordGram@503a327c]
 [org.topicquests.newasr.impl.WordGram@3aa8d175, org.topicquests.newasr.impl.WordGram@37d6fd52, org.topicquests.newasr.impl.WordGram@7025c397]
- */
+ * /
 		} catch (Exception e) {
 			result.addErrorString(e.getMessage());
 			environment.logError("WGB-1 "+e.getMessage(), e);
 			e.printStackTrace();
-		}
+		}*/
 		
 		
 		return result;

@@ -20,6 +20,11 @@ public interface ITupleDataProvicer {
 	
 	IResult getTupleByPSI(String psi);
 	
+	IResult putWorkingTuple(ITuple tup);
+	IResult getWorkingTupleById(long id);
+	IResult getWorkingTupleByPSI(String psi);
+
+	
 	IResult addSentenceIdToTuple(long sentenceId, long tupleId);
 	
 	IResult getTupleBySubjectTypeAndId(String type, long id);

@@ -34,6 +34,11 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 
 	@Override
 	public IResult putTuple(ITuple tup) {
+	    String sql = ITripleQueries.PUT_TRIPLE;
+	    return _putTuple(tup, sql);
+	}
+	
+	IResult _putTuple(ITuple tup, String sql) {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 	    JsonObject data = tup.getData();
@@ -41,7 +46,6 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	    JsonArray foo =null;
 	    try { //TODO Transaction?
 		      conn = dbDriver.getConnection();
-		      String sql = ITripleQueries.PUT_TRIPLE;
 		// TODO Auto-generated method stub
 	    } catch (Exception e) {
 		      result.addErrorString("PDD-4 "+objectId+" "+e.getMessage());
@@ -50,20 +54,54 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    	conn.closeConnection(result);
 		}
 		return result;
+		
 	}
 
 	@Override
 	public IResult getTupleById(long id) {
+	    String sql = ITripleQueries.GET_TRIPLE;
+		return _getTupleById(id,sql);
+	}
+
+	IResult _getTupleById(long id, String sql) {
+		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+
+	    JsonArray foo =null;
+	    try { //TODO Transaction?
+		      conn = dbDriver.getConnection();
 		// TODO Auto-generated method stub
-		return null;
+	    } catch (Exception e) {
+		      //result.addErrorString("PDD-4 "+objectId+" "+e.getMessage());
+		     // environment.logError("PDD-5 "+objectId+" "+result.getErrorString(), null);
+		} finally {
+		    	conn.closeConnection(result);
+		}
+		return result;
 	}
 
 	@Override
 	public IResult getTupleByPSI(String psi) {
-		// TODO Auto-generated method stub
-		return null;
+	    String sql = ITripleQueries.GET_TRIPLE_BY_PSI;
+		return _getTupleByPSI(psi,sql);
 	}
 
+	IResult _getTupleByPSI(String psi, String sql) {
+		IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+
+	    JsonArray foo =null;
+	    try { //TODO Transaction?
+		      conn = dbDriver.getConnection();
+		// TODO Auto-generated method stub
+	    } catch (Exception e) {
+		      //result.addErrorString("PDD-4 "+objectId+" "+e.getMessage());
+		     // environment.logError("PDD-5 "+objectId+" "+result.getErrorString(), null);
+		} finally {
+		    	conn.closeConnection(result);
+		}
+		return result;
+	}
 	@Override
 	public IResult addSentenceIdToTuple(long sentenceId, long tupleId) {
 		// TODO Auto-generated method stub
@@ -82,4 +120,21 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		return null;
 	}
 
+	@Override
+	public IResult putWorkingTuple(ITuple tup) {
+	    String sql = ITripleQueries.PUT_WORKING_TRIPLE;
+	    return _putTuple(tup, sql);
+	}
+
+	@Override
+	public IResult getWorkingTupleById(long id) {
+	    String sql = ITripleQueries.GET_WORKING_TRIPLE;
+		return _getTupleById(id,sql);
+	}
+
+	@Override
+	public IResult getWorkingTupleByPSI(String psi) {
+	    String sql = ITripleQueries.GET_WORKING_TRIPLE_BY_PSI;
+		return _getTupleByPSI(psi, sql);
+	}
 }

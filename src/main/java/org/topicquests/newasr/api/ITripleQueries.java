@@ -26,12 +26,21 @@ public interface ITripleQueries {
 			
 		GET_TRIPLE =
 			"SELECT * FROM public.triple WHERE id=?",
-			
+
+		GET_TRIPLE_BY_PSI =
+			"SELECT * FROM public.triple WHERE psi=?",
+
 		GET_TRIPLE_SENTENCES =
 			"SELECT * FROM public.sentenceids WHERE id=?",
 			
 		GET_WORKING_TRIPLE =
-			"SELECT * FROM public.triple WHERE id=?";
-	
+			"SELECT * FROM public.working_triple WHERE id=?",
+
+		GET_WORKING_TRIPLE_BY_PSI =
+			"SELECT * FROM public.working_triple WHERE psi=?",
+			
+		LIST_TRIPLES = 
+			"SELECT * FROM public.triple LIMIT=? OFFSET=?";
+
 
 }
