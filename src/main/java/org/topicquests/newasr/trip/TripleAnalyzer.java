@@ -61,7 +61,6 @@ public class TripleAnalyzer {
 		//if (predicates.size() == 1)
 		result = makeTriple(0, 0, things, predicates);
 		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
-				
 		return result;
 	}
 	

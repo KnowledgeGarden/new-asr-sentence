@@ -145,6 +145,14 @@ public class WordGramBuilder {
 		///////////////////
 		List<String> nouns = new ArrayList<String>();
 		List<String> verbs = new ArrayList<String>();
+		
+		JsonObject ta = analyzer.bigDamnAnalyze(predicates, resolvedNouns);
+		if (ta != null)
+			sentence.addSimpleTriple(ta);
+		
+		
+		
+		
 		///////////////////
 		// Process the predicates
 		///////////////////
@@ -292,7 +300,6 @@ public class WordGramBuilder {
 					predList.add(wg);
 			}
 		}
-		JsonObject ta = analyzer.bigDamnAnalyze(predicates, resolvedNouns);
 		///////////////////
 		// At this point, we may have:
 		//	* Predicate phrases and their wordgrams

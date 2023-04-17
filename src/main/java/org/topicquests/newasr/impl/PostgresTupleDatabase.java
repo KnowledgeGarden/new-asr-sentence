@@ -4,7 +4,6 @@
 package org.topicquests.newasr.impl;
 
 import org.topicquests.newasr.ASREnvironment;
-import org.topicquests.newasr.api.IQueries;
 import org.topicquests.newasr.api.ITripleQueries;
 import org.topicquests.newasr.api.ITuple;
 import org.topicquests.newasr.api.ITupleDataProvicer;

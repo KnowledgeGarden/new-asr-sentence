@@ -136,12 +136,14 @@ public class NounAssembler {
 			je = jo.get("concepts");
 			if (je != null) {
 				conc = je.getAsJsonObject();
-				theConceptText = conc.get("text").getAsString();
-				environment.logDebug("NounAssembler-3 "+theConceptText);
-				cx = new JsonObject();
-				cx.addProperty("strt", Integer.toString(i));
-				cx.addProperty("txt", theConceptText);
-				result.add(cx);
+				if (conc.get("text") != null) {
+					theConceptText = conc.get("text").getAsString();
+					environment.logDebug("NounAssembler-3 "+theConceptText);
+					cx = new JsonObject();
+					cx.addProperty("strt", Integer.toString(i));
+					cx.addProperty("txt", theConceptText);
+					result.add(cx);
+				}
 
 			}
 		}
