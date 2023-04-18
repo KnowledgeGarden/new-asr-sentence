@@ -23,7 +23,7 @@ public class FirstSentenceTest extends TestingRoot {
 		S7  = "Greenhouse gas causes climate change",
 		S8  = "Some scientists believe that other scientists believe that carbon dioxide causes climate change",
 		S9  = "Elephant shit encourages flies",
-		S10 = "The pandemic of obesity, type 2 diabetes mellitus (T2DM) and nonalcoholic fatty liver disease (NAFLD) has frequently been associated with dietary intake of saturated fats (1) and specifically with dietary palm oil (PO) (2). According to current paradigms, chronic insulin resistance is the common feature of these diseases (3, 4) and relates to intracellular concentrations of triglycerides (TG) and lipotoxins paring subacute oral ingestion of fatty acids with different compositions found an increase in the glucose infusion rate only after polyunsaturated fatty acid ingestion (20).";
+		S10 = "The pandemic of obesity, type 2 diabetes mellitus (T2DM) and nonalcoholic fatty liver disease (NAFLD) has frequently been associated with dietary intake of saturated fats (1) and specifically with dietary palm oil (PO) (2).";
 
 
 	private ISentence sentence;
