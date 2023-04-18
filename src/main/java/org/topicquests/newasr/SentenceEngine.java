@@ -139,6 +139,17 @@ public class SentenceEngine {
 			//environment.logDebug("SentenceEngine-1 "+foo);
 			//{"text":"Elephant shit encourages flies","results":{"c
 			JsonArray preds = spcy.get("data").getAsJsonArray();
+			// grab conjuncts and disjuncts
+			if (spcy.get("conj") != null) {
+				JsonArray conjuncts = spcy.get("conj").getAsJsonArray();
+				environment.logDebug("SentenceEngine-za "+conjuncts);
+				sentence.setConjuncts(conjuncts);
+			}
+			if (spcy.get("disj") != null) {
+				JsonArray disjuncts = spcy.get("disj").getAsJsonArray();
+				environment.logDebug("SentenceEngine-zb "+disjuncts);
+				sentence.setDisjuncts(disjuncts);
+			}
 			r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
 			// process verbs
 			if (spcy.get("vrbs") != null) {
