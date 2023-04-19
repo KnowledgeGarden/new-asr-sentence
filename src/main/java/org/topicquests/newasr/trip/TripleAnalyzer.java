@@ -5,6 +5,7 @@ package org.topicquests.newasr.trip;
 
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
+import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.api.ITripleModel;
 import java.util.*;
 import com.google.gson.JsonArray;
@@ -26,10 +27,12 @@ public class TripleAnalyzer {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public JsonObject bigDamnAnalyze(JsonArray predicates, JsonArray nouns) {
-		environment.logDebug("BigDamAnalysis\n"+predicates+"\n"+nouns);
+	public JsonObject bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
+		boolean hasConjuncts = sentence.hasConjuncts();
+		boolean hasDisjuncts = sentence.hasDisjuncts();
+		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+"\n"+predicates+"\n"+nouns);
 		JsonObject result = new JsonObject();
-		int counts = 20;
+		int counts = 200; //WARNING sentences longer than this will crash
 		int predLength = predicates.size();
 		List<JsonObject>things = new ArrayList<JsonObject>();
 		JsonObject [] construct = new JsonObject[counts];
@@ -40,9 +43,11 @@ public class TripleAnalyzer {
 		JsonObject jo;
 		for (int i=0;i<predLength;i++) {
 			jo = (predicates.get(i).getAsJsonObject());
+			environment.logDebug("BigDamAnalysis-1a "+predLength+" "+i+"\n"+jo);
 			where = jo.get("strt").getAsJsonPrimitive().getAsInt();
 			construct[where] = jo;
 		}
+		environment.logDebug("BigDamAnalysis-1\n"+construct);
 		//populate with nouns
 		int nounLength = nouns.size();
 		
@@ -51,10 +56,12 @@ public class TripleAnalyzer {
 			where = jo.get("strt").getAsJsonPrimitive().getAsInt();
 			construct[where] = jo;
 		}
+		environment.logDebug("BigDamAnalysis-2\n"+construct);
 		for (int i=0;i<counts;i++) {
 			if (construct[i] != null)
 				things.add(construct[i]);
 		}
+		environment.logDebug("BigDamAnalysis-3\n"+things);
 		///////////////////////////
 		// normalize the list
 		///////////////////////////

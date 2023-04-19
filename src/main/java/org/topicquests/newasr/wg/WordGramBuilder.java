@@ -146,7 +146,7 @@ public class WordGramBuilder {
 		List<String> nouns = new ArrayList<String>();
 		List<String> verbs = new ArrayList<String>();
 		
-		JsonObject ta = analyzer.bigDamnAnalyze(predicates, resolvedNouns);
+		JsonObject ta = analyzer.bigDamnAnalyze(sentence, predicates, resolvedNouns);
 		if (ta != null)
 			sentence.addSimpleTriple(ta);
 		
