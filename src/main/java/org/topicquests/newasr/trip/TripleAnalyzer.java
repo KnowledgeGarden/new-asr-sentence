@@ -26,13 +26,28 @@ public class TripleAnalyzer {
 		model = environment.getModel();
 		// TODO Auto-generated constructor stub
 	}
-	
+	/**
+	 * <p>Isolating triple structures in a sentence is complex; it is made more complex when
+	 * a sentence is conjunctive, disjunctive, oor both, and when certain phrases, such as "pandemic of"
+	 * complicate the isolation of triple subjects and objects".</>
+	 * <p>We are calling phrases like "pandemic of" <em>nominals</em> and will use that in noun analysis</p>
+	 * <p>We collect evidence of conjuncts and disjuncts and use those to break a sentence into its collections
+	 * of triples</p>
+	 * <p>This code serves one and only one purpose: to capture what we call <em>raw</em> triples, those statements
+	 * as they exist in the sentence</p>
+	 * @param sentence
+	 * @param predicates
+	 * @param nouns
+	 * @return
+	 */
 	public JsonObject bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
 		boolean hasConjuncts = sentence.hasConjuncts();
 		boolean hasDisjuncts = sentence.hasDisjuncts();
-		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+"\n"+predicates+"\n"+nouns);
+		boolean hasNominals = sentence.hasNominals();
+		String text = sentence.getText();
+		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+hasNominals+"\n"+predicates+"\n"+nouns);
 		JsonObject result = new JsonObject();
-		int counts = 200; //WARNING sentences longer than this will crash
+		int counts = text.length();
 		int predLength = predicates.size();
 		List<JsonObject>things = new ArrayList<JsonObject>();
 		JsonObject [] construct = new JsonObject[counts];
