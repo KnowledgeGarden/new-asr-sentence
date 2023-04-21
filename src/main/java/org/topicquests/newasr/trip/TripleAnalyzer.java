@@ -43,9 +43,11 @@ public class TripleAnalyzer {
 	public JsonObject bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
 		boolean hasConjuncts = sentence.hasConjuncts();
 		boolean hasDisjuncts = sentence.hasDisjuncts();
-		boolean hasNominals = sentence.hasNominals();
+		JsonArray conjuncts = sentence.getConjuncts();
+		JsonArray disjuncts = sentence.getDisjuncts();
+		
 		String text = sentence.getText();
-		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+hasNominals+"\n"+predicates+"\n"+nouns);
+		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+"\n"+predicates+"\n"+nouns);
 		JsonObject result = new JsonObject();
 		int counts = text.length();
 		int predLength = predicates.size();
@@ -85,7 +87,7 @@ public class TripleAnalyzer {
 		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
 		return result;
 	}
-	
+
 	/**
 	 * Recursive
 	 * @param predlocs

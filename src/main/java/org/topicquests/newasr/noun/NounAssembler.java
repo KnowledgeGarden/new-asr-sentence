@@ -58,13 +58,14 @@ public class NounAssembler {
 		//System.out.println("ProcessSentence\n"+sentence.getData());
 		// gather predicates, wikidata and dbpedia stuff in the sentence object
 		//sentenceProducer.sendMessage(SPACY_TOPIC, sentence.getData().toString(), SPACY_KEY, partition);
-		//@see acceptSpacyResponse below	
 		IResult r = null; //spacy.processSentence(text);
 		JsonObject jo;
 		JsonArray ja, jax;
 		environment.logDebug("NounAssembler-\n"+spacyData);
+		boolean hasNominals = sentence.hasNominals();
+		JsonArray nominals = sentence.getNominalPhrases();
 
-		//environment.logError("BIGJA "+spacyData, null);
+		environment.logDebug("BIGJA "+hasNominals+"\n"+nominals);
 		try {
 			
 			
@@ -87,7 +88,7 @@ public class NounAssembler {
 				ja = spcy.get("pnns").getAsJsonArray();
 				processProperNoun(sentence, ja);
 			}
-			resolveNouns(sentence, concepts);
+			resolveNouns(sentence, concepts, nominals);
 			environment.logDebug("NounAssembler\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO
@@ -98,6 +99,42 @@ public class NounAssembler {
 		return result;
 	}
 		
+	//////////////////////////
+	// nouns: [{"strt":"1","txt":"The pandemic"},{"strt":"18","txt":"(NAFLD"},{"strt":"38","txt":"specifically with dietary palm oil"},{"strt":"40","txt":"(PO"},{"strt":"3","txt":"obesity","dbp":{"strt":"obesity","kid":"http://dbpedia.org/resource/Obesity","dbp":"1.0"}},{"strt":"5","txt":"type"},{"strt":"8","txt":"2 diabetes mellitus"},{"strt":"16","txt":"nonalcoholic fatty liver disease","dbp":{"strt":"nonalcoholic fatty liver disease","kid":"http://dbpedia.org/resource/Non-alcoholic_fatty_liver_disease","dbp":"1.0"}},{"strt":"26","txt":"dietary intake"},{"strt":"29","txt":"saturated fats"}]
+	// nominals: [{"strt":1,"txt":"pandemic of"},{"strt":26,"txt":"intake of"}]
+	/////////////////////////
+	/**
+	 * Heuristic behavior: remove nouns which are part of a nominal phrase
+	 * @param nominals
+	 * @param nouns
+	 * @return
+	 */
+	JsonArray processNominals(JsonArray nominals, JsonArray nouns) {
+		environment.logDebug("ProcessNominals\n"+nominals+"\n"+nouns);
+		JsonArray result = new JsonArray();
+		if (nominals == null || nominals.isEmpty())
+			return result;
+		JsonObject jo, match;
+		int len = nominals.size();
+		String txt;
+		IResult r;
+		JsonArray temp, droppers=null;
+		for (int i=0;i<len;i++) {
+			jo = nominals.get(i).getAsJsonObject();
+			txt = jo.get("txt").getAsString();
+			r = match(txt, jo, nouns);
+			if (r != null) {
+				temp = (JsonArray)r.getResultObject();
+				if (droppers == null)
+					droppers = temp;
+				else
+					droppers.addAll(temp);
+			}
+		}
+		environment.logDebug("ProcessNominals "+droppers);
+		return result;
+	}
+
 	/**
 	 * 
 	 * @param data
@@ -153,7 +190,7 @@ public class NounAssembler {
 	}
 	
 
-	void resolveNouns(ISentence sentence, JsonArray concepts) {
+	void resolveNouns(ISentence sentence, JsonArray concepts, JsonArray nominals) {
 		environment.logDebug("resolveNouns\n"+concepts);
 		JsonArray result = new JsonArray();
 		JsonArray nouns = sentence.getNouns();
@@ -202,9 +239,9 @@ public class NounAssembler {
 		environment.logDebug("NOUNS-1\n"+nouns);
 		environment.logDebug("NOUNS-2\n"+set.getData());
 		if (nouns!= null) {
-			len = pNouns.size();
+			len = nouns.size();
 			for (int i=0;i<len;i++) {
-				jo = pNouns.get(i).getAsJsonObject();
+				jo = nouns.get(i).getAsJsonObject();
 				set.addTriple(jo);
 			}
 		}
@@ -233,6 +270,10 @@ public class NounAssembler {
 				
 			}
 		}
+		JsonArray pn = processNominals(nominals, nouns);
+		environment.logDebug("BigResolve\n"+nouns);
+		//[{"strt":"1","txt":"The pandemic"},{"strt":"18","txt":"(NAFLD"},{"strt":"38","txt":"specifically with dietary palm oil"},{"strt":"40","txt":"(PO"},{"strt":"3","txt":"obesity","dbp":{"strt":"obesity","kid":"http://dbpedia.org/resource/Obesity","dbp":"1.0"}},{"strt":"5","txt":"type"},{"strt":"8","txt":"2 diabetes mellitus"},{"strt":"16","txt":"nonalcoholic fatty liver disease","dbp":{"strt":"nonalcoholic fatty liver disease","kid":"http://dbpedia.org/resource/Non-alcoholic_fatty_liver_disease","dbp":"1.0"}},{"strt":"26","txt":"dietary intake"},{"strt":"29","txt":"saturated fats"}]
+
 		sentence.setResolvedNouns(nouns);
 	}
 	
@@ -240,6 +281,9 @@ public class NounAssembler {
 	
 	IResult match(String txt, JsonObject dbp, JsonArray nouns) {
 		environment.logDebug("MATCHING "+txt+"\n"+nouns);
+		String [] theLabel = txt.trim().split(" ");
+		int numWords = theLabel.length;
+		boolean isMultiWord = numWords>1;
 		IResult output = new ResultPojo();
 		JsonObject result = new JsonObject();
 		JsonArray droppers = new JsonArray();

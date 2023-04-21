@@ -150,12 +150,21 @@ public class SentenceEngine {
 				environment.logDebug("SentenceEngine-zb "+disjuncts);
 				sentence.setDisjuncts(disjuncts);
 			}
+			// process nominals
+			environment.logDebug("SentenceEngineNOM\n"+spcy.get("xyz"));
+
+			if (spcy.get("xyz") != null) {
+				ja = spcy.get("xyz").getAsJsonArray();
+				environment.logDebug("SentenceEngineNOMa\n"+ja);
+				sentence.setNominalPhrases(ja);
+			}
 			r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
 			// process verbs
 			if (spcy.get("vrbs") != null) {
 				ja = spcy.get("vrbs").getAsJsonArray();
 				processVerb(sentence, ja);
 			}
+			
 			predAssem.processSentencePredicates(sentence, preds);
 
 			
