@@ -64,6 +64,8 @@ public class NounAssembler {
 		environment.logDebug("NounAssembler-\n"+spacyData);
 		boolean hasNominals = sentence.hasNominals();
 		JsonArray nominals = sentence.getNominalPhrases();
+		JsonArray predicates = sentence.getPredicatePhrases();
+		environment.logDebug("NounAssembler-\n"+predicates);
 
 		environment.logDebug("BIGJA "+hasNominals+"\n"+nominals);
 		try {
@@ -89,7 +91,7 @@ public class NounAssembler {
 				processProperNoun(sentence, ja);
 			}
 			resolveNouns(sentence, concepts, nominals);
-			environment.logDebug("NounAssembler\n"+sentence.getData());
+			environment.logDebug("NounAssembler-2\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO
 		} catch (Exception e) {
@@ -125,13 +127,14 @@ public class NounAssembler {
 			r = _match(txt, jo, nouns);
 			if (r != null) {
 				temp = (JsonArray)r.getResultObjectA();
-				//droppers = (JsonArray)r.getResultObjectA()));
+				
 				if (droppers == null)
 					droppers = temp;
 				else
 					droppers.addAll(temp);
 			}
 		}
+		
 		environment.logDebug("ProcessNominals "+droppers);
 		return droppers;
 	}
@@ -257,20 +260,43 @@ public class NounAssembler {
 		String txt;
 		JsonObject match;
 		JsonArray toRemove = new JsonArray();
+		JsonArray droppers = null, adders = null, temp;
 		if (dbp != null) {
 			len = dbp.size();
-			JsonArray droppers;
 			for (int i=0;i<len;i++) {
 				Object ox = dbp.get(i);
 				environment.logDebug("RESOLVING-X "+ox);
 				jo = dbp.get(i).getAsJsonObject();
 				txt = jo.get("strt").getAsString();
 				// match dbpedia in nouns
-				IResult rx = match(txt, jo, nouns);
-				environment.logDebug("RESOLVING-1 "+rx+"\n"+jo);
+				IResult rx = match(txt, jo, nouns, sentence);
+				if (rx != null) {
+					temp = (JsonArray)rx.getResultObjectA();
+					if (temp != null && !temp.isEmpty()) {
+						if (droppers == null)
+							droppers = new JsonArray();
+						droppers.addAll(temp);
+					}
+					match = (JsonObject)rx.getResultObject();
+					if (match != null) {
+						if (adders == null)
+							adders = new JsonArray();
+						adders.add(match);
+					}
+					environment.logDebug("RESOLVING-1 "+rx+"\n"+jo);
+				}
 				
 			}
+			if (adders != null)
+				nouns.addAll(adders);
 		}
+		if (droppers !=null) {
+			len = droppers.size();
+			for (int i=0;i<len;i++)
+				nouns.remove(droppers.get(i));
+		}
+		environment.logDebug("RESOLVING-BIG "+adders+"\n"+nouns+"\n"+droppers);
+
 		JsonArray pn = processNominals(nominals, nouns);
 		
 		if (pn != null && !pn.isEmpty()) {
@@ -278,16 +304,69 @@ public class NounAssembler {
 			for (int i=0;i<len;i++)
 				nouns.remove(pn.get(i));
 		}
+		droppers = heuristicCleanup(nouns);
+		environment.logDebug("RESOLVING-BIGBIG "+droppers);
+		if (!droppers.isEmpty()) {
+			len = droppers.size();
+			for (int i=0;i<len;i++)
+				nouns.remove(droppers.get(i));
+			
+		}
 		environment.logDebug("BigResolve\n"+nouns);
 		//[{"strt":"1","txt":"The pandemic"},{"strt":"18","txt":"(NAFLD"},{"strt":"38","txt":"specifically with dietary palm oil"},{"strt":"40","txt":"(PO"},{"strt":"3","txt":"obesity","dbp":{"strt":"obesity","kid":"http://dbpedia.org/resource/Obesity","dbp":"1.0"}},{"strt":"5","txt":"type"},{"strt":"8","txt":"2 diabetes mellitus"},{"strt":"16","txt":"nonalcoholic fatty liver disease","dbp":{"strt":"nonalcoholic fatty liver disease","kid":"http://dbpedia.org/resource/Non-alcoholic_fatty_liver_disease","dbp":"1.0"}},{"strt":"26","txt":"dietary intake"},{"strt":"29","txt":"saturated fats"}]
 
 		sentence.setResolvedNouns(nouns);
 	}
 	
+	JsonArray heuristicCleanup(JsonArray nouns) {
+		JsonArray result = new JsonArray();
+		int len = nouns.size();
+		JsonObject jo;
+		String txt;
+		for (int i=0;i<len;i++) {
+			jo = nouns.get(i).getAsJsonObject();
+			environment.logDebug("HC "+jo);
+			if (jo.get("txt") != null) {
+				txt = jo.get("txt").getAsString();
+				if (txt.startsWith("("))
+					result.add(jo);
+			} else
+				result.add(jo);
+		}
+		return result;
+	}
+	String burpParens(String text) {
+		String result = text.trim();
+		result = result.replaceAll("\\(", "");
+		result = result.replaceAll("\\)", "");
+		return result;
+	}
 	
-	
-	IResult match(String txt, JsonObject dbp, JsonArray nouns) {
+	/**
+	 * <p>When finding DBpedia nodes, may have to look behind as well as ahead</p>
+	 * 
+	 * @param txt
+	 * @param dbp
+	 * @param nouns
+	 * @param sentence
+	 * @return
+	 */
+	IResult match(String txt, JsonObject dbp, JsonArray nouns, ISentence sentence) {
 		environment.logDebug("MATCHING "+txt+"\n"+nouns);
+		//////////////////////////
+		// We make a text array
+		// Note some words can be surrounded in parens, e.g. (T2DM) which are considered
+		// acronyms of other terms in the sentence.
+		// We must strip the sentence of parens first
+		// We must then burp the final array of spurious spaces
+		//////////////////////////
+		String sentenceText = burpParens(sentence.getText()).trim();
+		String textArray [] = sentenceText.split(" ");
+		int foundLoc = findLabelInArray(txt, textArray);
+		environment.logDebug("MATCHING-F "+foundLoc);
+		String labelArray [] = txt.trim().split(" ");
+		int labelLen = labelArray.length;
+		boolean multiWordLabel =  labelLen > 1;
 		IResult output = new ResultPojo();
 		JsonObject result = new JsonObject();
 		JsonArray droppers = new JsonArray();
@@ -302,18 +381,47 @@ public class NounAssembler {
 		boolean isMultiWord = numWords>1;
 		JsonObject jo;
 		int strt = 0;
+		/////////////////////////
+		// Gping fishing in the nouns
+		// If found, update the noun with dbp
+		// Otherwise, create a new noun with dbpedia
+		//////////////////////////
+		boolean isFound = false;
+		boolean startMatch = false;
 		for (int i=0;i<len;i++) {
+			// for each noun
 			temp = nouns.get(i).getAsJsonObject();
 			environment.logDebug("MATCHING-1 "+txt+"\n"+temp);
 			label = temp.get("txt").getAsString().toLowerCase();
 			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
+			if (foundLoc > -1)
+				startMatch = foundLoc == strt;
 			// exact match
 			if (label.equals(comp)) {
 				temp.add("dbp", dbp);
 				//result.addProperty("strt", Integer.toString(strt));
 				//result.addProperty("txt", txt);
 				return output;
+			} else if (startMatch) {
+				// labels do not match but the text was found here
+				droppers.add(temp); //get rid of this one
+				// make new one
+				result.addProperty("strt", Integer.toString(foundLoc));
+				result.addProperty("txt", txt);
+				result.add("dbp", dbp);
+				return output;
+			} else if (label.contains(txt) && foundLoc > -1) {
+				//high risk heuristic
+				droppers.add(temp); //get rid of this one
+				// make new one
+				result.addProperty("strt", Integer.toString(foundLoc));
+				result.addProperty("txt", txt);
+				result.add("dbp", dbp);
+				return output;
 			} else { // speculative check - are the next words compatible?
+				/////////////////////
+				// this is weak and probably will fail
+				////////////////////
 				if (comp.contains(label)) {
 					boolean found = true;
 					droppers.add(temp);
@@ -322,7 +430,8 @@ public class NounAssembler {
 						environment.logDebug("MATCHING-2 "+txt+"\n"+jo);
 						label = jo.get("txt").getAsString().toLowerCase();
 						environment.logDebug("MATCHING-3 "+txt+" "+label);
-						droppers.add(jo);
+						if (containsDBP(temp))
+							droppers.add(jo);
 						if (!comp.contains(label)) {
 							environment.logDebug("MATCHING-4 ");
 							found = false;
@@ -333,17 +442,60 @@ public class NounAssembler {
 					if (found) {
 						result.addProperty("strt", Integer.toString(strt));
 						result.addProperty("txt", txt);
+						result.add("dbp", dbp);
 						return output;
-					} else
-						return null;
+					} 
+					if (!isFound && foundLoc > -1)
+						result.addProperty("strt", Integer.toString(foundLoc));
+						result.addProperty("txt", txt);
+						result.add("dbp", dbp);
+						return output;
 				}
 			}
 		}
-		environment.logDebug("MATCHING+ ");
+		environment.logDebug("MATCHING+ "+result);
 
 		return null;
 	}
 	
+	int findLabelInArray(String label, String [] textArray) {
+		int result = -1;
+		String labelArray [] =label.split(" ");
+		int labelLen = labelArray.length;
+		int textLen = textArray.length;
+		String lx, tx;
+		int where = -1;
+		boolean found = false;
+		for (int i=0;i<labelLen;i++) {
+			lx = labelArray[i].toLowerCase();
+			for (int j=0;j<textLen;j++) {
+				tx = textArray[j].toLowerCase();
+				if (lx.equals(tx)) {
+					where = j;
+					found = true;
+					for (int k=i+1;k<labelLen;k++) {
+						tx = textArray[k].toLowerCase();
+						for (int l = j+1; l<textLen; l++) {
+							tx = textArray[j].toLowerCase();
+							if (!lx.equals(tx)) {
+								found = false;
+								where = -1;
+							} 
+						}
+
+					}
+				}
+				if (found)
+					result = where;
+			}
+		}
+		
+		return result;
+	}
+	
+	boolean containsDBP(JsonObject node) {
+		return (node.get("dbp") != null);
+	}
 	IResult _match(String txt, JsonObject nominal, JsonArray nouns) {
 		environment.logDebug("XMATCHING "+txt+"\n"+nouns);
 		IResult output = new ResultPojo();
@@ -367,19 +519,19 @@ public class NounAssembler {
 			label = temp.get("txt").getAsString().toLowerCase();
 			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
 			// exact match
-			if (label.equals(comp)) {
+			if (label.equals(comp) /*&& !containsDBP(temp)*/) {
 				droppers.add(temp);
 				return output;
 			} else { // speculative check - are the next words compatible?
-				if (!isMultiWord && comp.contains(label)) {
+				if (!isMultiWord && comp.contains(label) /*&& !containsDBP(temp)*/) {
 					droppers.add(temp);
 					return output;
 				} else {
 					for (int j = 0; j<numWords;j++) {
-						lx = textC[i];
-						environment.logDebug("XMATCHING-2 "+lx+" "+comp);
+						lx = textC[j];
+						environment.logDebug("XMATCHING-2 "+lx+" "+label);
 						
-						if (comp.contains(lx)) {
+						if (label.contains(lx) /*&& !containsDBP(temp)*/) {
 							environment.logDebug("XMATCHING-3 ");
 							droppers.add(temp);
 							return output;
