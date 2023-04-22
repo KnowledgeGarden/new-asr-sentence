@@ -122,9 +122,10 @@ public class NounAssembler {
 		for (int i=0;i<len;i++) {
 			jo = nominals.get(i).getAsJsonObject();
 			txt = jo.get("txt").getAsString();
-			r = match(txt, jo, nouns);
+			r = _match(txt, jo, nouns);
 			if (r != null) {
-				temp = (JsonArray)r.getResultObject();
+				temp = (JsonArray)r.getResultObjectA();
+				//droppers = (JsonArray)r.getResultObjectA()));
 				if (droppers == null)
 					droppers = temp;
 				else
@@ -132,7 +133,7 @@ public class NounAssembler {
 			}
 		}
 		environment.logDebug("ProcessNominals "+droppers);
-		return result;
+		return droppers;
 	}
 
 	/**
@@ -271,6 +272,12 @@ public class NounAssembler {
 			}
 		}
 		JsonArray pn = processNominals(nominals, nouns);
+		
+		if (pn != null && !pn.isEmpty()) {
+			len = pn.size();
+			for (int i=0;i<len;i++)
+				nouns.remove(pn.get(i));
+		}
 		environment.logDebug("BigResolve\n"+nouns);
 		//[{"strt":"1","txt":"The pandemic"},{"strt":"18","txt":"(NAFLD"},{"strt":"38","txt":"specifically with dietary palm oil"},{"strt":"40","txt":"(PO"},{"strt":"3","txt":"obesity","dbp":{"strt":"obesity","kid":"http://dbpedia.org/resource/Obesity","dbp":"1.0"}},{"strt":"5","txt":"type"},{"strt":"8","txt":"2 diabetes mellitus"},{"strt":"16","txt":"nonalcoholic fatty liver disease","dbp":{"strt":"nonalcoholic fatty liver disease","kid":"http://dbpedia.org/resource/Non-alcoholic_fatty_liver_disease","dbp":"1.0"}},{"strt":"26","txt":"dietary intake"},{"strt":"29","txt":"saturated fats"}]
 
@@ -281,9 +288,6 @@ public class NounAssembler {
 	
 	IResult match(String txt, JsonObject dbp, JsonArray nouns) {
 		environment.logDebug("MATCHING "+txt+"\n"+nouns);
-		String [] theLabel = txt.trim().split(" ");
-		int numWords = theLabel.length;
-		boolean isMultiWord = numWords>1;
 		IResult output = new ResultPojo();
 		JsonObject result = new JsonObject();
 		JsonArray droppers = new JsonArray();
@@ -295,6 +299,7 @@ public class NounAssembler {
 		String label;
 		String [] textC = txt.split(" ");
 		int numWords = textC.length;
+		boolean isMultiWord = numWords>1;
 		JsonObject jo;
 		int strt = 0;
 		for (int i=0;i<len;i++) {
@@ -331,6 +336,57 @@ public class NounAssembler {
 						return output;
 					} else
 						return null;
+				}
+			}
+		}
+		environment.logDebug("MATCHING+ ");
+
+		return null;
+	}
+	
+	IResult _match(String txt, JsonObject nominal, JsonArray nouns) {
+		environment.logDebug("XMATCHING "+txt+"\n"+nouns);
+		IResult output = new ResultPojo();
+		JsonObject result = new JsonObject();
+		JsonArray droppers = new JsonArray();
+		output.setResultObject(result);
+		output.setResultObjectA(droppers);
+		String comp = txt.toLowerCase().trim();
+		int len = nouns.size();
+		JsonObject temp;
+		String label, lx;
+		String [] textC = txt.split(" ");
+		int numWords = textC.length;
+		boolean isMultiWord = numWords>1;
+		JsonObject jo;
+		int strt = 0;
+		//for each noun
+		for (int i=0;i<len;i++) {
+			temp = nouns.get(i).getAsJsonObject();
+			environment.logDebug("XMATCHING-1 "+txt+"\n"+temp);
+			label = temp.get("txt").getAsString().toLowerCase();
+			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
+			// exact match
+			if (label.equals(comp)) {
+				droppers.add(temp);
+				return output;
+			} else { // speculative check - are the next words compatible?
+				if (!isMultiWord && comp.contains(label)) {
+					droppers.add(temp);
+					return output;
+				} else {
+					for (int j = 0; j<numWords;j++) {
+						lx = textC[i];
+						environment.logDebug("XMATCHING-2 "+lx+" "+comp);
+						
+						if (comp.contains(lx)) {
+							environment.logDebug("XMATCHING-3 ");
+							droppers.add(temp);
+							return output;
+						}
+
+					}
+			
 				}
 			}
 		}

@@ -158,6 +158,14 @@ public class SentenceEngine {
 				environment.logDebug("SentenceEngineNOMa\n"+ja);
 				sentence.setNominalPhrases(ja);
 			}
+			///////////////////////////
+			// Process predicate/predicatePhrases returned by spacy
+			// Their location is important to processing nouns
+			//////////////////////////
+			predAssem.processSentencePredicates(sentence, preds);
+			//////////////////////////
+			// Process the nouns
+			//////////////////////////
 			r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
 			// process verbs
 			if (spcy.get("vrbs") != null) {
@@ -165,7 +173,7 @@ public class SentenceEngine {
 				processVerb(sentence, ja);
 			}
 			
-			predAssem.processSentencePredicates(sentence, preds);
+	
 
 			
 			// and now, the wordgrams
