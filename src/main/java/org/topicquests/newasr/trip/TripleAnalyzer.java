@@ -18,6 +18,10 @@ import com.google.gson.JsonObject;
 public class TripleAnalyzer {
 	private ASREnvironment environment;
 	private IAsrModel model;
+	private final String
+		COMMA		= ",",
+		AND			= "and",
+		OR			= "or";
 	/**
 	 * 
 	 */
@@ -99,11 +103,99 @@ public class TripleAnalyzer {
 		// normalize the list
 		///////////////////////////
 		//if (predicates.size() == 1)
-		result = makeTriple(0, 0, things, predicates);
-		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
+		JsonArray triples = null;
+		if (hasConjuncts || hasDisjuncts)
+			triples = makeTriples(things, predicates);
+		else
+			result = makeTriple(0, 0, things, predicates);
+		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result+"\n"+triples);
 		return result;
 	}
 
+	/**
+	 * For conjunctive/disjunctive sentences
+	 * @param things
+	 * @param preds
+	 * @return
+	 */
+	JsonArray makeTriples(List<JsonObject> things, JsonArray preds) {
+		environment.logDebug("MAKETriples "+preds);
+		if (preds.size() == 1)
+			return singlePredTriples(things, preds);
+		return multiPredTriples(things,preds);
+	}
+	
+	JsonArray singlePredTriples(List<JsonObject> things, JsonArray preds) {
+		environment.logDebug("SinglePredTriples "+preds);
+		JsonArray result = new JsonArray();
+		JsonObject thePred = preds.get(0).getAsJsonObject();
+		int predLoc = thePred.get("strt").getAsJsonPrimitive().getAsInt();
+		List<JsonObject> LHS = new ArrayList<JsonObject>();
+		List<JsonObject> RHS = new ArrayList<JsonObject>();
+		int len = things.size();
+		environment.logDebug("SinglePredTriples-1 "+predLoc+" "+len);
+		JsonObject jo;
+		boolean predFound = false;
+		for (int i=0;i<len;i++) {
+			jo = things.get(i).getAsJsonObject();
+			if (jo.equals(thePred)) 
+				predFound = true;
+			else if (!predFound)
+				LHS.add(jo);
+			else
+				RHS.add(jo);
+		}
+		environment.logDebug("SPT-1 "+thePred+"\n"+LHS+"\n"+RHS);
+		LHS = trimList(LHS);
+		RHS = trimList(RHS);
+		int lhsLen = LHS.size();
+		int rhsLen = RHS.size();
+		JsonObject subj, obj;
+		for (int i=0;i<lhsLen;i++) {
+			subj = LHS.get(i);
+			for (int j=0;j<rhsLen;j++) {
+				obj = RHS.get(j);
+				result.add(createTriple(subj, thePred, obj));
+			}
+		}
+		environment.logDebug("SinglePredTriplesBIG\n"+result);
+
+		return result;		
+	}
+	
+	JsonObject createTriple(JsonObject subj, JsonObject pred, JsonObject obj) {
+		JsonObject result = new JsonObject();
+		result.add("subj", subj);
+		result.add("pred", pred);
+		result.add("obj", obj);
+		return result;
+	}
+	
+	List<JsonObject> trimList(List<JsonObject> theList) {
+		List<JsonObject> result = new ArrayList<JsonObject>();
+		int len = theList.size();
+		JsonObject jo = null, joprev = null;
+		String txt;
+		boolean conjFound = false;
+		for (int i=0;i<len;i++) {
+			jo = theList.get(i);
+			txt = jo.get("txt").getAsString();
+			if (!isConj(txt))
+				result.add(jo);
+		}
+		environment.logDebug("TRIMLIST++ \n"+theList+"\n"+result);
+		return result;
+	}
+	
+	boolean isConj(String txt) {
+		return (txt.equals(COMMA) || txt.equals(AND) || txt.equals(OR));
+	}
+	JsonArray multiPredTriples(List<JsonObject> things, JsonArray preds) {
+		environment.logDebug("MultiPredTriples "+preds);
+		JsonArray result = new JsonArray();
+	
+		return result;		
+	}
 	/**
 	 * Recursive
 	 * @param predlocs
