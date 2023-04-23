@@ -90,7 +90,8 @@ public class NounAssembler {
 				ja = spcy.get("pnns").getAsJsonArray();
 				processProperNoun(sentence, ja);
 			}
-			resolveNouns(sentence, concepts, nominals);
+			JsonObject spacySentence = spacyData.get(0).getAsJsonObject();
+			resolveNouns(sentence, concepts, nominals, spacySentence);
 			environment.logDebug("NounAssembler-2\n"+sentence.getData());
 			// and now, send the results on to the ne
 			//TODO
@@ -194,10 +195,11 @@ public class NounAssembler {
 	}
 	
 
-	void resolveNouns(ISentence sentence, JsonArray concepts, JsonArray nominals) {
+	void resolveNouns(ISentence sentence, JsonArray concepts, JsonArray nominals, JsonObject spacySentence) {
 		environment.logDebug("resolveNouns\n"+concepts);
 		JsonArray result = new JsonArray();
 		JsonArray nouns = sentence.getNouns();
+		
 		environment.logDebug("resolveNouns-1\n"+nouns);
 		//[{"strt":0,"txt":"Scientists"},{"strt":7,"txt":"climate"},{"strt":8,"txt":"change"},{"strt":12,"txt":"carbon"},{"strt":13,"txt":"dioxide"}]
 
@@ -269,7 +271,7 @@ public class NounAssembler {
 				jo = dbp.get(i).getAsJsonObject();
 				txt = jo.get("strt").getAsString();
 				// match dbpedia in nouns
-				IResult rx = match(txt, jo, nouns, sentence);
+				IResult rx = match(txt, jo, nouns, sentence, spacySentence);
 				if (rx != null) {
 					temp = (JsonArray)rx.getResultObjectA();
 					if (temp != null && !temp.isEmpty()) {
@@ -342,6 +344,49 @@ public class NounAssembler {
 		return result;
 	}
 	
+	int findInNodes(String txt, JsonObject spacySentence) {
+		environment.logDebug("FINDNODESX "+txt);
+		JsonArray sx = spacySentence.get("sentences").getAsJsonArray();
+		JsonObject theSent = sx.get(0).getAsJsonObject();
+		int where = -1;
+		String [] tA = txt.split(" ");
+		int tlen = tA.length;
+		boolean isPhrase = tlen > 1;
+		environment.logDebug("FINDNODESY "+tlen+" "+isPhrase);
+		JsonArray nodes = theSent.get("nodes").getAsJsonArray();
+		int len = nodes.size();
+		
+		JsonObject nod, nod2;
+		int loc = -1;
+		String label, l2;
+		boolean found = true;
+		for (int i=0;i<len;i++) {
+			nod = nodes.get(i).getAsJsonObject();
+			loc = i;
+			label = nod.get("text").getAsString();
+			environment.logDebug("FINDNODES-1 "+loc+" "+label+"\n"+nod);
+			if (txt.contains(label)) {
+				environment.logDebug("FINDNODES-2 "+isPhrase+" "+loc+" "+label+" "+txt);
+				found = true;
+				if (isPhrase) {
+					for (int j=1;j<tlen;j++) {
+						nod2 = nodes.get(i+j).getAsJsonObject();
+						l2 = nod2.get("text").getAsString();
+						environment.logDebug("FINDNODES-3 "+l2+"\n"+nod2);
+						if (!txt.contains(l2)) {
+							found = false;
+							break;
+						}
+					}
+				}
+				if (found)
+					return loc;
+			}
+		}
+		
+		return where;
+	}
+	
 	/**
 	 * <p>When finding DBpedia nodes, may have to look behind as well as ahead</p>
 	 * 
@@ -351,7 +396,7 @@ public class NounAssembler {
 	 * @param sentence
 	 * @return
 	 */
-	IResult match(String txt, JsonObject dbp, JsonArray nouns, ISentence sentence) {
+	IResult match(String txt, JsonObject dbp, JsonArray nouns, ISentence sentence, JsonObject spacySentence) {
 		environment.logDebug("MATCHING "+txt+"\n"+nouns);
 		//////////////////////////
 		// We make a text array
@@ -363,7 +408,11 @@ public class NounAssembler {
 		String sentenceText = burpParens(sentence.getText()).trim();
 		String textArray [] = sentenceText.split(" ");
 		int foundLoc = findLabelInArray(txt, textArray);
-		environment.logDebug("MATCHING-F "+foundLoc);
+		////////////////////////////
+		// when a phrase is found in the sentence, it must be validated with the nodes
+		////////////////////////////
+		int nodeLoc = findInNodes(txt, spacySentence);
+		environment.logDebug("MATCHING-F "+foundLoc+" "+nodeLoc);
 		String labelArray [] = txt.trim().split(" ");
 		int labelLen = labelArray.length;
 		boolean multiWordLabel =  labelLen > 1;
@@ -406,7 +455,7 @@ public class NounAssembler {
 				// labels do not match but the text was found here
 				droppers.add(temp); //get rid of this one
 				// make new one
-				result.addProperty("strt", Integer.toString(foundLoc));
+				result.addProperty("strt", Integer.toString(nodeLoc));
 				result.addProperty("txt", txt);
 				result.add("dbp", dbp);
 				return output;
@@ -414,7 +463,7 @@ public class NounAssembler {
 				//high risk heuristic
 				droppers.add(temp); //get rid of this one
 				// make new one
-				result.addProperty("strt", Integer.toString(foundLoc));
+				result.addProperty("strt", Integer.toString(nodeLoc));
 				result.addProperty("txt", txt);
 				result.add("dbp", dbp);
 				return output;
@@ -440,13 +489,17 @@ public class NounAssembler {
 
 					}
 					if (found) {
-						result.addProperty("strt", Integer.toString(strt));
+						environment.logDebug("MATCHING-4XXX "+foundLoc+" "+strt+" "+txt);
+						if (foundLoc > -1)
+							result.addProperty("strt", Integer.toString(nodeLoc));
+						else
+							result.addProperty("strt", Integer.toString(strt));
 						result.addProperty("txt", txt);
 						result.add("dbp", dbp);
 						return output;
 					} 
 					if (!isFound && foundLoc > -1)
-						result.addProperty("strt", Integer.toString(foundLoc));
+						result.addProperty("strt", Integer.toString(nodeLoc));
 						result.addProperty("txt", txt);
 						result.add("dbp", dbp);
 						return output;

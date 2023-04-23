@@ -28,9 +28,8 @@ public class TripleAnalyzer {
 	}
 	/**
 	 * <p>Isolating triple structures in a sentence is complex; it is made more complex when
-	 * a sentence is conjunctive, disjunctive, oor both, and when certain phrases, such as "pandemic of"
+	 * a sentence is conjunctive, disjunctive, or both
 	 * complicate the isolation of triple subjects and objects".</>
-	 * <p>We are calling phrases like "pandemic of" <em>nominals</em> and will use that in noun analysis</p>
 	 * <p>We collect evidence of conjuncts and disjuncts and use those to break a sentence into its collections
 	 * of triples</p>
 	 * <p>This code serves one and only one purpose: to capture what we call <em>raw</em> triples, those statements
@@ -73,12 +72,29 @@ public class TripleAnalyzer {
 			where = jo.get("strt").getAsJsonPrimitive().getAsInt();
 			construct[where] = jo;
 		}
-		environment.logDebug("BigDamAnalysis-2\n"+construct);
+		// populate with conjuncts if any
+		if (conjuncts != null && !conjuncts.isEmpty()) {
+			nounLength = conjuncts.size();
+			for (int i=0;i<nounLength;i++) {
+				jo = conjuncts.get(i).getAsJsonObject();
+				where = jo.get("strt").getAsJsonPrimitive().getAsInt();
+				construct[where] = jo;
+			}
+		}
+		// populate with disjuncts if any
+		if (disjuncts != null && !disjuncts.isEmpty()) {
+			nounLength = disjuncts.size();
+			for (int i=0;i<nounLength;i++) {
+				jo = disjuncts.get(i).getAsJsonObject();
+				where = jo.get("strt").getAsJsonPrimitive().getAsInt();
+				construct[where] = jo;
+			}
+		}		environment.logDebug("BigDamAnalysis-2\n"+construct);
 		for (int i=0;i<counts;i++) {
 			if (construct[i] != null)
 				things.add(construct[i]);
 		}
-		environment.logDebug("BigDamAnalysis-3\n"+things);
+		environment.logDebug("BigDamAnalysis-3\n"+things+"\n"+conjuncts+"\n"+disjuncts);
 		///////////////////////////
 		// normalize the list
 		///////////////////////////
