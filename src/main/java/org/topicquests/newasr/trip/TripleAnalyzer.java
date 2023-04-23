@@ -43,7 +43,7 @@ public class TripleAnalyzer {
 	 * @param nouns
 	 * @return
 	 */
-	public JsonObject bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
+	public JsonArray bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
 		boolean hasConjuncts = sentence.hasConjuncts();
 		boolean hasDisjuncts = sentence.hasDisjuncts();
 		JsonArray conjuncts = sentence.getConjuncts();
@@ -51,7 +51,7 @@ public class TripleAnalyzer {
 		
 		String text = sentence.getText();
 		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+"\n"+predicates+"\n"+nouns);
-		JsonObject result = new JsonObject();
+		JsonArray result = new JsonArray();
 		int counts = text.length();
 		int predLength = predicates.size();
 		List<JsonObject>things = new ArrayList<JsonObject>();
@@ -107,7 +107,7 @@ public class TripleAnalyzer {
 		if (hasConjuncts || hasDisjuncts)
 			triples = makeTriples(things, predicates);
 		else
-			result = makeTriple(0, 0, things, predicates);
+			result.add( makeTriple(0, 0, things, predicates));
 		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result+"\n"+triples);
 		return result;
 	}
