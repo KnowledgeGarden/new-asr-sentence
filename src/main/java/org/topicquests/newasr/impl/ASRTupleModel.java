@@ -7,10 +7,8 @@ package org.topicquests.newasr.impl;
 
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.ISimpleTriple;
-import org.topicquests.newasr.api.ITuple;
 import org.topicquests.newasr.api.ITupleDataProvicer;
 import org.topicquests.newasr.api.ITupleModel;
-import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
 
 /**

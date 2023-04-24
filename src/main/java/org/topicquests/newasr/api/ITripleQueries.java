@@ -12,12 +12,13 @@ package org.topicquests.newasr.api;
 public interface ITripleQueries {
 
 	public static final String
+
 	
 		PUT_TRIPLE =
-			"INSERT INTO public.triple (subj_id, pred_id, obj_id, subj_typ, obj_typ) "+
-			"VALUES (?, ?, ?, ?, ?) RETURNS id",
+			"INSERT INTO public.triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt) "+
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNS id",
 			
-		PUT_WORKING_TRIPLE =
+		PUT_WORKING_TRIPLE = // we don't bother with text objects in working triples
 			"INSERT INTO public.working_triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, norm_id) "+
 			"VALUES (?, ?, ?, ?, ?, ?,) RETURNS id",
 			
@@ -25,7 +26,8 @@ public interface ITripleQueries {
 			"INSERT INTO public.sentenceids (id, sentence_id) VALUES (?, ?)",
 			
 		GET_TRIPLE =
-			"SELECT * FROM public.triple WHERE id=?",//TODO JOIN SentenceIds
+			"SELECT * FROM public.triple WHERE id=? "+
+			" JOIN public.sentenceIds ON id=?",
 
 		GET_THIS_TRIPLE =
 			"SELECT * FROM public.triple WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?",
@@ -36,7 +38,7 @@ public interface ITripleQueries {
 		GET_WORKING_TRIPLE =
 			"SELECT * FROM public.working_triple WHERE id=?",
 			
-		LIST_TRIPLES = 
+		LIST_TRIPLES = // does not join sentence ids
 			"SELECT * FROM public.triple LIMIT=? OFFSET=?",
 		
 		GET_THIS_WORKING_TRIPLE =
