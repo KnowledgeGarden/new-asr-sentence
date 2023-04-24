@@ -14,33 +14,36 @@ public interface ITripleQueries {
 	public static final String
 	
 		PUT_TRIPLE =
-			"INSERT INTO public.triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, psi, norm_id) "+
-			"VALUES (?, ?, ?, ?, ?, ?, ?) RETURNS id",
+			"INSERT INTO public.triple (subj_id, pred_id, obj_id, subj_typ, obj_typ) "+
+			"VALUES (?, ?, ?, ?, ?) RETURNS id",
 			
 		PUT_WORKING_TRIPLE =
-			"INSERT INTO public.working_triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, psi, norm_id) "+
-			"VALUES (?, ?, ?, ?, ?, ?, ?) RETURNS id",
+			"INSERT INTO public.working_triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, norm_id) "+
+			"VALUES (?, ?, ?, ?, ?, ?,) RETURNS id",
 			
 		PUT_SENTENCE_ID =
 			"INSERT INTO public.sentenceids (id, sentence_id) VALUES (?, ?)",
 			
 		GET_TRIPLE =
-			"SELECT * FROM public.triple WHERE id=?",
+			"SELECT * FROM public.triple WHERE id=?",//TODO JOIN SentenceIds
 
-		GET_TRIPLE_BY_PSI =
-			"SELECT * FROM public.triple WHERE psi=?",
+		GET_THIS_TRIPLE =
+			"SELECT * FROM public.triple WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?",
 
 		GET_TRIPLE_SENTENCES =
 			"SELECT * FROM public.sentenceids WHERE id=?",
 			
 		GET_WORKING_TRIPLE =
 			"SELECT * FROM public.working_triple WHERE id=?",
-
-		GET_WORKING_TRIPLE_BY_PSI =
-			"SELECT * FROM public.working_triple WHERE psi=?",
 			
 		LIST_TRIPLES = 
-			"SELECT * FROM public.triple LIMIT=? OFFSET=?";
+			"SELECT * FROM public.triple LIMIT=? OFFSET=?",
+		
+		GET_THIS_WORKING_TRIPLE =
+			"SELECT * FROM public.working_triple WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?",
+
+		UPDATE_WORKING_TRIPLE =
+			"UPDATE public.working_triple SET norm_id=? WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?";
 
 
 }

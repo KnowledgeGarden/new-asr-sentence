@@ -6,6 +6,7 @@
 package org.topicquests.newasr.impl;
 
 import org.topicquests.newasr.ASREnvironment;
+import org.topicquests.newasr.api.ISimpleTriple;
 import org.topicquests.newasr.api.ITuple;
 import org.topicquests.newasr.api.ITupleDataProvicer;
 import org.topicquests.newasr.api.ITupleModel;
@@ -28,7 +29,7 @@ public class ASRTupleModel implements ITupleModel {
 	}
 
 	@Override
-	public IResult putTuple(ITuple tup) {
+	public IResult putTuple(ISimpleTriple tup) {
 		return database.putTuple(tup);
 	}
 
@@ -37,39 +38,32 @@ public class ASRTupleModel implements ITupleModel {
 		return database.getTupleById(id);
 	}
 
-	@Override
-	public IResult getTupleByPSI(String psi) {
-		return database.getTupleByPSI(psi);
-	}
 
 	@Override
 	public IResult addSentenceIdToTuple(long sentenceId, long tupleId) {
 		return database.addSentenceIdToTuple(sentenceId, tupleId);
 	}
 
-	@Override
-	public IResult getTupleBySubjectTypeAndId(String type, long id) {
-		return database.getTupleBySubjectTypeAndId(type, id);
-	}
-
+	
 	@Override
 	public IResult listTuples(int start, int count) {
 		return database.listTuples(start,count);
 	}
 
 	@Override
-	public IResult putWorkingTuple(ITuple tup) {
+	public IResult putWorkingTuple(ISimpleTriple tup) {
 		return database.putWorkingTuple(tup);
 	}
 
+
 	@Override
-	public IResult getWorkingTupleById(long id) {
-		return database.getWorkingTupleById(id);
+	public IResult getThisWorkingTuple(ISimpleTriple template) {
+		return database.getThisWorkingTuple(template);
 	}
 
 	@Override
-	public IResult getWorkingTupleByPSI(String psi) {
-		return database.getWorkingTupleByPSI(psi);
+	public IResult getThisTuple(ISimpleTriple template) {
+		return database.getThisTuple(template);
 	}
 
 }

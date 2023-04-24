@@ -14,20 +14,20 @@ import org.topicquests.support.api.IResult;
 public interface ITupleDataProvicer {
 
 	
-	IResult putTuple(ITuple tup);
+	IResult putTuple(ISimpleTriple tup);
 	
 	IResult getTupleById(long id);
 	
-	IResult getTupleByPSI(String psi);
-	
-	IResult putWorkingTuple(ITuple tup);
-	IResult getWorkingTupleById(long id);
-	IResult getWorkingTupleByPSI(String psi);
+	IResult getThisTuple(ISimpleTriple template);
+
+	IResult putWorkingTuple(ISimpleTriple tup);
+	//IResult getWorkingTupleById(long id);
+	IResult getThisWorkingTuple(ISimpleTriple template);
 
 	
 	IResult addSentenceIdToTuple(long sentenceId, long tupleId);
 	
-	IResult getTupleBySubjectTypeAndId(String type, long id);
+	//IResult getTupleBySubjectTypeAndId(String type, long id);
 	
 	IResult listTuples(int start, int count);
 

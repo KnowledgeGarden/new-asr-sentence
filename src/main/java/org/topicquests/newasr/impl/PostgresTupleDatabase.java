@@ -4,8 +4,9 @@
 package org.topicquests.newasr.impl;
 
 import org.topicquests.newasr.ASREnvironment;
+import org.topicquests.newasr.api.ISimpleTriple;
 import org.topicquests.newasr.api.ITripleQueries;
-import org.topicquests.newasr.api.ITuple;
+//import org.topicquests.newasr.api.ITuple;
 import org.topicquests.newasr.api.ITupleDataProvicer;
 import org.topicquests.pg.PostgresConnectionFactory;
 import org.topicquests.pg.api.IPostgresConnection;
@@ -32,12 +33,12 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	}
 
 	@Override
-	public IResult putTuple(ITuple tup) {
+	public IResult putTuple(ISimpleTriple tup) {
 	    String sql = ITripleQueries.PUT_TRIPLE;
 	    return _putTuple(tup, sql);
 	}
 	
-	IResult _putTuple(ITuple tup, String sql) {
+	IResult _putTuple(ISimpleTriple tup, String sql) {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 	    JsonObject data = tup.getData();
@@ -79,13 +80,9 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		return result;
 	}
 
-	@Override
-	public IResult getTupleByPSI(String psi) {
-	    String sql = ITripleQueries.GET_TRIPLE_BY_PSI;
-		return _getTupleByPSI(psi,sql);
-	}
+	
 
-	IResult _getTupleByPSI(String psi, String sql) {
+	/*IResult _getTupleByPSI(String psi, String sql) {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 
@@ -100,40 +97,43 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    	conn.closeConnection(result);
 		}
 		return result;
-	}
+	}*/
 	@Override
 	public IResult addSentenceIdToTuple(long sentenceId, long tupleId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public IResult getTupleBySubjectTypeAndId(String type, long id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public IResult listTuples(int start, int count) {
+	    String sql = ITripleQueries.LIST_TRIPLES;
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	@Override
+	public IResult getThisTuple(ISimpleTriple template) {
+	    String sql = ITripleQueries.GET_THIS_TRIPLE;
+
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public IResult putWorkingTuple(ITuple tup) {
+	public IResult putWorkingTuple(ISimpleTriple tup) {
 	    String sql = ITripleQueries.PUT_WORKING_TRIPLE;
 	    return _putTuple(tup, sql);
 	}
 
 	@Override
-	public IResult getWorkingTupleById(long id) {
-	    String sql = ITripleQueries.GET_WORKING_TRIPLE;
-		return _getTupleById(id,sql);
-	}
+	public IResult getThisWorkingTuple(ISimpleTriple template) {
+	    String sql = ITripleQueries.GET_THIS_WORKING_TRIPLE;
 
-	@Override
-	public IResult getWorkingTupleByPSI(String psi) {
-	    String sql = ITripleQueries.GET_WORKING_TRIPLE_BY_PSI;
-		return _getTupleByPSI(psi, sql);
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

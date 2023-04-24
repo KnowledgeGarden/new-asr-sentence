@@ -110,7 +110,20 @@ public class WordGramBuilder {
 		}
 	}
 	 ********************/
-	
+	///////////////////////////////////
+	// Building Triples
+	// 1- Craft an ISimpleTriple
+	// 2- See if it exists as a Triple
+	//		If not, see if it exists as a WorkingTriple
+	//			IF so, grab its normId and update that with new sentenceId
+	// 3- Otherwise, examine its wordgrams for normalization factors
+	// 		If normalization is needed
+	//			Craft a second ISimpleTriple and normalize it
+	//			Store the normalized Trple and retrieve its Id
+	//			Set the normId of the first ISimpleTriple
+	//			Store it as a WorkingTriple
+	//		Else store it as a Triple
+	/////////////////////////////////
 	/**
 	 * Build the WordGram graph for the given {@code sentence}
 	 * @param sentence
