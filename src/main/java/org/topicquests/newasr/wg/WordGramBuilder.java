@@ -16,6 +16,7 @@ import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.api.ISimpleTriple;
 import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.api.IWordGram;
+import org.topicquests.newasr.impl.ASRSimpleTriple;
 import org.topicquests.newasr.trip.TripleAnalyzer;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.support.ResultPojo;
@@ -150,9 +151,16 @@ public class WordGramBuilder {
 		if (ta != null)
 			sentence.setSimpleTriples(ta);
 		
+		int len = ta.size();
+		JsonObject trix;
+		JsonObject strix;
+		for (int i=0;i<len;i++) {
+			trix = ta.get(i).getAsJsonObject();
+			strix = processSimpleTriple(sentenceId, trix);
+			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix);
+		}
 		
-		
-		
+	/**	
 		///////////////////
 		// Process the predicates
 		///////////////////
@@ -361,6 +369,62 @@ public class WordGramBuilder {
 		
 		
 		return result;
+	}
+	/**
+	 * Recursive
+	 * NOTE: this will not work until we are storing triples to give them Identity
+	 * @param triple
+	 */
+	JsonObject processSimpleTriple(long sentenceId,JsonObject triple) {
+		JsonObject pred = triple.get("pred").getAsJsonObject();
+		JsonObject sx = triple.get("subj").getAsJsonObject();
+		JsonObject ox = triple.get("obj").getAsJsonObject();
+		ISimpleTriple st = new ASRSimpleTriple();
+		// Test subject
+		JsonObject subject = null;
+		String subjText = null;
+		IWordGram wg;
+		IResult r;
+		String idx;
+		IWordGram predicateGram;
+		String predText = pred.get("txt").getAsString();
+		/////////////////////
+		// TODO
+		// This is where we test for predicate existence
+		// and Stop if it doesn't
+		/////////////////////
+		r = model.processTerm(predText, IPOS.VERB_POS);
+		idx = (String)r.getResultObject();
+		r = model.getThisTermById(idx);
+		predicateGram = (IWordGram)r.getResultObject();
+		String tense = predicateGram.getTense();
+		String epi = predicateGram.getEpistemicStatus();
+		st.setPredicateId(predicateGram.getId());
+		if (sx.get("subj") == null) {
+			subjText = sx.get("txt").getAsString();
+			r = model.processTerm(subjText, IPOS.NOUN_POS);
+			idx = (String)r.getResultObject();
+			r = model.getThisTermById(idx);
+			wg = (IWordGram)r.getResultObject();	
+			wg.setSentenceId(sentenceId, tense, epi);
+			st.setSubjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
+		} else {
+			environment.logError("WGB-1 missing", null);
+		}
+		if (ox.get("subj") == null) {
+			subjText = sx.get("txt").getAsString();
+			r = model.processTerm(subjText, IPOS.NOUN_POS);
+			idx = (String)r.getResultObject();
+			r = model.getThisTermById(idx);
+			wg = (IWordGram)r.getResultObject();	
+			wg.setSentenceId(sentenceId, tense, epi);
+			st.setObjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
+		} else {
+			environment.logError("WGB-2 missing", null);
+		}
+		st.addSentenceId(sentenceId);
+		//st.computePSI();
+		return st.getData();
 	}
 	///////////////////////////////
 	// We need to know where terms are relative to each other
