@@ -209,6 +209,13 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	    return _getThisTuple(template, sql, false);
 	}
 
+	/**
+	 * Builds everything except sentenceIds
+	 * @param template
+	 * @param sql
+	 * @param isWorking
+	 * @return
+	 */
 	IResult _getThisTuple(ISimpleTriple template, String sql, boolean isWorking) {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;

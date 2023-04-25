@@ -89,7 +89,7 @@ public class WordGramCache {
 	}
 
 	/**
-	 * Returns an {@link IWordGram}. If the object has an <em>RedirectIdProperty</em>
+	 * Returns an {@link IWordGram}. If the object has an <em>canonTerm</em> link
 	 * it will return the object identified by that.
 	 * @param key
 	 * @return can return <code>null</code>

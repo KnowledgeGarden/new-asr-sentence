@@ -65,14 +65,15 @@ public interface IAsrModel {
 			String epistemicStatus, boolean isNegative);
 	
 	/**
-	 * Fetch a term by its {@code id}
+	 * <p>Fetch a term by its {@code id}</p>
+	 * <p>If a canonical form of that term exists, return it instead</p>
 	 * @param id
 	 * @return
 	 */
 	IResult getTermById(String id);
 	
 	/**
-	 * Same as $getTermById but does not check cache
+	 * Same as $getTermById but does not check for canonical form
 	 * @param id
 	 * @return
 	 */

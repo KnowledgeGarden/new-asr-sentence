@@ -39,7 +39,8 @@ public class WordGramBuilder {
 	private ITupleModel tripleModel;
 	private JsonUtil util;
 	private final String
-		NOUN 	= "NOUN";
+		NOUN 	= "NOUN",
+		LANG	= "en"; //TODO
 	/**
 	 * 
 	 */
@@ -171,6 +172,309 @@ public class WordGramBuilder {
 		
 		return result;
 	}
+	
+	ISimpleTriple _makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
+		ISimpleTriple result = new ASRSimpleTriple();
+		result.setSubjectId(subject.getId(), ISimpleTriple.WORDGRAM_TYPE);
+		result.setSubjectText(subject.getWords(LANG));
+		result.setPredicateId(predicate.getId());
+		result.setPredicateText(predicate.getWords(LANG));
+		result.setObjectId(object.getId(), ISimpleTriple.WORDGRAM_TYPE);
+		result.setObjectText(object.getWords(LANG));
+		return result;
+	}
+	
+	/**
+	 * Always tries to return a fully normalized triple
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @return
+	 * @throws Exception
+	 */
+	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) throws Exception {
+		ISimpleTriple result = _makeTriple(subject, predicate, object);
+		// do we have this triple?
+		IResult r = tripleModel.getThisTuple(result);
+		Object ox = r.getResultObject();
+		String json;
+		JsonObject jo;
+		ISimpleTriple foo;
+		if (ox != null) {
+			json = (String)ox;
+			jo = util.parse(json);
+			result = new ASRSimpleTriple(jo);
+		} else {
+			r  = tripleModel.getThisWorkingTuple(result);
+			ox = r.getResultObject();
+			if (ox != null) {
+				json = (String)ox;
+				jo = util.parse(json);
+				foo = new ASRSimpleTriple(jo);
+				//ACTUALLY we have this as a WorkingTriple
+				// let's return the real triple
+				long normId = foo.getNormalizedTripleId();
+				r = tripleModel.getTupleById(normId);
+				json = (String)r.getResultObject();
+				jo = util.parse(json);
+				result = new ASRSimpleTriple(jo);
+			} else {
+				// this is virgin territory
+				boolean needsNorm =  needsNormalization(subject, predicate, object);
+				if (!needsNorm) {
+					r = tripleModel.putTuple(result);
+					ox = r.getResultObject();
+					Long l = (Long)ox;
+					result.setId(l.longValue());
+				} else {
+					
+					IWordGram subj = normalizeGram(subject);
+					IWordGram obj = normalizeGram(object);
+					boolean reverse = predicate.getInverseTerm() > -1;
+					IWordGram pred = normalizeGram(predicate);
+					if (reverse)
+						foo = _makeTriple(obj, pred, subj);
+					else
+						foo = _makeTriple(subj, pred, obj);
+					// save tuple
+					r = tripleModel.putTuple(result);
+					ox = r.getResultObject();
+					Long l = (Long)ox;
+					// save as working tuple
+					result.setNormalizedTripleId(l.longValue());
+					r = tripleModel.putWorkingTuple(result);
+					// now fetch the triple
+					r = tripleModel.getTupleById(l.longValue());
+					json = (String)r.getResultObject();
+					jo = util.parse(json);
+					result = new ASRSimpleTriple(jo);
+				}
+			}
+		}
+		return result;
+	}
+	IWordGram normalizeGram(IWordGram wg) throws Exception {
+		IWordGram result = wg; // default
+		long inv = wg.getInverseTerm();
+		long can = wg.getCannonTerm();
+		IResult r;
+		if (inv > -1) {
+			r = model.getThisTermById(Long.toString(inv));
+			result= (IWordGram)r.getResultObject();
+		} else if (can > -1) {
+			r = model.getThisTermById(Long.toString(can));
+			result= (IWordGram)r.getResultObject();
+		}
+		return result;
+	}
+	
+	boolean needsNormalization(IWordGram subject, IWordGram predicate, IWordGram object) {
+		boolean result = false;
+		if (predicate.hasCannonicalTerm() || 
+			predicate.getInverseTerm() > -1)
+			return true;
+		if (subject.hasCannonicalTerm() ||
+			object.hasCannonicalTerm())
+			return true;
+		return result;
+	}
+	ISimpleTriple normalizeTriple(ISimpleTriple trip) throws Exception{
+		ISimpleTriple result = trip; // default
+		ISimpleTriple foo;
+		String json;
+		JsonObject jo;
+		long inv;
+		boolean found = false;
+		IResult r = tripleModel.getThisTuple(trip);
+		if (r.getResultObject() == null) {
+			r = tripleModel.getThisWorkingTuple(trip);
+			json = (String)r.getResultObject();
+			jo = util.parse(json);
+			foo = new ASRSimpleTriple(jo);
+			inv = foo.getNormalizedTripleId();
+			r = tripleModel.getTupleById(inv);
+			json = (String)r.getResultObject();
+			jo = util.parse(json);
+			foo = new ASRSimpleTriple(jo);
+			found = true;
+		} else {
+			json = (String)r.getResultObject();
+			jo = util.parse(json);
+			foo = new ASRSimpleTriple(jo);
+			found = true;
+		}
+		if (found) {
+			return foo;
+		}
+		// now the harder work because we do not have this triple
+		String subjType = trip.getSubjectType();
+		String objType = trip.getObjectType();
+		long subjId = trip.getSubjectId();
+		long objId = trip.getObjectId();
+		long predId = trip.getPredicateId();
+		IWordGram subj, pred, obj;
+		
+		r = model.getThisTermById(Long.toString(predId));
+		pred = (IWordGram)r.getResultObject();
+		inv = pred.getInverseTerm();
+		boolean needsReverse = inv > -1;
+		ISimpleTriple bar;
+		
+		if (subjType.equals(ISimpleTriple.WORDGRAM_TYPE)) {
+			r = model.getThisTermById(Long.toString(subjId));
+			subj = (IWordGram)r.getResultObject();
+			subj = normalizeGram(subj);
+			if (objType.equals(ISimpleTriple.WORDGRAM_TYPE)) {
+				r = model.getThisTermById(Long.toString(objId));
+				obj = (IWordGram)r.getResultObject();
+				obj = normalizeGram(obj);
+				pred = normalizeGram(pred);
+				if (!needsReverse)
+					result = _makeTriple(subj, pred, obj);
+				else
+					result = _makeTriple(obj, pred, subj);
+			} else {
+				// object is a triple
+				r = tripleModel.getTupleById(objId);
+				json = (String)r.getResultObject();
+				jo = util.parse(json);
+				foo = new ASRSimpleTriple(jo);
+			}
+		}
+		return result;
+	}
+	
+	ISimpleTriple fetchTriple(long id) throws Exception {
+		ISimpleTriple result = null;
+		IResult r = tripleModel.getTupleById(id);
+		return result;
+	}
+	String getTripleText(ISimpleTriple trip) throws Exception {
+		StringBuilder buf = new StringBuilder();
+		//		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
+		buf.append("{ ");
+		String subjType = trip.getSubjectType();
+		String objType = trip.getObjectType();
+		String subjectText, predText, objectText;
+		boolean sIsWG = subjType.equals(ISimpleTriple.WORDGRAM_TYPE);
+		boolean oIsWG = objType.equals(ISimpleTriple.WORDGRAM_TYPE);
+		predText = trip.getPredicateText();
+		ISimpleTriple foo;
+		long oid;
+		IResult r;
+		if (sIsWG) {
+			subjectText = trip.getSubjectText();
+			if (oIsWG) {
+				objectText = trip.getObjectText();
+			} else {
+				oid = trip.getObjectId();
+				//r = 
+			}
+		}
+		buf.append(" }");
+		return buf.toString().trim();
+	}
+	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, ISimpleTriple object) {
+		ISimpleTriple result = null;
+		long inv = predicate.getInverseTerm();
+		IResult r;
+		boolean needsReverse = inv > -1;
+		return result;
+	}
+	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, IWordGram object) {
+		ISimpleTriple result = null;
+		long inv = predicate.getInverseTerm();
+		IResult r;
+		boolean needsReverse = inv > -1;
+		return result;
+	}
+	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, 
+			IWordGram oSubject, IWordGram oPredicate, IWordGram oObject) throws Exception {
+		ISimpleTriple result = new ASRSimpleTriple();
+		ISimpleTriple foo;
+		IWordGram nSubj = normalizeGram(subject);
+		IWordGram noSubj = normalizeGram(oSubject);
+		IWordGram noObj = normalizeGram(oObject);
+		IWordGram nPred = normalizeGram(predicate);
+		long inv = predicate.getInverseTerm();
+		IResult r;
+		boolean needsReverse = inv > -1;
+		result.setPredicateId(predicate.getId());
+		result.setPredicateText(predicate.getWords(LANG));
+		foo = makeTriple(oSubject, oPredicate, oObject); // fully normalized
+		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
+		if (needsReverse) {
+			result = new ASRSimpleTriple();
+			result.setPredicateId(nPred.getId());
+			result.setPredicateText(nPred.getWords(LANG));
+			result.setObjectText(nSubj.getWords(LANG));
+			result.setObjectId(nSubj.getId(), ISimpleTriple.WORDGRAM_TYPE);
+			result.setSubjectId(foo.getId(), ISimpleTriple.TRIPLE_TYPE);
+			result.setSubjectText(oText);
+		} else {
+			result.setSubjectText(nSubj.getWords(LANG));
+			result.setSubjectId(nSubj.getId(), ISimpleTriple.WORDGRAM_TYPE);
+			result.setPredicateId(nPred.getId());
+			result.setPredicateText(nPred.getWords(LANG));
+			result.setObjectId(foo.getId(), ISimpleTriple.TRIPLE_TYPE);
+			result.setObjectText(oText);
+			// this is fully normalized
+			r = tripleModel.getThisTuple(result);
+			Object ox = r.getResultObject();
+			Long l;
+			if (ox != null) {
+				l = (Long)ox;
+				result.setId(l.longValue());
+			} else {
+				// store it
+				r = tripleModel.putTuple(result);
+				ox = r.getResultObject();
+				l = (Long)ox;
+				result.setId(l.longValue());
+			}
+		}
+
+		return result;
+	}
+	
+	/*ISimpleTriple makeTriple2(IWordGram sSubj, IWordGram sPred, IWordGram sObj,
+							 IWordGram predicate, IWordGram object) throws Exception {
+		ISimpleTriple result = new ASRSimpleTriple();
+		
+		return result;
+	}*/
+	
+	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, ISimpleTriple object) throws Exception {
+		ISimpleTriple result = new ASRSimpleTriple();
+		long inv = predicate.getInverseTerm();
+		IResult r;
+		boolean needsReverse = inv > -1;
+		return result;
+	}
+	
+	/**
+	 * Main entry point
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @return
+	 * @throws Exception
+	 */
+	ISimpleTriple exploreTriple(Object subject, IWordGram predicate, Object object) throws Exception {
+		boolean subjIsWG = (subject instanceof IWordGram);
+		boolean objIsWG = (object instanceof IWordGram);
+		if (subjIsWG) {
+			if (objIsWG)
+				return makeTriple((IWordGram)subject, predicate,(IWordGram)object);
+			else {
+				return (makeTriple((IWordGram)subject, predicate, (ISimpleTriple)object));
+			}
+		} if (objIsWG)
+			return makeTriple((ISimpleTriple)subject, predicate,(IWordGram)object);
+		else {
+			return (makeTriple((ISimpleTriple)subject, predicate, (ISimpleTriple)object));
+		}
+	}
 	/**
 	 * Recursive
 	 * NOTE: this will not work until we are storing triples to give them Identity
@@ -239,7 +543,7 @@ public class WordGramBuilder {
 	 * @param wikidataWordgrams
 	 * @param nounWordgrams
 	 * @return can return an empty array
-	 */
+	 * /
 	JsonArray lookForTriples(ISentence sentence, 
 			List<IWordGram> predWordgrams,
 			List<IWordGram> dbPediaWordgrams,
@@ -404,7 +708,7 @@ public class WordGramBuilder {
 		String TT = term.toLowerCase();
 		return SS.indexOf(TT);
 	}
-
+*/
 }
 
 /**

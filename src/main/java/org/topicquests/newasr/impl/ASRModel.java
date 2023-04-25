@@ -103,9 +103,9 @@ public class ASRModel implements IAsrModel {
 		IWordGram wg = cache.get(id);
 		if (wg == null) {
 			result = database.getNode(new Long(id).longValue());
-			JsonObject jo = (JsonObject)result.getResultObject();
-			if (jo != null) {
-				wg = new WordGram(jo, environment);
+			System.out.println("ASRGet-1 "+result.getResultObject());
+			wg = (IWordGram)result.getResultObject();
+			if (wg != null) {
 				cache.add(id,wg);
 				result.setResultObject(wg);
 			}
@@ -116,10 +116,12 @@ public class ASRModel implements IAsrModel {
 		return result;		
 	}
 	
+	
 	@Override
 	public IResult getThisTermById(String id) {
 		System.out.println("ASRGetThis "+id);
 		IResult result = database.getNode(new Long(id).longValue());
+		System.out.println("ASRGetThis-1 "+result.getResultObject());
 		IWordGram wg = (IWordGram)result.getResultObject();
 		if (wg != null) {
 			cache.add(id,wg);
