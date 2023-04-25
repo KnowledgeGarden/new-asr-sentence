@@ -13,11 +13,13 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IDictionary;
 import org.topicquests.newasr.api.IDictionaryClient;
 import org.topicquests.newasr.api.IKafkaDispatcher;
+import org.topicquests.newasr.api.ITupleModel;
 import org.topicquests.newasr.bootstrap.PredicateImporter;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
 import org.topicquests.newasr.impl.ASRBaseEnvironment;
 import org.topicquests.newasr.impl.ASRModel;
+import org.topicquests.newasr.impl.ASRTupleModel;
 import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
@@ -52,6 +54,8 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceEngine sentenceEngine;
 	private PredicateImporter predImporter;
+	private ITupleModel tripleModel;
+
 
 	public static final String AGENT_GROUP = "Sentence";
 
@@ -63,8 +67,10 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
-		schemaName=getStringProperty("TriplebaseName");
+		dbName=getStringProperty("TriplebaseName");
+		logDebug("TRIPLEDBNAME "+dbName);
 		tripleDriver = new PostgresConnectionFactory(dbName, schemaName);
+		tripleModel = new ASRTupleModel(this);
 
 		dictionarHttpyClient = new DictionaryHttpClient(this);
 		dictionary = new DictionaryClient(this);
@@ -95,12 +101,12 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	        shutDown();
 	      }
 	    });
-		logDebug("Hello World");
-		System.out.println("ENV BOOTED");
-		//logError("SHIT ",null);
-		//say("Just starting");
+		
 	}
 	
+	public ITupleModel getTripleModel() {
+		return tripleModel;
+	}
 	public PredicateImporter getPredicateImporter() {
 		return predImporter;
 	}

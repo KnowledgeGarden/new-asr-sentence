@@ -9,8 +9,8 @@
 	<!-- WordGram database -->
 	<parameter name="DatabaseName" value = "asrtest" />
 	<parameter name="DatabaseSchema" value = "public" />
-	<!-- Triple database -->
-	<parameter name="TriplebaseName" value = "tripletest" />
+	<!-- Triple database bigjuice-->
+	<parameter name="TriplebaseName" value = "bigjuice" />
 	
 	<!-- Bootstrapping data files -->
 	<parameter name="PredCSV" value="./data/predicates/ASRpreds.csv/" /> <!--  pay attention to filename -->

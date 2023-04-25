@@ -20,11 +20,12 @@ public class SentenceTestingFramework {
 		//new FirstNodeTest();
 		//new SecondNodeTest();
 		//new FirstPredicateTest();
-	//	new FirstSentenceTest();
+		new FirstSentenceTest();
 		//new SpacyHttpTest();
 		//new PredicateImportTest();
 		//new SecondPredicateTest();
-		new WordgramTest();
+		//new WordgramTest();
+		//new FirstTripleTest();
 	}
 
 }

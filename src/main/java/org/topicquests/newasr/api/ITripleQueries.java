@@ -16,19 +16,23 @@ public interface ITripleQueries {
 	
 		PUT_TRIPLE =
 			"INSERT INTO public.triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt) "+
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNS id",
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
 			
 		PUT_WORKING_TRIPLE = // we don't bother with text objects in working triples
 			"INSERT INTO public.working_triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, norm_id) "+
-			"VALUES (?, ?, ?, ?, ?, ?,) RETURNS id",
+			"VALUES (?, ?, ?, ?, ?, ?,) RETURNING id",
 			
 		PUT_SENTENCE_ID =
 			"INSERT INTO public.sentenceids (id, sentence_id) VALUES (?, ?)",
-			
+		
 		GET_TRIPLE =
-			"SELECT * FROM public.triple WHERE id=? "+
-			" JOIN public.sentenceIds ON id=?",
-
+			//"SELECT t.id, t.subj_id, t.pred_id, t.obj_id, t.subj_typ, t.obj_typ, t.subj_txt, t.pred_txt, t.obj_txt, s.sentence_id "+
+			"SELECT public.triple.*, public.sentenceIds.sentence_id "+
+			"FROM public.triple  "+
+			"JOIN public.sentenceIds  ON (public.triple.id = public.sentenceIds.id) WHERE public.triple.id=? ",
+		
+		NEW_GET_TRIPLE =
+			"SELECT * from public.triple WHERE id=?",
 		GET_THIS_TRIPLE =
 			"SELECT * FROM public.triple WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?",
 

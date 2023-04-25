@@ -51,16 +51,26 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 	    JsonObject data = tup.getData();
-	    long objectId=tup.getId();
-	    JsonArray foo =null;
 	    try { //TODO Transaction?
 	    	conn = dbDriver.getConnection();
-	    	//(subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt)
+	    	//(subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt & norm_id)
 	    	int count = 8;
 	    	if (isWorking)
-	    		count = 5;
+	    		count = 6;
+	    	// we do not have id - that's returned
 	    	Object [] vals = new Object[count];
-	    	//TODO
+	    	vals[0] = new Long(tup.getSubjectId());
+	    	vals[1] = new Long(tup.getPredicateId());
+	    	vals[2] = new Long(tup.getObjectId());
+	    	vals[3] = tup.getSubjectType();
+	    	vals[4] = tup.getObjectType();
+	    	if (isWorking)
+	    		vals[5] = new Long(tup.getNormalizedTripleId());
+	    	else {
+	    		vals[5] = tup.getSubjectText();
+	    		vals[6] = tup.getPredicateText();
+	    		vals[7] = tup.getObjectText();
+	    	}
 	    	IResult rx = conn.executeSelect(sql, vals);
 		    if (rx.hasError())
 				result.addErrorString(rx.getErrorString());
@@ -81,11 +91,63 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 
 	@Override
 	public IResult getTupleById(long id) {
-	    String sql = ITripleQueries.GET_TRIPLE;
-		return _getTupleById(id,sql);
-	}
+	    String sql = ITripleQueries.NEW_GET_TRIPLE;
+	    IResult result = new ResultPojo();
+	    IPostgresConnection conn = null;
+
+	    JsonArray foo =null;
+	    try { 
+	    	conn = dbDriver.getConnection();
+	    	Object [] vals = new Object[1];
+	    	vals[0] = new Long(id);
+	    	
+	    	//(subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt)
+	    	IResult rx = conn.executeSelect(sql, vals);
+		    if (rx.hasError())
+				result.addErrorString(rx.getErrorString());
+		    ResultSet rs = (ResultSet)rx.getResultObject();
+			environment.logDebug("GETTUPLE-1 "+rs);
+		    if (rs != null) {
+		    	ISimpleTriple st = null;
+		    	String tripType;
+		    	if (rs.next()) {
+	    			environment.logDebug("GETTUPLE-2 ");
+	    			st = new ASRSimpleTriple();
+		    		st.setId(rs.getLong("id"));
+		    		tripType = rs.getString("subj_typ");
+		    		//TODO what we do next depends on tripType
+		    		// if it's a triple, we do somethng else
+		    		st.setSubjectId(rs.getLong("subj_id"), tripType);
+		    		st.setSubjectText(rs.getString("subj_txt"));
+		    		st.setPredicateId(rs.getLong("pred_id"));
+		    		st.setPredicateText(rs.getString("pred_txt"));
+		    		tripType = rs.getString("obj_typ");
+		    		//TODO what we do next depends on tripType
+		    		// if it's a triple, we do somethng else
+		    		st.setObjectId(rs.getLong("obj_id"), tripType);
+		    		st.setObjectText(rs.getString("obj_txt"));
+		    		sql = ITripleQueries.GET_TRIPLE_SENTENCES;
+		    		rx = conn.executeSelect(sql, vals);
+				    if (rx.hasError())
+						result.addErrorString(rx.getErrorString());
+				    rs = (ResultSet)rx.getResultObject();
+				    if (rs != null) {
+				    	while (rs.next())
+				    		st.addSentenceId(rs.getLong("sentence_id"));
+				    }
+		    	}
+		    	result.setResultObject(st);
+		    }
+	    } catch (Exception e) {
+		     result.addErrorString("PTD-GT "+id+" "+e.getMessage());
+		     environment.logError("PTD-GT "+id+" "+result.getErrorString(), null);
+		} finally {
+		    conn.closeConnection(result);
+		}
+		return result;	}
 
 	IResult _getTupleById(long id, String sql) {
+		environment.logDebug("GETTUPLE\n"+sql);
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 
@@ -94,17 +156,20 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	    	conn = dbDriver.getConnection();
 	    	Object [] vals = new Object[1];
 	    	vals[0] = new Long(id);
+	    	
 	    	//(subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt)
 	    	IResult rx = conn.executeSelect(sql, vals);
 		    if (rx.hasError())
 				result.addErrorString(rx.getErrorString());
 		    ResultSet rs = (ResultSet)rx.getResultObject();
+			environment.logDebug("GETTUPLE-1 "+rs);
 		    if (rs != null) {
-		    	ISimpleTriple st = new ASRSimpleTriple();
+		    	ISimpleTriple st = null;
 		    	boolean isFirst = true;
 		    	String tripType;
-		    	while (rs.next()) {
+		    	/*while*/ if (rs.next()) {
 		    		if (isFirst) {
+		    			environment.logDebug("GETTUPLE-2 ");
 		    			st = new ASRSimpleTriple();
 			    		st.setId(rs.getLong("id"));
 			    		tripType = rs.getString("subj_typ");
@@ -123,7 +188,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    		}
 		    		st.addSentenceId(rs.getLong("sentence_id"));
 		    	}
-		    	result.setResultObject(st.getData());
+		    	result.setResultObject(st);
 		    }
 	    } catch (Exception e) {
 		     result.addErrorString("PTD-GT "+id+" "+e.getMessage());
@@ -246,7 +311,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    			st.setObjectText(rs.getString("obj_txt"));
 		    		} else
 		    			st.setNormalizedTripleId(rs.getLong("norm_id"));
-			    	result.setResultObject(st.getData());
+			    	result.setResultObject(st);
 		    	}
 		    }
 		    

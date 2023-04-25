@@ -48,7 +48,7 @@ public class WordGramBuilder {
 		environment =env;
 		model = environment.getModel();
 		analyzer = new TripleAnalyzer(environment);
-		tripleModel = new ASRTupleModel(environment);
+		tripleModel = environment.getTripleModel();
 		util = new JsonUtil();
 	}
 
@@ -167,7 +167,6 @@ public class WordGramBuilder {
 			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix);
 		}
 		
-	
 		
 		
 		return result;
@@ -190,34 +189,23 @@ public class WordGramBuilder {
 	 * @param predicate
 	 * @param object
 	 * @return
-	 * @throws Exception
 	 */
-	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) throws Exception {
+	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
 		ISimpleTriple result = _makeTriple(subject, predicate, object);
 		// do we have this triple?
 		IResult r = tripleModel.getThisTuple(result);
-		Object ox = r.getResultObject();
-		String json;
-		JsonObject jo;
-		ISimpleTriple foo;
-		if (ox != null) {
-			json = (String)ox;
-			jo = util.parse(json);
-			result = new ASRSimpleTriple(jo);
-		} else {
+		ISimpleTriple foo = (ISimpleTriple)r.getResultObject();
+		Object ox;
+		if (foo == null) {
 			r  = tripleModel.getThisWorkingTuple(result);
-			ox = r.getResultObject();
-			if (ox != null) {
-				json = (String)ox;
-				jo = util.parse(json);
-				foo = new ASRSimpleTriple(jo);
+			foo = (ISimpleTriple)r.getResultObject();
+			if (foo != null) {
 				//ACTUALLY we have this as a WorkingTriple
 				// let's return the real triple
 				long normId = foo.getNormalizedTripleId();
 				r = tripleModel.getTupleById(normId);
-				json = (String)r.getResultObject();
-				jo = util.parse(json);
-				result = new ASRSimpleTriple(jo);
+				result = (ISimpleTriple)r.getResultObject();
+
 			} else {
 				// this is virgin territory
 				boolean needsNorm =  needsNormalization(subject, predicate, object);
@@ -245,15 +233,14 @@ public class WordGramBuilder {
 					r = tripleModel.putWorkingTuple(result);
 					// now fetch the triple
 					r = tripleModel.getTupleById(l.longValue());
-					json = (String)r.getResultObject();
-					jo = util.parse(json);
-					result = new ASRSimpleTriple(jo);
+					result = (ISimpleTriple)r.getResultObject();
+	
 				}
 			}
 		}
 		return result;
 	}
-	IWordGram normalizeGram(IWordGram wg) throws Exception {
+	IWordGram normalizeGram(IWordGram wg) {
 		IWordGram result = wg; // default
 		long inv = wg.getInverseTerm();
 		long can = wg.getCannonTerm();
@@ -278,7 +265,7 @@ public class WordGramBuilder {
 			return true;
 		return result;
 	}
-	ISimpleTriple normalizeTriple(ISimpleTriple trip) throws Exception{
+	ISimpleTriple normalizeTriple(ISimpleTriple trip) {
 		ISimpleTriple result = trip; // default
 		ISimpleTriple foo;
 		String json;
@@ -288,19 +275,15 @@ public class WordGramBuilder {
 		IResult r = tripleModel.getThisTuple(trip);
 		if (r.getResultObject() == null) {
 			r = tripleModel.getThisWorkingTuple(trip);
-			json = (String)r.getResultObject();
-			jo = util.parse(json);
-			foo = new ASRSimpleTriple(jo);
+			foo = (ISimpleTriple)r.getResultObject();
+
 			inv = foo.getNormalizedTripleId();
 			r = tripleModel.getTupleById(inv);
-			json = (String)r.getResultObject();
-			jo = util.parse(json);
-			foo = new ASRSimpleTriple(jo);
+			foo = (ISimpleTriple)r.getResultObject();
+			
 			found = true;
 		} else {
-			json = (String)r.getResultObject();
-			jo = util.parse(json);
-			foo = new ASRSimpleTriple(jo);
+			foo = (ISimpleTriple)r.getResultObject();
 			found = true;
 		}
 		if (found) {
@@ -336,20 +319,20 @@ public class WordGramBuilder {
 			} else {
 				// object is a triple
 				r = tripleModel.getTupleById(objId);
-				json = (String)r.getResultObject();
-				jo = util.parse(json);
-				foo = new ASRSimpleTriple(jo);
+				foo = (ISimpleTriple)r.getResultObject();
+				
 			}
 		}
 		return result;
 	}
 	
-	ISimpleTriple fetchTriple(long id) throws Exception {
+	ISimpleTriple fetchTriple(long id) {
 		ISimpleTriple result = null;
 		IResult r = tripleModel.getTupleById(id);
+		result = (ISimpleTriple)r.getResultObject();
 		return result;
 	}
-	String getTripleText(ISimpleTriple trip) throws Exception {
+	String getTripleText(ISimpleTriple trip) {
 		StringBuilder buf = new StringBuilder();
 		//		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
 		buf.append("{ ");
@@ -389,7 +372,7 @@ public class WordGramBuilder {
 		return result;
 	}
 	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, 
-			IWordGram oSubject, IWordGram oPredicate, IWordGram oObject) throws Exception {
+			IWordGram oSubject, IWordGram oPredicate, IWordGram oObject)  {
 		ISimpleTriple result = new ASRSimpleTriple();
 		ISimpleTriple foo;
 		IWordGram nSubj = normalizeGram(subject);
@@ -437,14 +420,8 @@ public class WordGramBuilder {
 		return result;
 	}
 	
-	/*ISimpleTriple makeTriple2(IWordGram sSubj, IWordGram sPred, IWordGram sObj,
-							 IWordGram predicate, IWordGram object) throws Exception {
-		ISimpleTriple result = new ASRSimpleTriple();
-		
-		return result;
-	}*/
 	
-	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, ISimpleTriple object) throws Exception {
+	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, ISimpleTriple object) {
 		ISimpleTriple result = new ASRSimpleTriple();
 		long inv = predicate.getInverseTerm();
 		IResult r;
@@ -458,9 +435,8 @@ public class WordGramBuilder {
 	 * @param predicate
 	 * @param object
 	 * @return
-	 * @throws Exception
 	 */
-	ISimpleTriple exploreTriple(Object subject, IWordGram predicate, Object object) throws Exception {
+	ISimpleTriple exploreTriple(Object subject, IWordGram predicate, Object object)  {
 		boolean subjIsWG = (subject instanceof IWordGram);
 		boolean objIsWG = (object instanceof IWordGram);
 		if (subjIsWG) {
