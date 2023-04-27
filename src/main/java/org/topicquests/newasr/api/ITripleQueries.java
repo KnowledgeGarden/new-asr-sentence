@@ -20,7 +20,7 @@ public interface ITripleQueries {
 			
 		PUT_WORKING_TRIPLE = // we don't bother with text objects in working triples
 			"INSERT INTO public.working_triple (subj_id, pred_id, obj_id, subj_typ, obj_typ, norm_id) "+
-			"VALUES (?, ?, ?, ?, ?, ?,) RETURNING id",
+			"VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
 			
 		PUT_SENTENCE_ID =
 			"INSERT INTO public.sentenceids (id, sentence_id) VALUES (?, ?)",
@@ -38,6 +38,9 @@ public interface ITripleQueries {
 
 		GET_TRIPLE_SENTENCES =
 			"SELECT * FROM public.sentenceids WHERE id=?",
+			
+		GET_TRIPLE_SENTENCE =
+			"SELECT * FROM public.sentenceids WHERE id=? AND sentence_id=?",
 			
 		GET_WORKING_TRIPLE =
 			"SELECT * FROM public.working_triple WHERE id=?",

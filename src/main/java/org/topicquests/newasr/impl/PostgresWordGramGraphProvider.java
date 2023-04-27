@@ -536,18 +536,35 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	    try {
 	      conn = dbDriver.getConnection();
 	      String sql= IQueries.PUT_SENTENCE_EDGE;
+	      String sql2 = IQueries.GET_SENTENCE_EDGE;
 	      //id, sent_id, inLink, outLink, tense, epi
 	      IResult rx;
-	      Object [] obj = new Object[6];
+	      Object [] obj = new Object[2];
 	      obj[0] = Long.toString(gramId);
 	      obj[1] = Long.toString(sentenceId);
-	      obj[2] = Long.toString(inLinkTargetId);
-	      obj[3] = Long.toString(outlinkTargetId);
-	      obj[4] = tense;
-	      obj[5] = epistemicStatus;
-	      rx = conn.executeSQL(sql, obj);
+	      rx = conn.executeSelect(sql2, obj);
 	      if (rx.hasError())
-			result.addErrorString(rx.getErrorString());	      
+	    	  result.addErrorString(rx.getErrorString());
+	      ResultSet rs = (ResultSet)rx.getResultObject();
+	      String theLocators = null;
+	      boolean safe = true;
+	      if (rs != null) {
+	    	  if (rs.next())
+	    		  safe = false;
+	      }
+	      // we don't already have this sentenceId
+	      if (safe) {
+	    	  obj = new Object[6];
+		      obj[0] = Long.toString(gramId);
+		      obj[1] = Long.toString(sentenceId);
+		      obj[2] = Long.toString(inLinkTargetId);
+		      obj[3] = Long.toString(outlinkTargetId);
+		      obj[4] = tense;
+		      obj[5] = epistemicStatus;
+		      rx = conn.executeSQL(sql, obj);
+		      if (rx.hasError())
+				result.addErrorString(rx.getErrorString());	
+	      }
 	    } catch (Exception e) {
     	result.addErrorString("addSentenceEdge "+e.getMessage());
     	environment.logError(e.getMessage(), e);

@@ -48,6 +48,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	 * @return
 	 */
 	IResult _putTuple(ISimpleTriple tup, String sql, boolean isWorking) {
+		environment.logDebug("PutTuple "+isWorking+"\n"+sql+"\n"+tup.getData());
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 	    JsonObject data = tup.getData();
@@ -136,58 +137,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 				    		st.addSentenceId(rs.getLong("sentence_id"));
 				    }
 		    	}
-		    	result.setResultObject(st);
-		    }
-	    } catch (Exception e) {
-		     result.addErrorString("PTD-GT "+id+" "+e.getMessage());
-		     environment.logError("PTD-GT "+id+" "+result.getErrorString(), null);
-		} finally {
-		    conn.closeConnection(result);
-		}
-		return result;	}
-
-	IResult _getTupleById(long id, String sql) {
-		environment.logDebug("GETTUPLE\n"+sql);
-		IResult result = new ResultPojo();
-	    IPostgresConnection conn = null;
-
-	    JsonArray foo =null;
-	    try { 
-	    	conn = dbDriver.getConnection();
-	    	Object [] vals = new Object[1];
-	    	vals[0] = new Long(id);
-	    	
-	    	//(subj_id, pred_id, obj_id, subj_typ, obj_typ, subj_txt, pred_txt, obj_txt)
-	    	IResult rx = conn.executeSelect(sql, vals);
-		    if (rx.hasError())
-				result.addErrorString(rx.getErrorString());
-		    ResultSet rs = (ResultSet)rx.getResultObject();
-			environment.logDebug("GETTUPLE-1 "+rs);
-		    if (rs != null) {
-		    	ISimpleTriple st = null;
-		    	boolean isFirst = true;
-		    	String tripType;
-		    	/*while*/ if (rs.next()) {
-		    		if (isFirst) {
-		    			environment.logDebug("GETTUPLE-2 ");
-		    			st = new ASRSimpleTriple();
-			    		st.setId(rs.getLong("id"));
-			    		tripType = rs.getString("subj_typ");
-			    		//TODO what we do next depends on tripType
-			    		// if it's a triple, we do somethng else
-			    		st.setSubjectId(rs.getLong("subj_id"), tripType);
-			    		st.setSubjectText(rs.getString("subj_txt"));
-			    		st.setPredicateId(rs.getLong("pred_id"));
-			    		st.setPredicateText(rs.getString("pred_txt"));
-			    		tripType = rs.getString("obj_typ");
-			    		//TODO what we do next depends on tripType
-			    		// if it's a triple, we do somethng else
-			    		st.setObjectId(rs.getLong("obj_id"), tripType);
-			    		st.setObjectText(rs.getString("obj_txt"));
-			    		isFirst = false;
-		    		}
-		    		st.addSentenceId(rs.getLong("sentence_id"));
-		    	}
+		    
 		    	result.setResultObject(st);
 		    }
 	    } catch (Exception e) {
@@ -202,6 +152,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	@Override
 	public IResult addSentenceIdToTuple(long sentenceId, long tupleId) {
 	    String sql = ITripleQueries.PUT_SENTENCE_ID;
+	    String sql2 =ITripleQueries.GET_TRIPLE_SENTENCE;
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
 
@@ -211,9 +162,21 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	    	Object [] vals = new Object[2];
 	    	vals[0] = new Long(tupleId);
 	    	vals[1] = new Long(sentenceId);
-	    	IResult rx = conn.executeSQL(sql, vals);
+	    	IResult rx = conn.executeSelect(sql2, vals);
 	    	if (rx.hasError())
 				result.addErrorString(rx.getErrorString());
+		    ResultSet rs = (ResultSet)rx.getResultObject();
+		    boolean safe = true;
+		    // does this sentenceIdalready exist?
+		    if (rs != null) {
+		    	if (rs.next())
+		    		safe = false;
+		    }
+		    if (safe) {
+		    	rx = conn.executeSQL(sql, vals);
+		    	if (rx.hasError())
+		    		result.addErrorString(rx.getErrorString());
+		    }
 	    } catch (Exception e) {
 		     result.addErrorString("PTD-3 "+e.getMessage());
 		     environment.logError("PTD-3 "+result.getErrorString(), e);
@@ -284,7 +247,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	IResult _getThisTuple(ISimpleTriple template, String sql, boolean isWorking) {
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
-
+	    environment.logDebug("GetThisTuple "+isWorking+"\n"+sql+"\n"+template.getData());
 	    try { //TODO Transaction?
 		    conn = dbDriver.getConnection();
 			//WHERE subj_id=? AND pred_id=? AND obj_id=? AND subj_typ=? AND obj_typ=?

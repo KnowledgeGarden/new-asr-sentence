@@ -119,9 +119,9 @@ public interface IAsrModel {
 	
 	
 	/**
-	 * Add a sentence edge to this wordgram
+	 * Add a sentence edge to this wordgram only if it does not already have one with {@code sentenceId}
 	 * @param gramId
-	 * @param senteneId TODO
+	 * @param senteneId
 	 * @param inLinkTargetId can be {@code -1}
 	 * @param outlinkTargetId can be {@code -1}
 	 * @param tense can be {@code null}
@@ -130,6 +130,11 @@ public interface IAsrModel {
 	 */
 	IResult addSentenceEdge(long gramId, long sentenceId, long inLinkTargetId, long outlinkTargetId, String tense, String epistemicStatus);
 	
+	///////////////////
+	// TODO
+	// WE need to add:
+	// updateSentenceEdge for existing edges that are getting new source or target
+	//////////////////
 	IResult addTopicLocator(long gramId, long topicLocator);
 
 	IResult addSynonymTerm(long gramId, long synonymTermId);

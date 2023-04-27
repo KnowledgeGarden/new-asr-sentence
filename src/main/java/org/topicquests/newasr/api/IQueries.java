@@ -33,6 +33,8 @@ public interface IQueries {
 			"SELECT * FROM public.node where id=?",
 		GET_SENTENCE_EDGES =
 			"SELECT * FROM public.sentence_edges WHERE id=?",
+		GET_SENTENCE_EDGE =
+				"SELECT * FROM public.sentence_edges WHERE id=? AND sent_id=?",
 		PUT_SENTENCE_EDGE =	
 			"INSERT INTO public.sentence_edges (id, sent_id, inLink, outLink, tense, epi) VALUES (?, ?, ?, ?, ?,?)",
 		PUT_NODE =

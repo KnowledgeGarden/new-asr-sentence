@@ -22,7 +22,7 @@ public class SentenceTestingFramework {
 		//new FirstPredicateTest();
 		new FirstSentenceTest();
 		//new SpacyHttpTest();
-		//new PredicateImportTest();
+//		new PredicateImportTest();
 		//new SecondPredicateTest();
 		//new WordgramTest();
 		//new FirstTripleTest();

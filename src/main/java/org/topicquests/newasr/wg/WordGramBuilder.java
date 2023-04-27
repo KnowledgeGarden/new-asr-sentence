@@ -136,35 +136,30 @@ public class WordGramBuilder {
 	public IResult processSentence(ISentence sentence) {
 		long sentenceId =sentence.getId();
 		IResult result = new ResultPojo();
-		String text = sentence.getText();
 		JsonArray predicates = sentence.getPredicatePhrases();
-		JsonArray dbpedia = sentence.getDBpediaData();
-		JsonArray wikidata = sentence.getWikiData();
-		JsonArray spacyResults = sentence.getSpacyData();
-		JsonArray spacyNouns = sentence.getNouns();
-		JsonArray spacyProperNouns = sentence.getProperNouns();
-		JsonArray spacyVerbs = sentence.getVerbs();
 		JsonArray resolvedNouns = sentence.getResolvedNouns();
 		Iterator<JsonElement> itr;
-		JsonObject jo;
-		JsonArray ja;
-		String snippet, idx;
-		int loc;
-		IWordGram wg;
+		//JsonObject jo;
+		//JsonArray ja;
+		//String snippet, idx;
+		//int loc;
+		//IWordGram wg;
 		IResult r;
 		
 		
 		JsonArray ta = analyzer.bigDamnAnalyze(sentence, predicates, resolvedNouns);
 		if (ta != null)
 			sentence.setSimpleTriples(ta);
+		environment.logDebug("WGBuild\n"+ta);
 		
 		int len = ta.size();
 		JsonObject trix;
-		JsonObject strix;
+		ISimpleTriple strix;
 		for (int i=0;i<len;i++) {
 			trix = ta.get(i).getAsJsonObject();
+			environment.logDebug("WGBuild-1\n"+trix);
 			strix = processSimpleTriple(sentenceId, trix);
-			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix);
+			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix.getData());
 		}
 		
 		
@@ -172,166 +167,6 @@ public class WordGramBuilder {
 		return result;
 	}
 	
-	ISimpleTriple _makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
-		ISimpleTriple result = new ASRSimpleTriple();
-		result.setSubjectId(subject.getId(), ISimpleTriple.WORDGRAM_TYPE);
-		result.setSubjectText(subject.getWords(LANG));
-		result.setPredicateId(predicate.getId());
-		result.setPredicateText(predicate.getWords(LANG));
-		result.setObjectId(object.getId(), ISimpleTriple.WORDGRAM_TYPE);
-		result.setObjectText(object.getWords(LANG));
-		return result;
-	}
-	
-	/**
-	 * Always tries to return a fully normalized triple
-	 * @param subject
-	 * @param predicate
-	 * @param object
-	 * @return
-	 */
-	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
-		ISimpleTriple result = _makeTriple(subject, predicate, object);
-		// do we have this triple?
-		IResult r = tripleModel.getThisTuple(result);
-		ISimpleTriple foo = (ISimpleTriple)r.getResultObject();
-		Object ox;
-		if (foo == null) {
-			r  = tripleModel.getThisWorkingTuple(result);
-			foo = (ISimpleTriple)r.getResultObject();
-			if (foo != null) {
-				//ACTUALLY we have this as a WorkingTriple
-				// let's return the real triple
-				long normId = foo.getNormalizedTripleId();
-				r = tripleModel.getTupleById(normId);
-				result = (ISimpleTriple)r.getResultObject();
-
-			} else {
-				// this is virgin territory
-				boolean needsNorm =  needsNormalization(subject, predicate, object);
-				if (!needsNorm) {
-					r = tripleModel.putTuple(result);
-					ox = r.getResultObject();
-					Long l = (Long)ox;
-					result.setId(l.longValue());
-				} else {
-					
-					IWordGram subj = normalizeGram(subject);
-					IWordGram obj = normalizeGram(object);
-					boolean reverse = predicate.getInverseTerm() > -1;
-					IWordGram pred = normalizeGram(predicate);
-					if (reverse)
-						foo = _makeTriple(obj, pred, subj);
-					else
-						foo = _makeTriple(subj, pred, obj);
-					// save tuple
-					r = tripleModel.putTuple(result);
-					ox = r.getResultObject();
-					Long l = (Long)ox;
-					// save as working tuple
-					result.setNormalizedTripleId(l.longValue());
-					r = tripleModel.putWorkingTuple(result);
-					// now fetch the triple
-					r = tripleModel.getTupleById(l.longValue());
-					result = (ISimpleTriple)r.getResultObject();
-	
-				}
-			}
-		}
-		return result;
-	}
-	IWordGram normalizeGram(IWordGram wg) {
-		IWordGram result = wg; // default
-		long inv = wg.getInverseTerm();
-		long can = wg.getCannonTerm();
-		IResult r;
-		if (inv > -1) {
-			r = model.getThisTermById(Long.toString(inv));
-			result= (IWordGram)r.getResultObject();
-		} else if (can > -1) {
-			r = model.getThisTermById(Long.toString(can));
-			result= (IWordGram)r.getResultObject();
-		}
-		return result;
-	}
-	
-	boolean needsNormalization(IWordGram subject, IWordGram predicate, IWordGram object) {
-		boolean result = false;
-		if (predicate.hasCannonicalTerm() || 
-			predicate.getInverseTerm() > -1)
-			return true;
-		if (subject.hasCannonicalTerm() ||
-			object.hasCannonicalTerm())
-			return true;
-		return result;
-	}
-	ISimpleTriple normalizeTriple(ISimpleTriple trip) {
-		ISimpleTriple result = trip; // default
-		ISimpleTriple foo;
-		String json;
-		JsonObject jo;
-		long inv;
-		boolean found = false;
-		IResult r = tripleModel.getThisTuple(trip);
-		if (r.getResultObject() == null) {
-			r = tripleModel.getThisWorkingTuple(trip);
-			foo = (ISimpleTriple)r.getResultObject();
-
-			inv = foo.getNormalizedTripleId();
-			r = tripleModel.getTupleById(inv);
-			foo = (ISimpleTriple)r.getResultObject();
-			
-			found = true;
-		} else {
-			foo = (ISimpleTriple)r.getResultObject();
-			found = true;
-		}
-		if (found) {
-			return foo;
-		}
-		// now the harder work because we do not have this triple
-		String subjType = trip.getSubjectType();
-		String objType = trip.getObjectType();
-		long subjId = trip.getSubjectId();
-		long objId = trip.getObjectId();
-		long predId = trip.getPredicateId();
-		IWordGram subj, pred, obj;
-		
-		r = model.getThisTermById(Long.toString(predId));
-		pred = (IWordGram)r.getResultObject();
-		inv = pred.getInverseTerm();
-		boolean needsReverse = inv > -1;
-		ISimpleTriple bar;
-		
-		if (subjType.equals(ISimpleTriple.WORDGRAM_TYPE)) {
-			r = model.getThisTermById(Long.toString(subjId));
-			subj = (IWordGram)r.getResultObject();
-			subj = normalizeGram(subj);
-			if (objType.equals(ISimpleTriple.WORDGRAM_TYPE)) {
-				r = model.getThisTermById(Long.toString(objId));
-				obj = (IWordGram)r.getResultObject();
-				obj = normalizeGram(obj);
-				pred = normalizeGram(pred);
-				if (!needsReverse)
-					result = _makeTriple(subj, pred, obj);
-				else
-					result = _makeTriple(obj, pred, subj);
-			} else {
-				// object is a triple
-				r = tripleModel.getTupleById(objId);
-				foo = (ISimpleTriple)r.getResultObject();
-				
-			}
-		}
-		return result;
-	}
-	
-	ISimpleTriple fetchTriple(long id) {
-		ISimpleTriple result = null;
-		IResult r = tripleModel.getTupleById(id);
-		result = (ISimpleTriple)r.getResultObject();
-		return result;
-	}
 	String getTripleText(ISimpleTriple trip) {
 		StringBuilder buf = new StringBuilder();
 		//		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
@@ -343,120 +178,47 @@ public class WordGramBuilder {
 		boolean oIsWG = objType.equals(ISimpleTriple.WORDGRAM_TYPE);
 		predText = trip.getPredicateText();
 		ISimpleTriple foo;
-		long oid;
+		long oid, sid;
 		IResult r;
+		IWordGram wg;
 		if (sIsWG) {
 			subjectText = trip.getSubjectText();
 			if (oIsWG) {
 				objectText = trip.getObjectText();
 			} else {
 				oid = trip.getObjectId();
-				//r = 
+				r = model.getThisTermById(Long.toString(oid));
+				wg = (IWordGram)r.getResultObject();
+				objectText = wg.getWords(LANG);
+			}
+		} else {
+			sid = trip.getSubjectId();
+			r = model.getThisTermById(Long.toString(sid));
+			wg = (IWordGram)r.getResultObject();
+			subjectText = wg.getWords(LANG);
+			if (oIsWG) {
+				objectText = trip.getObjectText();
+			} else {
+				oid = trip.getObjectId();
+				r = model.getThisTermById(Long.toString(oid));
+				wg = (IWordGram)r.getResultObject();
+				objectText = wg.getWords(LANG);
 			}
 		}
+		buf.append("subj: "+subjectText+", pred: "+predText+", obj: "+objectText);
 		buf.append(" }");
 		return buf.toString().trim();
 	}
-	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, ISimpleTriple object) {
-		ISimpleTriple result = null;
-		long inv = predicate.getInverseTerm();
-		IResult r;
-		boolean needsReverse = inv > -1;
-		return result;
-	}
-	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, IWordGram object) {
-		ISimpleTriple result = null;
-		long inv = predicate.getInverseTerm();
-		IResult r;
-		boolean needsReverse = inv > -1;
-		return result;
-	}
-	ISimpleTriple makeTriple(IWordGram subject, IWordGram predicate, 
-			IWordGram oSubject, IWordGram oPredicate, IWordGram oObject)  {
-		ISimpleTriple result = new ASRSimpleTriple();
-		ISimpleTriple foo;
-		IWordGram nSubj = normalizeGram(subject);
-		IWordGram noSubj = normalizeGram(oSubject);
-		IWordGram noObj = normalizeGram(oObject);
-		IWordGram nPred = normalizeGram(predicate);
-		long inv = predicate.getInverseTerm();
-		IResult r;
-		boolean needsReverse = inv > -1;
-		result.setPredicateId(predicate.getId());
-		result.setPredicateText(predicate.getWords(LANG));
-		foo = makeTriple(oSubject, oPredicate, oObject); // fully normalized
-		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
-		if (needsReverse) {
-			result = new ASRSimpleTriple();
-			result.setPredicateId(nPred.getId());
-			result.setPredicateText(nPred.getWords(LANG));
-			result.setObjectText(nSubj.getWords(LANG));
-			result.setObjectId(nSubj.getId(), ISimpleTriple.WORDGRAM_TYPE);
-			result.setSubjectId(foo.getId(), ISimpleTriple.TRIPLE_TYPE);
-			result.setSubjectText(oText);
-		} else {
-			result.setSubjectText(nSubj.getWords(LANG));
-			result.setSubjectId(nSubj.getId(), ISimpleTriple.WORDGRAM_TYPE);
-			result.setPredicateId(nPred.getId());
-			result.setPredicateText(nPred.getWords(LANG));
-			result.setObjectId(foo.getId(), ISimpleTriple.TRIPLE_TYPE);
-			result.setObjectText(oText);
-			// this is fully normalized
-			r = tripleModel.getThisTuple(result);
-			Object ox = r.getResultObject();
-			Long l;
-			if (ox != null) {
-				l = (Long)ox;
-				result.setId(l.longValue());
-			} else {
-				// store it
-				r = tripleModel.putTuple(result);
-				ox = r.getResultObject();
-				l = (Long)ox;
-				result.setId(l.longValue());
-			}
-		}
-
-		return result;
-	}
 	
-	
-	ISimpleTriple makeTriple(ISimpleTriple subject, IWordGram predicate, ISimpleTriple object) {
-		ISimpleTriple result = new ASRSimpleTriple();
-		long inv = predicate.getInverseTerm();
-		IResult r;
-		boolean needsReverse = inv > -1;
-		return result;
-	}
-	
-	/**
-	 * Main entry point
-	 * @param subject
-	 * @param predicate
-	 * @param object
-	 * @return
-	 */
-	ISimpleTriple exploreTriple(Object subject, IWordGram predicate, Object object)  {
-		boolean subjIsWG = (subject instanceof IWordGram);
-		boolean objIsWG = (object instanceof IWordGram);
-		if (subjIsWG) {
-			if (objIsWG)
-				return makeTriple((IWordGram)subject, predicate,(IWordGram)object);
-			else {
-				return (makeTriple((IWordGram)subject, predicate, (ISimpleTriple)object));
-			}
-		} if (objIsWG)
-			return makeTriple((ISimpleTriple)subject, predicate,(IWordGram)object);
-		else {
-			return (makeTriple((ISimpleTriple)subject, predicate, (ISimpleTriple)object));
-		}
-	}
 	/**
 	 * Recursive
-	 * NOTE: this will not work until we are storing triples to give them Identity
+	 * <p>The game here is to take an object which is composed of features like<br/>
+	 * {@code {startPosition, text}} and convert the text to an {@link IWordGram}</p>
+	 * <p>The process is complex because a subject or an object - or both - can be a
+	 * a triple, which makes this a recursive process</p>
 	 * @param triple
 	 */
-	JsonObject processSimpleTriple(long sentenceId,JsonObject triple) {
+	ISimpleTriple processSimpleTriple(long sentenceId, JsonObject triple) {
 		JsonObject pred = triple.get("pred").getAsJsonObject();
 		JsonObject sx = triple.get("subj").getAsJsonObject();
 		JsonObject ox = triple.get("obj").getAsJsonObject();
@@ -467,6 +229,7 @@ public class WordGramBuilder {
 		IWordGram wg;
 		IResult r;
 		String idx;
+		// process the predicate first
 		IWordGram predicateGram;
 		String predText = pred.get("txt").getAsString();
 		/////////////////////
@@ -478,10 +241,16 @@ public class WordGramBuilder {
 		idx = (String)r.getResultObject();
 		r = model.getThisTermById(idx);
 		predicateGram = (IWordGram)r.getResultObject();
+		// tense and epi are necessary for wordgram edges indexed by sentenceId
 		String tense = predicateGram.getTense();
 		String epi = predicateGram.getEpistemicStatus();
+		long invId = predicateGram.getInverseTerm();
+		long canonId = predicateGram.getCannonTerm();
 		st.setPredicateId(predicateGram.getId());
-		if (sx.get("subj") == null) {
+		st.setPredicateText(predText);
+		long tId;
+		//Subject next
+		if (sx.get("subj") == null) { // is it a triple?
 			subjText = sx.get("txt").getAsString();
 			r = model.processTerm(subjText, IPOS.NOUN_POS);
 			idx = (String)r.getResultObject();
@@ -489,202 +258,111 @@ public class WordGramBuilder {
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
 			st.setSubjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
-		} else {
-			environment.logError("WGB-1 missing", null);
+			st.setSubjectText(subjText);
+		} else { // it's a triple
+			environment.logDebug("NestedSubject "+sx);
+			ISimpleTriple theSubject = processSimpleTriple(sentenceId, sx);
+			tId = theSubject.getId();
+			subjText = getTripleText(theSubject);
+			st.setSubjectId(tId, ISimpleTriple.TRIPLE_TYPE);
+			st.setSubjectText(subjText);
 		}
-		if (ox.get("subj") == null) {
-			subjText = sx.get("txt").getAsString();
+		if (ox.get("subj") == null) { // nested object?
+			subjText = ox.get("txt").getAsString();
 			r = model.processTerm(subjText, IPOS.NOUN_POS);
 			idx = (String)r.getResultObject();
 			r = model.getThisTermById(idx);
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
 			st.setObjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
-		} else {
-			environment.logError("WGB-2 missing", null);
+			st.setObjectText(subjText);
+		} else { // nested object
+			environment.logDebug("NestedObject "+sx);
+			ISimpleTriple theObject = processSimpleTriple(sentenceId, ox);
+			tId = theObject.getId();
+			subjText = getTripleText(theObject);
+			st.setObjectId(tId, ISimpleTriple.TRIPLE_TYPE);
+			st.setObjectText(subjText);
 		}
 		st.addSentenceId(sentenceId);
-		//st.computePSI();
-		return st.getData();
-	}
-	///////////////////////////////
-	// We need to know where terms are relative to each other
-	// We also must pay attention to inverse predicates
-	/**
-	 * <p>Create triples if they can be created, and return in list</p>
-	 * <p>In theory, there will be one triple for each predicate</p>
-	 * @param sentence
-	 * @param predWordgrams
-	 * @param dbPediaWordgrams
-	 * @param wikidataWordgrams
-	 * @param nounWordgrams
-	 * @return can return an empty array
-	 * /
-	JsonArray lookForTriples(ISentence sentence, 
-			List<IWordGram> predWordgrams,
-			List<IWordGram> dbPediaWordgrams,
-			List<IWordGram> wikidataWordgrams,
-			List<IWordGram> nounWordgrams) {
-		JsonArray result = new JsonArray();
-		String theSentence = sentence.getText();
-		IWordGram subj=null, pred=null, obj=null;
-		ISimpleTriple subjT, objT;
-		int lenP = predWordgrams.size();
-		int lenS1 = dbPediaWordgrams.size();
-		int lenS3 = wikidataWordgrams.size();
-		int lenS4 = nounWordgrams.size();
-		String txtA, txtB;
-		boolean hasInverseTerm;
-		long canonicalTermId = -1;
-		int wherePredicate = -1;
-		int whereOther = -1;
-		boolean subjectFound, objectFound;
-		// For each predicaate
-		for (int i=0;i<lenP;i++) {
-			subjectFound = false;
-			objectFound = false;
-			hasInverseTerm = false;
-			pred = predWordgrams.get(i);
-			txtA = pred.getWords(null);
-			hasInverseTerm = pred.hasInverseTerm();
-			wherePredicate = locateTermInSentence(theSentence, txtA);
-			//Look in dbpedia
-			for (int j=0;j<lenS1;j++) {
-				subj = dbPediaWordgrams.get(j);
-				txtB = subj.getWords(null);
-				whereOther = locateTermInSentence(theSentence, txtB);
-				if (whereOther > wherePredicate) {
-					subj = null;
-					break;
-				} else {
-					environment.logDebug("PPG-1 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-					// heuristic = mayte that's it
-					subjectFound = true;
-					break;
-				}
-			}
-			if (!subjectFound && lenS3 > 0) {
-				for (int j=0;j<lenS3;j++) {
-					subj = wikidataWordgrams.get(j);
-					txtB = subj.getWords(null);
-					whereOther = locateTermInSentence(theSentence, txtB);
-					if (whereOther > wherePredicate) {
-						subj = null;
-						break;
-					} else {
-						environment.logDebug("PPG-2 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-						// heuristic = mayte that's it
-						subjectFound = true;
-						break;
+		r = tripleModel.getThisTuple(st);
+		environment.logDebug("ProcessSimpleTriple-1\n"+r.getResultObject()+"\n"+st.getData());
+		Object o = r.getResultObject();
+		ISimpleTriple foo;
+		if (o == null) {
+			r = tripleModel.getThisWorkingTuple(st);
+			environment.logDebug("ProcessSimpleTriple-2\n"+r.getResultObject()+"\n"+st.getData());
+			o = r.getResultObject();
+			if (o == null) {
+				environment.logDebug("ProcessSimpleTriple-3 "+invId+" "+canonId);
+			// it does not exist in the database
+				if (invId == -1 && canonId == -1) {
+					r = tripleModel.putTuple(st);
+					tId = ((Long)r.getResultObject()).longValue();
+					st.setId(tId);
+				} else if (invId > -1 || canonId > -1) {
+					environment.logDebug("ProcessSimpleTriple-4 "+invId+" "+canonId);
+					//make a canonical form, save that, grab it's id, then save that
+					if (invId > -1) {
+						environment.logDebug("ProcessSimpleTriple-5 "+invId+" "+canonId);
+						// this is an inverted gram
+						r = model.getTermById(Long.toString(invId));
+						IWordGram newPred = (IWordGram)r.getResultObject();
+						foo = new ASRSimpleTriple();
+						foo. setPredicateId(invId);
+						foo.setPredicateText(newPred.getWords(LANG));
+						foo.setSubjectId(st.getObjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setSubjectText(st.getObjectText());
+						foo.setObjectId(st.getSubjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setObjectText(st.getSubjectText());
+						foo.addSentenceId(sentenceId);
+
+						r =tripleModel.putTuple(foo);
+						tId = ((Long)r.getResultObject()).longValue();
+						st.setNormalizedTripleId(tId);
+						r = tripleModel.putWorkingTuple(st);
+						return foo;
+					} else if (canonId > -1) {
+						environment.logDebug("ProcessSimpleTriple-6 "+invId+" "+canonId);
+						r = model.getTermById(Long.toString(canonId));
+						IWordGram newPred = (IWordGram)r.getResultObject();
+						foo = new ASRSimpleTriple();
+						foo. setPredicateId(canonId);
+						foo.setPredicateText(newPred.getWords(LANG));
+						foo.setPredicateText(newPred.getWords(LANG));
+						foo.setSubjectId(st.getSubjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setSubjectText(st.getSubjectText());
+						foo.setObjectId(st.getObjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setObjectText(st.getObjectText());
+						foo.addSentenceId(sentenceId);
+
+						r =tripleModel.putTuple(foo);
+						tId = ((Long)r.getResultObject()).longValue();
+						st.setNormalizedTripleId(tId);
+						r = tripleModel.putWorkingTuple(st);
+						return foo;
 					}
+					
 				}
-			}
-			if (!subjectFound && lenS4 > 0) {
-				for (int j=0;j<lenS4;j++) {
-					subj = nounWordgrams.get(j);
-					txtB = subj.getWords(null);
-					whereOther = locateTermInSentence(theSentence, txtB);
-					if (whereOther > wherePredicate) {
-						subj = null;
-						break;
-					} else {
-						environment.logDebug("PPG-3 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-						// heuristic = mayte that's it
-						subjectFound = true;
-						break;
-					}
-				}
-			}
-			if (subjectFound)  {
-				//look for object
-				//Look in dbpedia
-				for (int j=0;j<lenS1;j++) {
-					obj = dbPediaWordgrams.get(j);
-					txtB = obj.getWords(null);
-					whereOther = locateTermInSentence(theSentence, txtB);
-					environment.logDebug("PPG-4a "+lenS1+" "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-					if (whereOther < wherePredicate) {
-						obj = null;
-						;
-					} else {
-						environment.logDebug("PPG-4 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-						// heuristic = mayte that's it
-						objectFound = true;
-						break;
-					}
-				}
-				if (!objectFound && lenS3 > 0) {
-					for (int j=0;j<lenS3;j++) {
-						obj = wikidataWordgrams.get(j);
-						txtB = obj.getWords(null);
-						whereOther = locateTermInSentence(theSentence, txtB);
-						if (whereOther < wherePredicate) {
-							obj = null;
-							
-						} else {
-							environment.logDebug("PPG-5 "+txtA+" "+txtA+" "+wherePredicate+" "+whereOther);
-							// heuristic = mayte that's it
-							objectFound = true;
-							break;
-						}
-					}
-				}
-				if (!objectFound && lenS4 > 0) {
-					for (int j=0;j<lenS4;j++) {
-						obj = nounWordgrams.get(j);
-						txtB = obj.getWords(null);
-						whereOther = locateTermInSentence(theSentence, txtB);
-						if (whereOther < wherePredicate) {
-							obj = null;
-							;
-						} else {
-							environment.logDebug("PPG-6 "+txtA+" "+txtB+" "+wherePredicate+" "+whereOther);
-							// heuristic = mayte that's it
-							objectFound = true;
-							break;
-						}
-					}
-				}				
-			}
-			if (subjectFound && objectFound) {
-				System.out.println("XX "+subj+"|"+pred+"|"+obj);
-				formTriple(subj, pred, obj);
+			} 
+			else {
+				// let's get its normalized version
+				foo = (ISimpleTriple)o;
+				tId=foo.getNormalizedTripleId();
+				r = tripleModel.getTupleById(tId);
+				st = (ISimpleTriple)r.getResultObject();
+				r = tripleModel.addSentenceIdToTuple(sentenceId, st.getId());
 			}
 
-		}
-		return result;
-	}
-	
-	ISimpleTriple formTriple(IWordGram subject, IWordGram predicate, IWordGram object) {
-		ISimpleTriple result = null;
-		long cannon= -1;
-		boolean hasInverse = predicate.hasInverseTerm();
-		IWordGram pred;
-		IResult r;
-		if (hasInverse) {
-			r = model.getThisTermById(Long.toString(predicate.getInverseTerm()));
-			pred = (IWordGram)r.getResultObject();
 		} else {
-			pred = predicate;
-		} 
-		if (cannon > -1) {
-			r = model.getThisTermById(Long.toString(cannon));
-			pred = (IWordGram)r.getResultObject();
+			//add sentence Id to it
+			foo = (ISimpleTriple)o;
+			tId=foo.getId();
+			r = tripleModel.addSentenceIdToTuple(sentenceId, tId);
 		}
-		//TODO check subject and object for predicates
-		String foo = subject.getWords(null)+" "+pred.getWords(null)+" "+object.getWords(null);
-		environment.logDebug("TheTriple: "+foo);
-		environment.logDebug("Pred: "+predicate.getData());
-
-		return result;
+		return st;
 	}
 	
-	int locateTermInSentence(String sentence, String term) {
-		String SS = sentence.toLowerCase();
-		String TT = term.toLowerCase();
-		return SS.indexOf(TT);
-	}
-*/
 }
 
 /**

@@ -103,12 +103,12 @@ public class TripleAnalyzer {
 		// normalize the list
 		///////////////////////////
 		//if (predicates.size() == 1)
-		JsonArray triples = null;
+		//JsonArray triples = null;
 		if (hasConjuncts || hasDisjuncts)
-			triples = makeTriples(things, predicates);
+			result = makeTriples(things, predicates);
 		else
 			result.add( makeTriple(0, 0, things, predicates));
-		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result+"\n"+triples);
+		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
 		return result;
 	}
 
