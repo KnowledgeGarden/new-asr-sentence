@@ -87,6 +87,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		} finally {
 		    conn.closeConnection(result);
 		}
+		environment.logDebug("PutTuple+ "+result.getResultObject());
 		return result;
 	}
 
@@ -266,11 +267,11 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    		ISimpleTriple st = new ASRSimpleTriple(template.getData());
 		    		st.setId(rs.getLong("id"));
 		    		st.setSubjectId(rs.getLong("subj_id"), rs.getString("subj_typ"));
-		    		st.setSubjectText(rs.getString("subj_txt"));
 		    		st.setPredicateId(rs.getLong("pred_id"));
+	    			st.setObjectId(rs.getLong("obj_id"), rs.getString("obj_typ"));
 		    		if (!isWorking) {
+			    		st.setSubjectText(rs.getString("subj_txt"));
 		    			st.setPredicateText(rs.getString("pred_txt"));
-		    			st.setObjectId(rs.getLong("obj_id"), rs.getString("obj_typ"));
 		    			st.setObjectText(rs.getString("obj_txt"));
 		    		} else
 		    			st.setNormalizedTripleId(rs.getLong("norm_id"));

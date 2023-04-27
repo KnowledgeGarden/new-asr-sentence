@@ -219,6 +219,7 @@ public class WordGramBuilder {
 	 * @param triple
 	 */
 	ISimpleTriple processSimpleTriple(long sentenceId, JsonObject triple) {
+		environment.logDebug("ProcessSimpleTriple\n"+triple);
 		JsonObject pred = triple.get("pred").getAsJsonObject();
 		JsonObject sx = triple.get("subj").getAsJsonObject();
 		JsonObject ox = triple.get("obj").getAsJsonObject();
@@ -233,7 +234,7 @@ public class WordGramBuilder {
 		IWordGram predicateGram;
 		String predText = pred.get("txt").getAsString();
 		/////////////////////
-		// TODO
+		// TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// This is where we test for predicate existence
 		// and Stop if it doesn't
 		/////////////////////
@@ -254,57 +255,63 @@ public class WordGramBuilder {
 			subjText = sx.get("txt").getAsString();
 			r = model.processTerm(subjText, IPOS.NOUN_POS);
 			idx = (String)r.getResultObject();
-			r = model.getThisTermById(idx);
+			r = model.getTermById(idx); // canonical form if exists
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
 			st.setSubjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
 			st.setSubjectText(subjText);
 		} else { // it's a triple
 			environment.logDebug("NestedSubject "+sx);
-			ISimpleTriple theSubject = processSimpleTriple(sentenceId, sx);
+			ISimpleTriple theSubject = processSimpleTriple(sentenceId, sx); // recurse
+			environment.logDebug("NestedSubject-1\n"+theSubject.getData());
 			tId = theSubject.getId();
 			subjText = getTripleText(theSubject);
+			environment.logDebug("NestedSubject-2 "+tId+" "+subjText);
 			st.setSubjectId(tId, ISimpleTriple.TRIPLE_TYPE);
 			st.setSubjectText(subjText);
 		}
+		environment.logDebug("ProcessSimpleTriple-1\n"+st.getData());
 		if (ox.get("subj") == null) { // nested object?
 			subjText = ox.get("txt").getAsString();
 			r = model.processTerm(subjText, IPOS.NOUN_POS);
 			idx = (String)r.getResultObject();
-			r = model.getThisTermById(idx);
+			r = model.getTermById(idx); // returns canonical form if exists
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
 			st.setObjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
 			st.setObjectText(subjText);
 		} else { // nested object
-			environment.logDebug("NestedObject "+sx);
-			ISimpleTriple theObject = processSimpleTriple(sentenceId, ox);
+			environment.logDebug("NestedObject "+ox);
+			ISimpleTriple theObject = processSimpleTriple(sentenceId, ox); // recurse
 			tId = theObject.getId();
+			environment.logDebug("NestedObject-1\n"+theObject.getData());
 			subjText = getTripleText(theObject);
+			environment.logDebug("NestedObject-2 "+tId+" "+subjText);
 			st.setObjectId(tId, ISimpleTriple.TRIPLE_TYPE);
 			st.setObjectText(subjText);
 		}
 		st.addSentenceId(sentenceId);
+		// working or full tuple?
 		r = tripleModel.getThisTuple(st);
-		environment.logDebug("ProcessSimpleTriple-1\n"+r.getResultObject()+"\n"+st.getData());
+		environment.logDebug("ProcessSimpleTriple-2\n"+r.getResultObject()+"\n"+st.getData());
 		Object o = r.getResultObject();
 		ISimpleTriple foo;
 		if (o == null) {
 			r = tripleModel.getThisWorkingTuple(st);
-			environment.logDebug("ProcessSimpleTriple-2\n"+r.getResultObject()+"\n"+st.getData());
+			environment.logDebug("ProcessSimpleTriple-3\n"+r.getResultObject()+"\n"+st.getData());
 			o = r.getResultObject();
 			if (o == null) {
-				environment.logDebug("ProcessSimpleTriple-3 "+invId+" "+canonId);
+				environment.logDebug("ProcessSimpleTriple-4 "+invId+" "+canonId);
 			// it does not exist in the database
 				if (invId == -1 && canonId == -1) {
 					r = tripleModel.putTuple(st);
 					tId = ((Long)r.getResultObject()).longValue();
 					st.setId(tId);
 				} else if (invId > -1 || canonId > -1) {
-					environment.logDebug("ProcessSimpleTriple-4 "+invId+" "+canonId);
+					environment.logDebug("ProcessSimpleTriple-5 "+invId+" "+canonId);
 					//make a canonical form, save that, grab it's id, then save that
 					if (invId > -1) {
-						environment.logDebug("ProcessSimpleTriple-5 "+invId+" "+canonId);
+						environment.logDebug("ProcessSimpleTriple-6 "+invId+" "+canonId);
 						// this is an inverted gram
 						r = model.getTermById(Long.toString(invId));
 						IWordGram newPred = (IWordGram)r.getResultObject();
@@ -321,9 +328,11 @@ public class WordGramBuilder {
 						tId = ((Long)r.getResultObject()).longValue();
 						st.setNormalizedTripleId(tId);
 						r = tripleModel.putWorkingTuple(st);
-						return foo;
+						
+						environment.logDebug("ProcessSimpleTriple-6A\n"+st.getData()+"\n"+foo.getData());
+						st = foo; // return the requested triple
 					} else if (canonId > -1) {
-						environment.logDebug("ProcessSimpleTriple-6 "+invId+" "+canonId);
+						environment.logDebug("ProcessSimpleTriple-7 "+invId+" "+canonId);
 						r = model.getTermById(Long.toString(canonId));
 						IWordGram newPred = (IWordGram)r.getResultObject();
 						foo = new ASRSimpleTriple();
@@ -340,7 +349,7 @@ public class WordGramBuilder {
 						tId = ((Long)r.getResultObject()).longValue();
 						st.setNormalizedTripleId(tId);
 						r = tripleModel.putWorkingTuple(st);
-						return foo;
+						st = foo;
 					}
 					
 				}
@@ -360,6 +369,7 @@ public class WordGramBuilder {
 			tId=foo.getId();
 			r = tripleModel.addSentenceIdToTuple(sentenceId, tId);
 		}
+		environment.logDebug("ProcessSimpleTriple++\n"+st.getData());
 		return st;
 	}
 	
