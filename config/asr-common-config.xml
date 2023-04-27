@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!-- new-asr properties
+	-->
+
+<properties>
+
+	<parameter name="SpacyURL" value = "http://127.0.0.1:8000" />  <!-- CHANGE ME -->
+
+	<!-- WordGram database -->
+	<parameter name="DatabaseName" value = "asrtest" />
+	<parameter name="DatabaseSchema" value = "public" />
+	<!-- Triple database -->
+	<parameter name="TriplebaseName" value = "bigjuice" />
+	
+	<!-- Bootstrapping data files -->
+	<parameter name="PredCSV" value="./data/predicates/ASRpreds.csv/" /> <!--  pay attention to filename -->
+	
+	<!-- Dictionary server -->
+	<!-- this agent commmunicates with the Dictionary Server -->
+	<parameter name="DictServerURl" value="localhost" /> <!--  coordinate with Dictionary -->
+	<parameter name="DictServerPort" value="7878" /> <!-- coordinate with Dictionary Server -->
+	<parameter name="DictServerClientId" value = "changeme" /> <!-- coordinate with Dictionary Server -->
+	
+	<!--  kafka rewinging T or F -->
+	<parameter name="ConsumerRewind" value="T" />
+</properties>
+
