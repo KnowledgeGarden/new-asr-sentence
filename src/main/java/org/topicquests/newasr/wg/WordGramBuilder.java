@@ -168,6 +168,7 @@ public class WordGramBuilder {
 	}
 	
 	String getTripleText(ISimpleTriple trip) {
+		environment.logDebug("GetTripleText\n"+trip.getData());
 		StringBuilder buf = new StringBuilder();
 		//		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
 		buf.append("{ ");
@@ -177,6 +178,7 @@ public class WordGramBuilder {
 		boolean sIsWG = subjType.equals(ISimpleTriple.WORDGRAM_TYPE);
 		boolean oIsWG = objType.equals(ISimpleTriple.WORDGRAM_TYPE);
 		predText = trip.getPredicateText();
+		environment.logDebug("GetTripleText-1\n"+subjType+" "+objType+" "+predText);
 		ISimpleTriple foo;
 		long oid, sid;
 		IResult r;
@@ -191,6 +193,7 @@ public class WordGramBuilder {
 				wg = (IWordGram)r.getResultObject();
 				objectText = wg.getWords(LANG);
 			}
+			environment.logDebug("GetTripleText-2\n"+subjectText+" "+objectText);
 		} else {
 			sid = trip.getSubjectId();
 			r = model.getThisTermById(Long.toString(sid));
@@ -203,10 +206,13 @@ public class WordGramBuilder {
 				r = model.getThisTermById(Long.toString(oid));
 				wg = (IWordGram)r.getResultObject();
 				objectText = wg.getWords(LANG);
+				environment.logDebug("GetTripleText-3\n"+subjectText+" "+objectText);
 			}
 		}
 		buf.append("subj: "+subjectText+", pred: "+predText+", obj: "+objectText);
 		buf.append(" }");
+		environment.logDebug("GetTripleText++\n"+buf.toString());
+
 		return buf.toString().trim();
 	}
 	
@@ -281,10 +287,10 @@ public class WordGramBuilder {
 			st.setObjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
 			st.setObjectText(subjText);
 		} else { // nested object
-			environment.logDebug("NestedObject "+ox);
+			environment.logDebug("NestedObject "+ox); // starts a recursion
 			ISimpleTriple theObject = processSimpleTriple(sentenceId, ox); // recurse
+			environment.logDebug("NestedObject-1\n"+theObject.getData()); // returns here
 			tId = theObject.getId();
-			environment.logDebug("NestedObject-1\n"+theObject.getData());
 			subjText = getTripleText(theObject);
 			environment.logDebug("NestedObject-2 "+tId+" "+subjText);
 			st.setObjectId(tId, ISimpleTriple.TRIPLE_TYPE);
@@ -326,6 +332,7 @@ public class WordGramBuilder {
 
 						r =tripleModel.putTuple(foo);
 						tId = ((Long)r.getResultObject()).longValue();
+						foo.setId(tId);
 						st.setNormalizedTripleId(tId);
 						r = tripleModel.putWorkingTuple(st);
 						
@@ -348,6 +355,7 @@ public class WordGramBuilder {
 						r =tripleModel.putTuple(foo);
 						tId = ((Long)r.getResultObject()).longValue();
 						st.setNormalizedTripleId(tId);
+						foo.setId(tId);
 						r = tripleModel.putWorkingTuple(st);
 						st = foo;
 					}
