@@ -6,7 +6,6 @@ package org.topicquests.newasr.trip;
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.ISentence;
-import org.topicquests.newasr.api.ITripleModel;
 import java.util.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -31,6 +30,41 @@ public class TripleAnalyzer {
 		// TODO Auto-generated constructor stub
 	}
 	/**
+	 * BAD structure
+	 	[{
+				"strt": "1",
+				"txt": "Some scientists"
+			}, {
+				"strt": 2,
+				"txt": " believe"
+			}, {
+				"strt": "5",
+				"txt": "other scientists"
+			}, {
+				"strt": 6,
+				"txt": " believe"
+			}, {
+				"strt": "9",
+				"txt": "carbon dioxide",
+				"dbp": {
+					"strt": "carbon dioxide",
+					"kid": "http://dbpedia.org/resource/Carbon_dioxide",
+					"dbp": "0.9990415953521904"
+				}
+			}, {
+				"strt": 10,
+				"txt": " causes"
+			}, {
+				"strt": "12",
+				"txt": "climate change",
+				"dbp": {
+					"strt": "climate change",
+					"kid": "http://dbpedia.org/resource/Global_warming",
+					"dbp": "0.9999940930657609"
+				}
+			}]
+	 */
+	/**
 	 * <p>Isolating triple structures in a sentence is complex; it is made more complex when
 	 * a sentence is conjunctive, disjunctive, or both
 	 * complicate the isolation of triple subjects and objects".</>
@@ -43,14 +77,14 @@ public class TripleAnalyzer {
 	 * @param nouns
 	 * @return
 	 */
-	public JsonArray bigDamnAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
+	public JsonArray bigDamnTripleAnalyze(ISentence sentence, JsonArray predicates, JsonArray nouns) {
 		boolean hasConjuncts = sentence.hasConjuncts();
 		boolean hasDisjuncts = sentence.hasDisjuncts();
 		JsonArray conjuncts = sentence.getConjuncts();
 		JsonArray disjuncts = sentence.getDisjuncts();
 		
 		String text = sentence.getText();
-		environment.logDebug("BigDamAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+"\n"+predicates+"\n"+nouns);
+		environment.logDebug("BigDamnTripleAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+"\n"+predicates+"\n"+nouns);
 		JsonArray result = new JsonArray();
 		int counts = text.length();
 		int predLength = predicates.size();
@@ -63,11 +97,11 @@ public class TripleAnalyzer {
 		JsonObject jo;
 		for (int i=0;i<predLength;i++) {
 			jo = (predicates.get(i).getAsJsonObject());
-			environment.logDebug("BigDamAnalysis-1a "+predLength+" "+i+"\n"+jo);
+			environment.logDebug("BigDamnTripleAnalysis-1a "+predLength+" "+i+"\n"+jo);
 			where = jo.get("strt").getAsJsonPrimitive().getAsInt();
 			construct[where] = jo;
 		}
-		environment.logDebug("BigDamAnalysis-1\n"+construct);
+		environment.logDebug("BigDamnTripleAnalysis-1\n"+construct);
 		//populate with nouns
 		int nounLength = nouns.size();
 		
@@ -93,12 +127,12 @@ public class TripleAnalyzer {
 				where = jo.get("strt").getAsJsonPrimitive().getAsInt();
 				construct[where] = jo;
 			}
-		}		environment.logDebug("BigDamAnalysis-2\n"+construct);
+		}		environment.logDebug("BigDamnTripleAnalysis-2\n"+construct);
 		for (int i=0;i<counts;i++) {
 			if (construct[i] != null)
 				things.add(construct[i]);
 		}
-		environment.logDebug("BigDamAnalysis-3\n"+things+"\n"+conjuncts+"\n"+disjuncts);
+		environment.logDebug("BigDamnTripleAnalysis-3\n"+things+"\n"+conjuncts+"\n"+disjuncts);
 		///////////////////////////
 		// normalize the list
 		///////////////////////////
@@ -108,7 +142,7 @@ public class TripleAnalyzer {
 			result = makeTriples(things, predicates);
 		else
 			result.add( makeTriple(0, 0, things, predicates));
-		environment.logDebug("BigDamAnalysis+\n"+things+"\n"+result);
+		environment.logDebug("BigDamnTripleAnalysis+\n"+things+"\n"+result);
 		return result;
 	}
 
@@ -204,6 +238,16 @@ public class TripleAnalyzer {
 	 * @return
 	 */
 	JsonObject makeTriple(int index, int predIndex, List<JsonObject> things, JsonArray preds) {
+		environment.logDebug("MakeTriple "+index+" "+predIndex+"\n"+things+"\n"+preds);
+		//MakeTriple 0 0
+		//[{"strt":"1","txt":"Some scientists"}, {"strt":2,"txt":" believe"}, {"strt":"5","txt":"other scientists"}, {"strt":6,"txt":" believe"}, {"strt":"9","txt":"carbon dioxide","dbp":{"strt":"carbon dioxide","kid":"http://dbpedia.org/resource/Carbon_dioxide","dbp":"0.9990415953521904"}}, {"strt":10,"txt":" causes"}, {"strt":"12","txt":"climate change","dbp":{"strt":"climate change","kid":"http://dbpedia.org/resource/Global_warming","dbp":"0.9999940930657609"}}]
+		//[{"strt":2,"txt":" believe"},{"strt":6,"txt":" believe"},{"strt":10,"txt":" causes"}]
+			//MakeTriple 1 1
+			//[{"strt":"1","txt":"Some scientists"}, {"strt":2,"txt":" believe"}, {"strt":"5","txt":"other scientists"}, {"strt":6,"txt":" believe"}, {"strt":"9","txt":"carbon dioxide","dbp":{"strt":"carbon dioxide","kid":"http://dbpedia.org/resource/Carbon_dioxide","dbp":"0.9990415953521904"}}, {"strt":10,"txt":" causes"}, {"strt":"12","txt":"climate change","dbp":{"strt":"climate change","kid":"http://dbpedia.org/resource/Global_warming","dbp":"0.9999940930657609"}}]
+			//[{"strt":2,"txt":" believe"},{"strt":6,"txt":" believe"},{"strt":10,"txt":" causes"}]
+				//MakeTriple 2 2
+				//[{"strt":"1","txt":"Some scientists"}, {"strt":2,"txt":" believe"}, {"strt":"5","txt":"other scientists"}, {"strt":6,"txt":" believe"}, {"strt":"9","txt":"carbon dioxide","dbp":{"strt":"carbon dioxide","kid":"http://dbpedia.org/resource/Carbon_dioxide","dbp":"0.9990415953521904"}}, {"strt":10,"txt":" causes"}, {"strt":"12","txt":"climate change","dbp":{"strt":"climate change","kid":"http://dbpedia.org/resource/Global_warming","dbp":"0.9999940930657609"}}]
+				//[{"strt":2,"txt":" believe"},{"strt":6,"txt":" believe"},{"strt":10,"txt":" causes"}]
 		int pointer = index;
 		if (index > 0) {
 			// we are looking for the next subject
@@ -214,20 +258,42 @@ public class TripleAnalyzer {
 			
 		JsonObject result = new JsonObject();
 		int predLength = preds.size();
-		environment.logDebug("FooBar "+predLength+" "+predIndex+"\n"+result);
+		environment.logDebug("MakeTriple-1 "+predLength+" "+predIndex+"\n"+result);
+		//3 0
+		//{}
+			//3 1
+			//{}
+				//3 2
+				//{}
 		result.add("subj", things.get(pointer));
 		result.add("pred", preds.get(predIndex));
-		environment.logDebug("FooBar-1 "+predLength+" "+predIndex+"\n"+result);
-		if (predLength ==1 || predIndex == predLength-1)
+		environment.logDebug("MakeTriple-2 "+predLength+" "+predIndex+"\n"+result);
+		//3 0
+		//{"subj":{"strt":"1","txt":"Some scientists"},"pred":{"strt":2,"txt":" believe"}}
+			//3 1
+			//{"subj":{"strt":"5","txt":"other scientists"},"pred":{"strt":6,"txt":" believe"}}
+				//3 2
+				//{"subj":{"strt":"9","txt":"carbon dioxide","dbp":{"strt":"carbon dioxide","kid":"http://dbpedia.org/resource/Carbon_dioxide","dbp":"0.9990415953521904"}},"pred":{"strt":10,"txt":" causes"}}
+		if (predLength ==1 || predIndex == predLength) {
+			environment.logDebug("MakeTriple-3 "+ things.get(pointer+2));
 			result.add("obj", things.get(pointer+2));
-		else {
-			environment.logDebug("FooBar-2 "+predLength+" "+predIndex+"\n"+result);
-			if (predIndex >= predLength-1)
+		} else {
+			environment.logDebug("MakeTriple-4 "+predLength+" "+predIndex+"\n"+result);
+			//3 0
+			//{"subj":{"strt":"1","txt":"Some scientists"},"pred":{"strt":2,"txt":" believe"}}
+				//3 1
+				//{"subj":{"strt":"5","txt":"other scientists"},"pred":{"strt":6,"txt":" believe"}}
+			if (predIndex >= predLength-1) {
+				if (result.get("obj") == null) {
+					environment.logDebug("MakeTriple-5 "+pointer+" "+result.get("pred")+"\n"+things);
+					result.add("obj", things.get(pointer+2));
+				}
 				return result;
-			JsonObject jo = makeTriple(index+1, predIndex+1, things,preds);
+			}
+			JsonObject jo = makeTriple(index+1, predIndex+1, things,preds); // recurse
 			result.add("obj", jo);
 		}
-		environment.logDebug("FooBar+\n"+result);
+		environment.logDebug("MakeTriple+\n"+result);
 
 		return result;
 	}

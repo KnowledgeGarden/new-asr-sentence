@@ -23,8 +23,8 @@ public interface ITripleQueries {
 			
 		PUT_WORKING_TRIPLE = // we don't bother with text objects in working triples
 			"INSERT INTO public.working_triple "+
-			"(wg_subj_id, tr_subj_id, wg_pred_id, wg_obj_id, tr_obj_id) "+
-			"VALUES (?, ?, ?, ?, ?) RETURNING id",
+			"(wg_subj_id, tr_subj_id, wg_pred_id, wg_obj_id, tr_obj_id, tr_norm_id) "+
+			"VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
 			//+ "(subj_id, pred_id, obj_id, subj_typ, obj_typ, norm_id) "+
 			//"VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
 			

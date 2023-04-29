@@ -10,12 +10,12 @@ import org.topicquests.support.api.IResult;
 
 /**
  * @author jackpark
- *
+ * @Deprecated
  */
 public class FirstTripleTest extends TestingRoot {
 
 	/**
-	 * 
+	 * @Deprecated
 	 */
 	public FirstTripleTest() {
 		super();
@@ -47,11 +47,11 @@ public class FirstTripleTest extends TestingRoot {
 
 	ISimpleTriple _makeTriple(long sId, String stx, long pId, String ptx,  long oId, String otx) {
 		ISimpleTriple result = new ASRSimpleTriple();
-		result.setSubjectId(sId, ISimpleTriple.WORDGRAM_TYPE);
+		result.setWgSubjectId(sId);
 		result.setSubjectText(stx);
 		result.setPredicateId(pId);
 		result.setPredicateText(ptx);
-		result.setObjectId(oId, ISimpleTriple.WORDGRAM_TYPE);
+		result.setWgObjectId(oId);
 		result.setObjectText(otx);
 		return result;
 	}

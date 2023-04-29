@@ -37,6 +37,7 @@ import org.topicquests.support.config.Configurator;
  *
  */
 public class ASREnvironment extends ASRBaseEnvironment {
+	private static ASREnvironment instance;
 	private PostgresConnectionFactory dbDriver = null;
 	private PostgresConnectionFactory tripleDriver = null;
 	private IDictionaryClient dictionarHttpyClient;
@@ -91,6 +92,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		sentenceEngine = new SentenceEngine(this);
 		predImporter = new PredicateImporter(this);
 		
+		instance = this;
 		sentenceEngine.startProcessing();
 		
 		// shutdown hook
@@ -104,6 +106,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		
 	}
 	
+	public static ASREnvironment getInstance() {
+		return instance;
+	}
 	public ITupleModel getTripleModel() {
 		return tripleModel;
 	}

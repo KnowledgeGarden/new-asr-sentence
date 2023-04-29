@@ -26,7 +26,11 @@ public class FirstSentenceTest extends TestingRoot {
 		S7  = "Greenhouse gas causes climate change",
 		S8  = "Some scientists believe that other scientists believe that carbon dioxide causes climate change",
 		S9  = "Elephant shit encourages flies",
-		S10 = "The pandemic of obesity, type 2 diabetes mellitus (T2DM) and nonalcoholic fatty liver disease (NAFLD) has frequently been associated with dietary intake of saturated fats (1) and specifically with dietary palm oil (PO) (2).";
+		S10 = "The pandemic of obesity, type 2 diabetes mellitus (T2DM) and nonalcoholic fatty liver disease (NAFLD) has frequently been associated with dietary intake of saturated fats (1) and specifically with dietary palm oil (PO) (2).",
+		S11 = "According to the latest definition of the World Health Organization, probiotics are active microbes that stimulate the growth of other probiotic bacteria in the gut and possess beneficial health effects to the host",
+		S12 = "",
+		S13  = "Some scientists believe that other scientists believe that global warming is caused by carbon dioxide";
+	
 
 
 	private ISentence sentence;
@@ -38,7 +42,7 @@ public class FirstSentenceTest extends TestingRoot {
 		super();
 		
 		sentence = new ASRSentence(); 
-		sentence.setText(S4A);
+		sentence.setText(S13); //(S9); //(S10); //(S4A);
 		sentence.setId(System.currentTimeMillis());
 		sentenceEngine.acceptNewSentence(sentence.getData());
 		

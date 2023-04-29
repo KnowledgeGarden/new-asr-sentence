@@ -14,11 +14,9 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IPOS;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.api.ISimpleTriple;
-import org.topicquests.newasr.api.ITripleModel;
 import org.topicquests.newasr.api.ITupleModel;
 import org.topicquests.newasr.api.IWordGram;
 import org.topicquests.newasr.impl.ASRSimpleTriple;
-import org.topicquests.newasr.impl.ASRTupleModel;
 import org.topicquests.newasr.trip.TripleAnalyzer;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.support.ResultPojo;
@@ -147,7 +145,7 @@ public class WordGramBuilder {
 		IResult r;
 		
 		
-		JsonArray ta = analyzer.bigDamnAnalyze(sentence, predicates, resolvedNouns);
+		JsonArray ta = analyzer.bigDamnTripleAnalyze(sentence, predicates, resolvedNouns);
 		if (ta != null)
 			sentence.setSimpleTriples(ta);
 		environment.logDebug("WGBuild\n"+ta);
@@ -155,67 +153,21 @@ public class WordGramBuilder {
 		int len = ta.size();
 		JsonObject trix;
 		ISimpleTriple strix;
+		JsonArray them = new JsonArray();
 		for (int i=0;i<len;i++) {
 			trix = ta.get(i).getAsJsonObject();
 			environment.logDebug("WGBuild-1\n"+trix);
 			strix = processSimpleTriple(sentenceId, trix);
 			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix.getData());
+			them.add(strix.getData());
 		}
 		
-		
+		environment.logDebug("TripleMonster\n"+them);
 		
 		return result;
 	}
 	
-	String getTripleText(ISimpleTriple trip) {
-		environment.logDebug("GetTripleText\n"+trip.getData());
-		StringBuilder buf = new StringBuilder();
-		//		String oText = "{ "+oSubject.getWords(LANG)+", "+oPredicate.getWords(LANG)+", "+oObject.getWords(LANG)+" }";
-		buf.append("{ ");
-		String subjType = trip.getSubjectType();
-		String objType = trip.getObjectType();
-		String subjectText, predText, objectText;
-		boolean sIsWG = subjType.equals(ISimpleTriple.WORDGRAM_TYPE);
-		boolean oIsWG = objType.equals(ISimpleTriple.WORDGRAM_TYPE);
-		predText = trip.getPredicateText();
-		environment.logDebug("GetTripleText-1\n"+subjType+" "+objType+" "+predText);
-		ISimpleTriple foo;
-		long oid, sid;
-		IResult r;
-		IWordGram wg;
-		if (sIsWG) {
-			subjectText = trip.getSubjectText();
-			if (oIsWG) {
-				objectText = trip.getObjectText();
-			} else {
-				oid = trip.getObjectId();
-				r = model.getThisTermById(Long.toString(oid));
-				wg = (IWordGram)r.getResultObject();
-				objectText = wg.getWords(LANG);
-			}
-			environment.logDebug("GetTripleText-2\n"+subjectText+" "+objectText);
-		} else {
-			sid = trip.getSubjectId();
-			r = model.getThisTermById(Long.toString(sid));
-			wg = (IWordGram)r.getResultObject();
-			subjectText = wg.getWords(LANG);
-			if (oIsWG) {
-				objectText = trip.getObjectText();
-			} else {
-				oid = trip.getObjectId();
-				r = model.getThisTermById(Long.toString(oid));
-				wg = (IWordGram)r.getResultObject();
-				objectText = wg.getWords(LANG);
-				environment.logDebug("GetTripleText-3\n"+subjectText+" "+objectText);
-			}
-		}
-		buf.append("subj: "+subjectText+", pred: "+predText+", obj: "+objectText);
-		buf.append(" }");
-		environment.logDebug("GetTripleText++\n"+buf.toString());
 
-		return buf.toString().trim();
-	}
-	
 	/**
 	 * Recursive
 	 * <p>The game here is to take an object which is composed of features like<br/>
@@ -255,7 +207,7 @@ public class WordGramBuilder {
 		long canonId = predicateGram.getCannonTerm();
 		st.setPredicateId(predicateGram.getId());
 		st.setPredicateText(predText);
-		long tId;
+		long tId, wId;
 		//Subject next
 		if (sx.get("subj") == null) { // is it a triple?
 			subjText = sx.get("txt").getAsString();
@@ -264,16 +216,16 @@ public class WordGramBuilder {
 			r = model.getTermById(idx); // canonical form if exists
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
-			st.setSubjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
+			st.setWgSubjectId(wg.getId());
 			st.setSubjectText(subjText);
 		} else { // it's a triple
 			environment.logDebug("NestedSubject "+sx);
 			ISimpleTriple theSubject = processSimpleTriple(sentenceId, sx); // recurse
 			environment.logDebug("NestedSubject-1\n"+theSubject.getData());
 			tId = theSubject.getId();
-			subjText = getTripleText(theSubject);
+			subjText =theSubject.toString();
 			environment.logDebug("NestedSubject-2 "+tId+" "+subjText);
-			st.setSubjectId(tId, ISimpleTriple.TRIPLE_TYPE);
+			st.setTrSubjectId(tId);
 			st.setSubjectText(subjText);
 		}
 		environment.logDebug("ProcessSimpleTriple-1\n"+st.getData());
@@ -284,16 +236,16 @@ public class WordGramBuilder {
 			r = model.getTermById(idx); // returns canonical form if exists
 			wg = (IWordGram)r.getResultObject();	
 			wg.setSentenceId(sentenceId, tense, epi);
-			st.setObjectId(wg.getId(), ISimpleTriple.WORDGRAM_TYPE);
+			st.setWgObjectId(wg.getId());
 			st.setObjectText(subjText);
 		} else { // nested object
 			environment.logDebug("NestedObject "+ox); // starts a recursion
 			ISimpleTriple theObject = processSimpleTriple(sentenceId, ox); // recurse
 			environment.logDebug("NestedObject-1\n"+theObject.getData()); // returns here
 			tId = theObject.getId();
-			subjText = getTripleText(theObject);
+			subjText = theObject.toString();
 			environment.logDebug("NestedObject-2 "+tId+" "+subjText);
-			st.setObjectId(tId, ISimpleTriple.TRIPLE_TYPE);
+			st.setTrObjectId(tId);
 			st.setObjectText(subjText);
 		}
 		st.addSentenceId(sentenceId);
@@ -324,13 +276,15 @@ public class WordGramBuilder {
 						foo = new ASRSimpleTriple();
 						foo. setPredicateId(invId);
 						foo.setPredicateText(newPred.getWords(LANG));
-						foo.setSubjectId(st.getObjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setWgSubjectId(st.getWgObjectId());
+						foo.setTrSubjectId(st.getTrObjectId());
 						foo.setSubjectText(st.getObjectText());
-						foo.setObjectId(st.getSubjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						foo.setWgObjectId(st.getWgSubjectId());
+						foo.setTrObjectId(st.getTrSubjectId());
 						foo.setObjectText(st.getSubjectText());
 						foo.addSentenceId(sentenceId);
-
-						r =tripleModel.putTuple(foo);
+						environment.logDebug("FOOBAR\n"+foo.getData());
+						r =tripleModel.putTuple(foo); // <<<<<<<<<<<<<<<<<<<<
 						tId = ((Long)r.getResultObject()).longValue();
 						foo.setId(tId);
 						st.setNormalizedTripleId(tId);
@@ -346,9 +300,15 @@ public class WordGramBuilder {
 						foo. setPredicateId(canonId);
 						foo.setPredicateText(newPred.getWords(LANG));
 						foo.setPredicateText(newPred.getWords(LANG));
-						foo.setSubjectId(st.getSubjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						if (st.getTrSubjectId() == -1)
+							foo.setWgSubjectId(st.getWgSubjectId());
+						else
+							foo.setTrSubjectId(st.getTrSubjectId());
 						foo.setSubjectText(st.getSubjectText());
-						foo.setObjectId(st.getObjectId(), ISimpleTriple.WORDGRAM_TYPE);
+						if (st.getTrObjectId() == -1)
+							foo.setWgObjectId(st.getWgObjectId());
+						else
+							foo.setTrObjectId(st.getTrObjectId());
 						foo.setObjectText(st.getObjectText());
 						foo.addSentenceId(sentenceId);
 

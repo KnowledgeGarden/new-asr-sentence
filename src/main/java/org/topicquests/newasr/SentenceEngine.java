@@ -112,7 +112,7 @@ public class SentenceEngine {
 				environment.logDebug("SentenceEngine-x ");
 			//This is the big spaCy full parse, etc
 				r = spacyServerEnvironment.processParagraph(text);
-				environment.logDebug("SentenceEngine-y\n"+r.getResultObject());
+				//environment.logDebug("SentenceEngine-y\n"+r.getResultObject());
 				
 				spacyData = (JsonArray)r.getResultObject();
 				sentence.setSpacyData(spacyData);
@@ -125,7 +125,7 @@ public class SentenceEngine {
 				////////////////////////////////
 				
 				//spacyObj is a sentence object
-				environment.logDebug("SentenceEngine-yy\n"+spacyData);
+				//environment.logDebug("SentenceEngine-yy\n"+spacyData);
 			} 
 			//spacyData ==> [ {concepts, sentences}, {concepts, sentences},...]
 			

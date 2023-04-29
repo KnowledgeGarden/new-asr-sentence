@@ -25,7 +25,7 @@ public class SentenceTestingFramework {
 //		new PredicateImportTest();
 		//new SecondPredicateTest();
 		//new WordgramTest();
-		//new FirstTripleTest();
+		//new FirstTripleTest(); -- do not run
 	}
 
 }

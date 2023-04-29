@@ -37,16 +37,17 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	@Override
 	public IResult putTuple(ISimpleTriple tup) {
 	    String sql = ITripleQueries.PUT_TRIPLE;
-	    return _putTuple(tup, sql);
+	    return _putTuple(tup, sql, false);
 	}
 	
 	/**
 	 * 
 	 * @param tup
 	 * @param sql
+	 * @param isWorking
 	 * @return
 	 */
-	IResult _putTuple(ISimpleTriple tup, String sql) {
+	IResult _putTuple(ISimpleTriple tup, String sql, boolean isWorking) {
 		environment.logDebug("PutTuple\n"+sql+"\n"+tup.getData());
 		IResult result = new ResultPojo();
 	    IPostgresConnection conn = null;
@@ -54,13 +55,19 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	    try { //TODO Transaction?
 	    	conn = dbDriver.getConnection();
 	    	//wg_subj_id, tr_subj_id, wg_pred_id, wg_obj_id, tr_obj_id
+	    	//wg_subj_id, tr_subj_id, wg_pred_id, wg_obj_id, tr_obj_id, tr_norm_id
 	    	int count = 5;
+	    	if (isWorking)
+	    		count=6;
 	    	// we do not have id - that's returned
 	    	Object [] vals = new Object[count];
 	    	vals[0] = new Long(tup.getWgSubjectId());
-	    	vals[1] = new Long(tup.getPredicateId());
-	    	vals[2] = new Long(tup.getWgObjectId());
-	    	vals[3] = new Long(tup.getTrObjectId());
+	    	vals[1] = new Long(tup.getTrSubjectId());
+	    	vals[2] = new Long(tup.getPredicateId());
+	    	vals[3] = new Long(tup.getWgObjectId());
+	    	vals[4] = new Long(tup.getTrObjectId());
+	    	if (isWorking)
+		    	vals[5] = new Long(tup.getNormalizedTripleId());
 	    	IResult rx = conn.executeSelect(sql, vals);
 		    if (rx.hasError())
 				result.addErrorString(rx.getErrorString());
@@ -282,7 +289,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	@Override
 	public IResult putWorkingTuple(ISimpleTriple tup) {
 	    String sql = ITripleQueries.PUT_WORKING_TRIPLE;
-	    return _putTuple(tup, sql);
+	    return _putTuple(tup, sql, true);
 	}
 
 	@Override
