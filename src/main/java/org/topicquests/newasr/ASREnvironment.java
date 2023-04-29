@@ -24,6 +24,7 @@ import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
 import org.topicquests.newasr.kafka.KafkaHandler;
+import org.topicquests.newasr.para.ParagraphHandler;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.newasr.wg.WordGramUtil;
@@ -56,6 +57,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private SentenceEngine sentenceEngine;
 	private PredicateImporter predImporter;
 	private ITupleModel tripleModel;
+	private ParagraphHandler paraHandler;
 
 
 	public static final String AGENT_GROUP = "Sentence";
@@ -91,7 +93,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceEngine = new SentenceEngine(this);
 		predImporter = new PredicateImporter(this);
-		
+		paraHandler = new ParagraphHandler(this);
 		instance = this;
 		sentenceEngine.startProcessing();
 		
@@ -108,6 +110,10 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	
 	public static ASREnvironment getInstance() {
 		return instance;
+	}
+	
+	public ParagraphHandler getParagraphHandler() {
+		return paraHandler;
 	}
 	public ITupleModel getTripleModel() {
 		return tripleModel;

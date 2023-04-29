@@ -9,6 +9,7 @@ import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.SentenceEngine;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.ITupleModel;
+import org.topicquests.newasr.para.ParagraphHandler;
 
 /**
  * @author jackpark
@@ -19,6 +20,7 @@ public class TestingRoot {
 	protected IAsrModel model;
 	protected SentenceEngine sentenceEngine;
 	protected ITupleModel tripleModel;
+	protected ParagraphHandler paraHandler;
 
 	/**
 	 * 
@@ -28,6 +30,7 @@ public class TestingRoot {
 		model = environment.getModel();
 		sentenceEngine = environment.getSentenceEngine();
 		tripleModel = environment.getTripleModel();
+		paraHandler = environment.getParagraphHandler();
 	}
 
 }
