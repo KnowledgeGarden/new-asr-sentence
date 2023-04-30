@@ -11,11 +11,11 @@ import org.topicquests.support.api.IResult;
  * @author jackpark
  *
  */
-public interface IParagraphModel {
+public interface ISentenceModel {
 
-	IResult putParagraph(IParagraph p);
+	IResult putSentence(ISentence s);
 	
-	IResult getParagraph(long id);
-	
-	IResult updateParagraph(IParagraph p);
+	IResult getSentence(long id);
+
+	IResult updateSentence(ISentence s);
 }

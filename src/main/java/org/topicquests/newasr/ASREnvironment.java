@@ -13,13 +13,19 @@ import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IDictionary;
 import org.topicquests.newasr.api.IDictionaryClient;
 import org.topicquests.newasr.api.IKafkaDispatcher;
+import org.topicquests.newasr.api.IParagraphModel;
+import org.topicquests.newasr.api.ISentenceDataProvider;
+import org.topicquests.newasr.api.ISentenceModel;
 import org.topicquests.newasr.api.ITupleModel;
 import org.topicquests.newasr.bootstrap.PredicateImporter;
 import org.topicquests.newasr.dictionary.DictionaryHttpClient;
 import org.topicquests.newasr.dictionary.DictionaryClient;
 import org.topicquests.newasr.impl.ASRBaseEnvironment;
 import org.topicquests.newasr.impl.ASRModel;
+import org.topicquests.newasr.impl.ASRParagraphModel;
+import org.topicquests.newasr.impl.ASRSentenceModel;
 import org.topicquests.newasr.impl.ASRTupleModel;
+import org.topicquests.newasr.impl.PostgresSentenceDatabase;
 import org.topicquests.newasr.impl.SentenceListener;
 import org.topicquests.newasr.impl.SpacyListener;
 import org.topicquests.newasr.impl.PostgresWordGramGraphProvider;
@@ -60,6 +66,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private SpacyDriverEnvironment spacyServerEnvironment;
 	private ParagraphEngine paragraphEngine;
 	private BulletinBoard bulletinBoard;
+	private IParagraphModel paragraphModel;
+	private ISentenceModel sentenceModel;
+	private ISentenceDataProvider sentenceDatabase;
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
@@ -90,12 +99,15 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		predAssem = new PredicateAssembler(this);
 		builder = new WordGramBuilder(this);
 		//spacyServerEnvironment = new SpacyDriverEnvironment();
+		sentenceDatabase = new PostgresSentenceDatabase(this);
 		sentenceEngine = new SentenceEngine(this);
 		predImporter = new PredicateImporter(this);
 		paraHandler = new ParagraphHandler(this);
+		paragraphModel = new ASRParagraphModel(this);
+		sentenceModel = new ASRSentenceModel(this);
+		sentenceEngine.startProcessing();
 		paragraphEngine = new ParagraphEngine(this);
 		instance = this;
-		sentenceEngine.startProcessing();
 		paragraphEngine.startProcessing();
 		// shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread()
@@ -111,7 +123,15 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	public static ASREnvironment getInstance() {
 		return instance;
 	}
-	
+	public IParagraphModel getParagraphModel() {
+		return paragraphModel;
+	}
+	public ISentenceModel getSentenceModel() {
+		return sentenceModel;
+	}
+	public ISentenceDataProvider getSentenceDatabase() {
+		return sentenceDatabase;
+	}
 	public BulletinBoard getBulletinBoard() {
 		return bulletinBoard;
 	}

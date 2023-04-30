@@ -13,6 +13,7 @@ import org.topicquests.newasr.api.IParagraph;
 import org.topicquests.newasr.api.IParagraphDataProvider;
 import org.topicquests.newasr.api.IParagraphModel;
 import org.topicquests.newasr.api.ISentence;
+import org.topicquests.newasr.api.ISentenceModel;
 import org.topicquests.newasr.impl.ASRParagraph;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.impl.PostgresParagraphDatabase;
@@ -36,8 +37,8 @@ public class ParagraphEngine {
 	private ParagraphHandler paraHandler;
 	private SentenceEngine sentenceEngine;
 	private BulletinBoard bulletinBoard;
-	private IParagraphModel model;
-	private IParagraphDataProvider database;
+	private IParagraphModel paragraphModel;
+	private ISentenceModel sentenceModel;
 	private List<JsonObject> paragraphs;
 	private boolean IS_RUNNING = true;
 	private ParagraphThread runner;
@@ -53,7 +54,8 @@ public class ParagraphEngine {
 		sentenceEngine = environment.getSentenceEngine();
 		paraHandler = environment.getParagraphHandler();
 		bulletinBoard = environment.getBulletinBoard();
-		database = new PostgresParagraphDatabase(environment);
+		paragraphModel = environment.getParagraphModel();
+		sentenceModel = environment.getSentenceModel();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;
 		SENTENCE_KEY = "data"; 		//TODO FIXME
@@ -110,7 +112,7 @@ public class ParagraphEngine {
 	 */
 	void processParagraph(IParagraph p) {
 		String text = p.getText();
-		IResult r = model.putParagraph(p);
+		IResult r = paragraphModel.putParagraph(p);
 		// store the paragraph to get its Id
 		long paragraphId = ((Long)r.getResultObject()).longValue();
 		//long paragraphId = p.getId();

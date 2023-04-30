@@ -5,17 +5,18 @@
  */
 package org.topicquests.newasr.api;
 
-import org.topicquests.support.api.IResult;
-
 /**
  * @author jackpark
  *
  */
-public interface IParagraphModel {
+public interface ISentenceQueries {
 
-	IResult putParagraph(IParagraph p);
-	
-	IResult getParagraph(long id);
-	
-	IResult updateParagraph(IParagraph p);
+	public static final String
+	PUT_SENTENCE =
+		"iNSERT INTO public.sentence",
+	GET_SENTENCE =
+		"SELECT * FROM public.sentence where id=?",
+	UPDATE_SENTENCE =
+		"UPDATE";
+
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.ISentence;
+import org.topicquests.newasr.api.ISentenceModel;
 import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.kafka.CommonKafkaProducer;
 import org.topicquests.newasr.noun.NounAssembler;
@@ -43,6 +44,7 @@ public class SentenceEngine {
 	private PredicateAssembler predAssem;
 	private NounAssembler nounAssem;
 	private WordGramBuilder builder;
+	private ISentenceModel sentenceModel;
 
 	private CommonKafkaProducer sentenceProducer;
 	private SpacyHttpClient spacy;
@@ -56,6 +58,7 @@ public class SentenceEngine {
 	public SentenceEngine(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		sentenceModel = environment.getSentenceModel();
 		bulletinBoard = environment.getBulletinBoard();
 		predAssem = environment.getPredicateAssembler();
 		nounAssem = new NounAssembler(environment);
