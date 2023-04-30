@@ -13,10 +13,10 @@ public interface IParagraphQueries {
 
 	public static final String
 		PUT_PARAGRAPH =
-			"iNSERT INTO public.paragraph",
+			"iNSERT INTO public.paragraph (doc_id, data) VALUES(?, ?) RETURNING id",
 		GET_PARAGRAPH =
-			"SELECT * FROM public.paragraph where id=?",
+			"SELECT * FROM public.paragraph WHERE id=?",
 		UPDATE_PARAGRAPH =
-			"UPDATE";
+			"UPDATE public.paragraph SET data=? WHERE id=?";
 		
 }

@@ -13,10 +13,10 @@ public interface ISentenceQueries {
 
 	public static final String
 	PUT_SENTENCE =
-		"iNSERT INTO public.sentence",
+		"iNSERT INTO public.sentence (para_id, doc_id, data) VALUES(?, ?, ?) RETURNING id",
 	GET_SENTENCE =
-		"SELECT * FROM public.sentence where id=?",
+		"SELECT * FROM public.sentence WHERE id=?",
 	UPDATE_SENTENCE =
-		"UPDATE";
+		"UPDATE public.sentence SET data=? WHERE id=?";
 
 }

@@ -205,6 +205,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	public void shutDown() {
 		logDebug("ASREnvironment Shutting down");
 		sentenceEngine.shutDown();
+		paragraphEngine.shutDown();
 		sentenceConsumer.shutDown();
 		spacyConsumer.shutDown();
 

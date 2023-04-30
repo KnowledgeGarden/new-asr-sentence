@@ -30,20 +30,17 @@ public class ASRParagraphModel implements IParagraphModel {
 
 	@Override
 	public IResult putParagraph(IParagraph p) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.putParagraph(p);
 	}
 
 	@Override
 	public IResult getParagraph(long id) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.getParagraph(id);
 	}
 
 	@Override
 	public IResult updateParagraph(IParagraph p) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.updateParagraph(p);
 	}
 
 }

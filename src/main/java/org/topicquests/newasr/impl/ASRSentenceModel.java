@@ -28,20 +28,17 @@ public class ASRSentenceModel implements ISentenceModel {
 
 	@Override
 	public IResult putSentence(ISentence s) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.putSentence(s);
 	}
 
 	@Override
 	public IResult getSentence(long id) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.getSentence(id);
 	}
 
 	@Override
 	public IResult updateSentence(ISentence s) {
-		// TODO Auto-generated method stub
-		return null;
+		return database.updateSentence(s);
 	}
 
 }

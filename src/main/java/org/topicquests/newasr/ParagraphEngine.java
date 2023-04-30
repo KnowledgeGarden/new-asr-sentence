@@ -5,6 +5,7 @@
  */
 package org.topicquests.newasr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.topicquests.newasr.SentenceEngine.SentenceThread;
@@ -49,6 +50,7 @@ public class ParagraphEngine {
 	 */
 	public ParagraphEngine(ASREnvironment env) {
 		environment =env;
+		paragraphs = new ArrayList<JsonObject>();
 		sentenceProducer = environment.getSentenceProducer();
 		spacyServerEnvironment = environment.getSpacyServer();
 		sentenceEngine = environment.getSentenceEngine();

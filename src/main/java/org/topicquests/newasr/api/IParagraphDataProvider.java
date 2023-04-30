@@ -17,4 +17,5 @@ public interface IParagraphDataProvider {
 	
 	IResult getParagraph(long id);
 
+	IResult updateParagraph(IParagraph p);
 }
