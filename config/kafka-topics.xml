@@ -9,7 +9,7 @@
 	<parameter name="KAFKA_SERVER_PORT" value="9092" />
 
 	<!-- Consumer Topic for handling sentences-->
-	<parameter name="SentenceConsumerTopic" value="SentenceIn" />
+	<parameter name="SentenceConsumerTopic" value="ParagraphIn" />
 	<!-- Producer Topic  which becomes a source topic for the next agent-->
 	<parameter name="SentenceProducerTopic" value="SentenceOut" />
 	<!-- Consumer Topic for handling spacy-->

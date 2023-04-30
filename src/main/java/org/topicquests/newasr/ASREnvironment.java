@@ -40,7 +40,6 @@ import org.topicquests.support.config.Configurator;
 public class ASREnvironment extends ASRBaseEnvironment {
 	private static ASREnvironment instance;
 	private PostgresConnectionFactory dbDriver = null;
-	//private PostgresConnectionFactory tripleDriver = null;
 	private IDictionaryClient dictionarHttpyClient;
 	private IDictionary dictionary;
 	private IAsrModel model;
@@ -71,10 +70,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
-		//dbName=getStringProperty("TriplebaseName");
-		//logDebug("TRIPLEDBNAME "+dbName);
 		bulletinBoard = new BulletinBoard(this);
-		//tripleDriver = new PostgresConnectionFactory(dbName, schemaName);
 		tripleModel = new ASRTupleModel(this);
 		spacyServerEnvironment = new SpacyDriverEnvironment();
 
@@ -100,6 +96,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		paragraphEngine = new ParagraphEngine(this);
 		instance = this;
 		sentenceEngine.startProcessing();
+		paragraphEngine.startProcessing();
 		// shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread()
 	    {
