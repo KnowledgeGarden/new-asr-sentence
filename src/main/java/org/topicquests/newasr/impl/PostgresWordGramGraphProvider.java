@@ -35,7 +35,7 @@ public class PostgresWordGramGraphProvider implements IAsrDataProvider {
 	 */
 	public PostgresWordGramGraphProvider(ASREnvironment e) {
 		environment = e;
-		dbDriver = environment.getTripleDatabaseDriver();//getDatabaseDriver();
+		dbDriver = environment.getDatabaseDriver();
 	}
 	@Override
 	public IResult putNode(IWordGram node) {

@@ -46,7 +46,8 @@ public class SentenceEngine {
 
 	private CommonKafkaProducer sentenceProducer;
 	private SpacyHttpClient spacy;
-	
+	private BulletinBoard bulletinBoard;
+
 	private final String SENTENCE_TOPIC, SENTENCE_KEY;
 
 	/**
@@ -55,13 +56,14 @@ public class SentenceEngine {
 	public SentenceEngine(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		bulletinBoard = environment.getBulletinBoard();
 		predAssem = environment.getPredicateAssembler();
 		nounAssem = new NounAssembler(environment);
 		builder = environment.getWordGramBuilder();
 		sentences = new ArrayList<JsonObject>();
 		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
-		spacyServerEnvironment = new SpacyDriverEnvironment();
+		spacyServerEnvironment = environment.getSpacyServer();
 		sentenceProducer = environment.getSentenceProducer();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
 		SENTENCE_TOPIC = pTopic;

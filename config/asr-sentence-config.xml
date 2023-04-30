@@ -7,10 +7,8 @@
 	<parameter name="SpacyURL" value = "http://127.0.0.1:8008" />  <!-- CHANGE ME -->
 
 	<!-- WordGram database -->
-	<parameter name="DatabaseName" value = "asrtest" />
+	<parameter name="DatabaseName" value = "bigjuice" />
 	<parameter name="DatabaseSchema" value = "public" />
-	<!-- Triple database bigjuice-->
-	<parameter name="TriplebaseName" value = "bigjuice" />
 	
 	<!-- Bootstrapping data files -->
 	<parameter name="PredCSV" value="./data/predicates/ASRpreds.csv/" /> <!--  pay attention to filename -->

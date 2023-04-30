@@ -31,7 +31,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 	 */
 	public PostgresTupleDatabase(ASREnvironment e) {
 		environment = e;
-		dbDriver = environment.getTripleDatabaseDriver();
+		dbDriver = environment.getDatabaseDriver();
 	}
 
 	@Override

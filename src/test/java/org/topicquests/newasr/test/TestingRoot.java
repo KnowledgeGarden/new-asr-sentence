@@ -6,6 +6,7 @@
 package org.topicquests.newasr.test;
 
 import org.topicquests.newasr.ASREnvironment;
+import org.topicquests.newasr.ParagraphEngine;
 import org.topicquests.newasr.SentenceEngine;
 import org.topicquests.newasr.api.IAsrModel;
 import org.topicquests.newasr.api.ITupleModel;
@@ -21,6 +22,7 @@ public class TestingRoot {
 	protected SentenceEngine sentenceEngine;
 	protected ITupleModel tripleModel;
 	protected ParagraphHandler paraHandler;
+	protected ParagraphEngine paragraphEngine;
 
 	/**
 	 * 
@@ -31,6 +33,7 @@ public class TestingRoot {
 		sentenceEngine = environment.getSentenceEngine();
 		tripleModel = environment.getTripleModel();
 		paraHandler = environment.getParagraphHandler();
+		paragraphEngine = environment.getParagraphEngine();
 	}
 
 }

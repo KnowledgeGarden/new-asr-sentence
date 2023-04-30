@@ -40,7 +40,7 @@ import org.topicquests.support.config.Configurator;
 public class ASREnvironment extends ASRBaseEnvironment {
 	private static ASREnvironment instance;
 	private PostgresConnectionFactory dbDriver = null;
-	private PostgresConnectionFactory tripleDriver = null;
+	//private PostgresConnectionFactory tripleDriver = null;
 	private IDictionaryClient dictionarHttpyClient;
 	private IDictionary dictionary;
 	private IAsrModel model;
@@ -58,8 +58,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private PredicateImporter predImporter;
 	private ITupleModel tripleModel;
 	private ParagraphHandler paraHandler;
-
-
+	private SpacyDriverEnvironment spacyServerEnvironment;
+	private ParagraphEngine paragraphEngine;
+	private BulletinBoard bulletinBoard;
 	public static final String AGENT_GROUP = "Sentence";
 
 	/**
@@ -70,10 +71,12 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		String schemaName = getStringProperty("DatabaseSchema");
 		String dbName = getStringProperty("DatabaseName");
 		dbDriver = new PostgresConnectionFactory(dbName, schemaName);
-		dbName=getStringProperty("TriplebaseName");
-		logDebug("TRIPLEDBNAME "+dbName);
-		tripleDriver = new PostgresConnectionFactory(dbName, schemaName);
+		//dbName=getStringProperty("TriplebaseName");
+		//logDebug("TRIPLEDBNAME "+dbName);
+		bulletinBoard = new BulletinBoard(this);
+		//tripleDriver = new PostgresConnectionFactory(dbName, schemaName);
 		tripleModel = new ASRTupleModel(this);
+		spacyServerEnvironment = new SpacyDriverEnvironment();
 
 		dictionarHttpyClient = new DictionaryHttpClient(this);
 		dictionary = new DictionaryClient(this);
@@ -94,9 +97,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		sentenceEngine = new SentenceEngine(this);
 		predImporter = new PredicateImporter(this);
 		paraHandler = new ParagraphHandler(this);
+		paragraphEngine = new ParagraphEngine(this);
 		instance = this;
 		sentenceEngine.startProcessing();
-		
 		// shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread()
 	    {
@@ -112,6 +115,15 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		return instance;
 	}
 	
+	public BulletinBoard getBulletinBoard() {
+		return bulletinBoard;
+	}
+	public ParagraphEngine getParagraphEngine() {
+		return paragraphEngine;
+	}
+	public SpacyDriverEnvironment getSpacyServer() {
+		return spacyServerEnvironment;
+	}
 	public ParagraphHandler getParagraphHandler() {
 		return paraHandler;
 	}
@@ -168,9 +180,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		return dbDriver;
 	}
 
-	public PostgresConnectionFactory getTripleDatabaseDriver() {
-		return tripleDriver;
-	}
+	//public PostgresConnectionFactory getTripleDatabaseDriver() {
+	//	return tripleDriver;
+	//}
 
 	@Override
 	public void shutDown() {
