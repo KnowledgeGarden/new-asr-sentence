@@ -7,7 +7,7 @@ package org.topicquests.newasr;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Iterator;
 import org.topicquests.newasr.SentenceEngine.SentenceThread;
 import org.topicquests.newasr.api.IExpectationTypes;
 import org.topicquests.newasr.api.IParagraph;
@@ -20,6 +20,7 @@ import org.topicquests.newasr.impl.ASRSentence;
 import org.topicquests.newasr.impl.PostgresParagraphDatabase;
 import org.topicquests.newasr.kafka.CommonKafkaProducer;
 import org.topicquests.newasr.para.ParagraphHandler;
+import org.topicquests.newasr.spacy.SpacyUtil;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
 import org.topicquests.support.ResultPojo;
 import org.topicquests.support.api.IResult;
@@ -43,6 +44,7 @@ public class ParagraphEngine {
 	private List<JsonObject> paragraphs;
 	private boolean IS_RUNNING = true;
 	private ParagraphThread runner;
+	private SpacyUtil spacyUtil;
 	private final String SENTENCE_TOPIC, SENTENCE_KEY;
 
 	/**
@@ -50,6 +52,7 @@ public class ParagraphEngine {
 	 */
 	public ParagraphEngine(ASREnvironment env) {
 		environment =env;
+		spacyUtil = new SpacyUtil(environment);
 		paragraphs = new ArrayList<JsonObject>();
 		sentenceProducer = environment.getSentenceProducer();
 		spacyServerEnvironment = environment.getSpacyServer();
@@ -120,7 +123,7 @@ public class ParagraphEngine {
 		environment.logDebug("ParagraphEngine.processParagraph-1 "+r.getErrorString());
 		long paragraphId = ((Long)r.getResultObject()).longValue();
 		environment.logDebug("ParagraphEngine.processParagraph-1a "+paragraphId);
-
+		p.setId(paragraphId);
 		//long paragraphId = p.getId();
 		JsonArray spacyData;
 		// coreferences
@@ -140,8 +143,74 @@ public class ParagraphEngine {
 		spacyData = (JsonArray)r.getResultObject();
 		// spacyData must now be broken into separate sentences
 		// each sentence must be stored in sentence database to retrieve its id
-		environment.logDebug("ParagraphEngine.processParagraph-3"+spacyData.size());
-
+		environment.logDebug("ParagraphEngine.processParagraph-3 "+spacyData.size());
+		/*int len = spacyData.size();
+		JsonObject jo;
+		JsonArray sentences;
+		for (int i=0;i<len;i++) {
+			//for each object
+			jo = spacyData.get(i).getAsJsonObject();
+			sentences = jo.get("sentences").getAsJsonArray();
+		}*/
+		IResult spacySentences = spacyUtil.grabSentences(spacyData);
+		//environment.logDebug("SpacyGot\n"+spacySentences.getResultObject()+"\n"+spacySentences.getResultObjectA());
+		JsonObject sentences = (JsonObject)spacySentences.getResultObject();
+		JsonObject sentenceConcepts = (JsonObject)spacySentences.getResultObjectA();
+		if (sentenceConcepts != null)
+			p.setParagraphConcepts(sentenceConcepts);
+		if (sentences != null) {
+			List<ISentence> mySentences = new ArrayList<ISentence>();
+			ISentence theSentence;
+			Iterator<String> itr = sentences.keySet().iterator();
+			String sid;
+			JsonArray sentx;
+			JsonObject sentObj;
+			String txt;
+			int lenx;
+			while (itr.hasNext()) {
+				sid = itr.next();
+				sentx = sentences.get(sid).getAsJsonArray();
+				lenx = sentx.size();
+				if (lenx > 0) {
+					// sanity check
+					sentObj =sentx.get(0).getAsJsonObject();
+					if (hasVerb(sentObj)) {
+						for (int i=0;i<lenx;i++) {
+							sentObj =sentx.get(i).getAsJsonObject();
+							txt = sentObj.get("text").getAsString();
+							theSentence = makeSentence(sentx, txt, paragraphId);
+							p.addSentenceId(theSentence.getId());
+							sentenceEngine.processSentence(theSentence);
+						}
+					}
+				}
+			}
+		}
+		r = paragraphModel.updateParagraph(p);
+	}
+	
+	ISentence makeSentence(JsonArray spacyData, String text, long paragraphId) {
+		ISentence result = new ASRSentence();
+		result.setText(text);
+		result.setSpacyData(spacyData);
+		result.setParagraphId(paragraphId);
+		IResult r = sentenceModel.putSentence(result);
+		long id = ((Long)r.getResultObject()).longValue();
+		result.setId(id);
+		return result;
+	}
+	
+	boolean hasVerb(JsonObject sentence) {
+		JsonArray nodes = sentence.get("nodes").getAsJsonArray();
+		int len = nodes.size();
+		JsonObject n;
+		for (int i=0;i<len;i++) {
+			n =nodes.get(i).getAsJsonObject();
+			if (n.get("pos").getAsString().equals("VERB"))
+				return true;
+		}
+		
+		return false;
 	}
 	class ParagraphThread extends Thread {
 		
