@@ -17,6 +17,7 @@ import org.topicquests.newasr.kafka.CommonKafkaProducer;
 import org.topicquests.newasr.noun.NounAssembler;
 import org.topicquests.newasr.pred.PredicateAssembler;
 import org.topicquests.newasr.spacy.SpacyHttpClient;
+import org.topicquests.newasr.spacy.SpacyUtil;
 import org.topicquests.newasr.util.JsonUtil;
 import org.topicquests.newasr.wg.WordGramBuilder;
 import org.topicquests.os.asr.driver.sp.SpacyDriverEnvironment;
@@ -45,6 +46,7 @@ public class SentenceEngine {
 	private NounAssembler nounAssem;
 	private WordGramBuilder builder;
 	private ISentenceModel sentenceModel;
+	private SpacyUtil spacyUtil;
 
 	private CommonKafkaProducer sentenceProducer;
 	private SpacyHttpClient spacy;
@@ -58,6 +60,8 @@ public class SentenceEngine {
 	public SentenceEngine(ASREnvironment env) {
 		environment =env;
 		model = environment.getModel();
+		spacyUtil = new SpacyUtil(environment);
+
 		sentenceModel = environment.getSentenceModel();
 		bulletinBoard = environment.getBulletinBoard();
 		predAssem = environment.getPredicateAssembler();
@@ -120,6 +124,18 @@ public class SentenceEngine {
 				//environment.logDebug("SentenceEngine-y\n"+r.getResultObject());
 				
 				spacyData = (JsonArray)r.getResultObject();
+				r = spacyUtil.grabSentences(spacyData);
+				JsonObject sentences = (JsonObject)r.getResultObject();
+				// takes the form
+				// {
+				//  "s_0": [{
+				//	"model": "en_ner_jnlpba_md",
+				//	"sentence": {
+				List<String>keys = new ArrayList<String>();
+				keys.addAll(sentences.keySet());
+				// in theory there should be just one sentence
+				String key = keys.get(0);
+				spacyData = sentences.get(key).getAsJsonArray();
 				sentence.setSpacyData(spacyData);
 				
 				////////////////////////////////
@@ -167,15 +183,20 @@ public class SentenceEngine {
 			// Process predicate/predicatePhrases returned by spacy
 			// Their location is important to processing nouns
 			//////////////////////////
-			predAssem.processSentencePredicates(sentence, preds);
-			//////////////////////////
-			// Process the nouns
-			//////////////////////////
-			r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
-			// process verbs
-			if (spcy.get("vrbs") != null) {
-				ja = spcy.get("vrbs").getAsJsonArray();
-				processVerb(sentence, ja);
+			boolean predsFound = predAssem.processSentencePredicates(sentence, preds);
+			if (predsFound) {
+				//////////////////////////
+				// Process the nouns
+				//////////////////////////
+				r = nounAssem.bigDamnAnalyze(sentence, spacyData, spcy);
+				// process verbs
+				if (spcy.get("vrbs") != null) {
+					ja = spcy.get("vrbs").getAsJsonArray();
+					processVerb(sentence, ja);
+				}
+			} else {
+				//TODO
+				// sent NoPredFound event
 			}
 			
 	

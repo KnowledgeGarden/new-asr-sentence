@@ -40,7 +40,7 @@ public class FirstPredicateTest extends TestingRoot {
 		sentence = new ASRSentence(); 
 		sentence.setText(S1);
 		JsonArray ja = (JsonArray)JsonParser.parseString(ONE_PRED);
-		IResult r = handler.processSentencePredicates(sentence, ja);
+		boolean r = handler.processSentencePredicates(sentence, ja);
 		System.out.println("SENTENCE:\n"+sentence.getText()+"\n"+sentence.getPredicatePhrases());
 		sentence = new ASRSentence(); 
 		sentence.setText(S2);

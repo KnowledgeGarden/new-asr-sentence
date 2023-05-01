@@ -116,8 +116,8 @@ public class PostgresSentenceDatabase implements ISentenceDataProvider {
 	    try { 
 	    	conn = dbDriver.getConnection();
 	    	Object [] vals = new Object[2];
-	    	vals[0] = new Long(id);
-	    	vals[1] = s.getData().getAsString();
+	    	vals[0] = s.getData().toString();
+	    	vals[1] = new Long(id);
 	    	
 	    	IResult rx = conn.executeSQL(sql, vals);
 		    if (rx.hasError())

@@ -155,7 +155,7 @@ public class NounAssembler {
 			je = sentences.get(i);
 			environment.logDebug("NounAssemblerFCF\n"+je);
 			jo =je.getAsJsonObject();
-			_findCons(jo.get("sentences").getAsJsonArray(), result);
+			_findCons(jo.get("sentence").getAsJsonArray(), result);
 		}
 		return result;
 	}

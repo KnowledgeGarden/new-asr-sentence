@@ -115,21 +115,25 @@ public class PredicateAssembler {
 	 * @param predicates
 	 * @return
 	 */
-	public IResult processSentencePredicates(ISentence sentence, JsonArray predicates) {
+	public boolean processSentencePredicates(ISentence sentence, JsonArray predicates) {
 		environment.logDebug("PredAssem\n"+predicates);
 		IResult result = new ResultPojo();
 		if (predicates == null)
-			return result;
+			return false;
 		JsonArray antecedents = predicates.get(_ANTECENDS).getAsJsonArray();
 		environment.logDebug("PredAssemANTS"+antecedents);
 		JsonArray preds = predicates.get(_PREDICATES).getAsJsonArray();
 		environment.logDebug("PredAssemPREDS"+preds);
 		int predCount = countPredicates(preds);
+		if (predCount == 0) {
+			environment.logDebug("NoPredFound\n"+sentence.getText());
+			return false;
+		}
 		if (predCount == 1) 
 			processOnePredicate(sentence, antecedents,preds, result);
 		else
 			processSeveralPredicates(sentence, antecedents, preds, predCount, result);
-		return result;
+		return true;
 	}
 	
 	void processOnePredicate(ISentence sentence, JsonArray ants, JsonArray predicate, IResult result) {

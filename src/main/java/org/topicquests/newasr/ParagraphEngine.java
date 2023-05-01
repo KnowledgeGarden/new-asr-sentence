@@ -122,6 +122,7 @@ public class ParagraphEngine {
 		// store the paragraph to get its Id
 		environment.logDebug("ParagraphEngine.processParagraph-1 "+r.getErrorString());
 		long paragraphId = ((Long)r.getResultObject()).longValue();
+		long documentId = p.getDocumentId();
 		environment.logDebug("ParagraphEngine.processParagraph-1a "+paragraphId);
 		p.setId(paragraphId);
 		//long paragraphId = p.getId();
@@ -155,7 +156,9 @@ public class ParagraphEngine {
 		IResult spacySentences = spacyUtil.grabSentences(spacyData);
 		//environment.logDebug("SpacyGot\n"+spacySentences.getResultObject()+"\n"+spacySentences.getResultObjectA());
 		JsonObject sentences = (JsonObject)spacySentences.getResultObject();
-		JsonObject sentenceConcepts = (JsonObject)spacySentences.getResultObjectA();
+		
+
+		JsonArray sentenceConcepts = (JsonArray)spacySentences.getResultObjectA();
 		if (sentenceConcepts != null)
 			p.setParagraphConcepts(sentenceConcepts);
 		if (sentences != null) {
@@ -164,36 +167,40 @@ public class ParagraphEngine {
 			Iterator<String> itr = sentences.keySet().iterator();
 			String sid;
 			JsonArray sentx;
-			JsonObject sentObj;
+			JsonObject sentObj, theSent;
 			String txt;
 			int lenx;
 			while (itr.hasNext()) {
 				sid = itr.next();
+				environment.logDebug("ParagraphEngineProcessing "+sid);
 				sentx = sentences.get(sid).getAsJsonArray();
 				lenx = sentx.size();
 				if (lenx > 0) {
 					// sanity check
 					sentObj =sentx.get(0).getAsJsonObject();
 					if (hasVerb(sentObj)) {
-						for (int i=0;i<lenx;i++) {
-							sentObj =sentx.get(i).getAsJsonObject();
-							txt = sentObj.get("text").getAsString();
-							theSentence = makeSentence(sentx, txt, paragraphId);
-							p.addSentenceId(theSentence.getId());
-							sentenceEngine.processSentence(theSentence);
-						}
-					}
+						theSent = sentObj.get("sentence").getAsJsonObject();
+
+						txt = theSent.get("text").getAsString();
+						theSentence = makeSentence(sentx, txt, paragraphId, documentId);
+						System.out.println("FUUUY "+theSentence.getId()+"\n"+theSentence.getData()+"\n"+p.getData());
+						p.addSentenceId(theSentence.getId());
+						sentenceEngine.processSentence(theSentence);
+						
+					} else
+						environment.logDebug("ParagraphEngineRejected\n"+sentObj);
 				}
 			}
 		}
 		r = paragraphModel.updateParagraph(p);
 	}
 	
-	ISentence makeSentence(JsonArray spacyData, String text, long paragraphId) {
+	ISentence makeSentence(JsonArray spacyData, String text, long paragraphId, long documentId) {
 		ISentence result = new ASRSentence();
 		result.setText(text);
 		result.setSpacyData(spacyData);
 		result.setParagraphId(paragraphId);
+		result.setDocumentId(documentId);
 		IResult r = sentenceModel.putSentence(result);
 		long id = ((Long)r.getResultObject()).longValue();
 		result.setId(id);
@@ -201,12 +208,16 @@ public class ParagraphEngine {
 	}
 	
 	boolean hasVerb(JsonObject sentence) {
-		JsonArray nodes = sentence.get("nodes").getAsJsonArray();
+		//environment.logDebug("HASVERBS\n"+sentence);
+		JsonObject s= sentence.get("sentence").getAsJsonObject();
+		JsonArray nodes = s.get("nodes").getAsJsonArray();
 		int len = nodes.size();
 		JsonObject n;
+		String pos;
 		for (int i=0;i<len;i++) {
 			n =nodes.get(i).getAsJsonObject();
-			if (n.get("pos").getAsString().equals("VERB"))
+			pos = n.get("pos").getAsString();
+			if (pos.equals("VERB")||pos.equals("AUX"))
 				return true;
 		}
 		
