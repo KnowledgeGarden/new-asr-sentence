@@ -3,6 +3,8 @@
  */
 package org.topicquests.newasr.test;
 
+import org.topicquests.newasr.api.IParagraph;
+import org.topicquests.newasr.impl.ASRParagraph;
 import org.topicquests.support.api.IResult;
 
 /**
@@ -18,13 +20,16 @@ public class FirstParagraphTest extends TestingRoot {
 	 */
 	public FirstParagraphTest() {
 		super();
-		
-		IResult r = paraHandler.findCoreferences(C);
-		System.out.println("A\n"+r.getResultObject());
-		System.out.println("B\n"+r.getResultObjectA());
+		IParagraph p = new ASRParagraph();
+		p.setDocumentId(System.currentTimeMillis());
+		p.setText(B);
+		paragraphEngine.addParagraph(p.getData());
+		//IResult r = paraHandler.findCoreferences(C);
+		//System.out.println("A\n"+r.getResultObject());
+		//System.out.println("B\n"+r.getResultObjectA());
 
-		environment.shutDown();
-		System.exit(0);
+		//environment.shutDown();
+		//System.exit(0);
 	}
 
 }

@@ -54,7 +54,7 @@ public class PostgresSentenceDatabase implements ISentenceDataProvider {
 	    	Object [] vals = new Object[count];
 	    	vals[0] = new Long(s.getParagraphId());
 	    	vals[1] = new Long(s.getDocumentId());
-	    	vals[2] = s.getData().getAsString();
+	    	vals[2] = s.getData().toString();
 	    	IResult rx = conn.executeSelect(sql, vals);
 		    if (rx.hasError())
 				result.addErrorString(rx.getErrorString());

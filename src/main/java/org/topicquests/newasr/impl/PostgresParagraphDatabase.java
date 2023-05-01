@@ -50,11 +50,11 @@ public class PostgresParagraphDatabase implements IParagraphDataProvider {
 	    	conn = dbDriver.getConnection();
 	    	//doc_id, data)
 	    	int count = 2;
-	    	JsonObject jo = null;
+	    	//JsonObject jo = null;
 	    	// we do not have id - that's returned
 	    	Object [] vals = new Object[count];
 	    	vals[0] = new Long(p.getDocumentId());
-	    	vals[1] = p.getData().getAsString();
+	    	vals[1] = p.getData().toString();
 	    	IResult rx = conn.executeSelect(sql, vals);
 		    if (rx.hasError())
 				result.addErrorString(rx.getErrorString());

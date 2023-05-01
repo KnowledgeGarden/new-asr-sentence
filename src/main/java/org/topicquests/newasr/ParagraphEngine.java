@@ -113,16 +113,22 @@ public class ParagraphEngine {
 	 * @param p
 	 */
 	void processParagraph(IParagraph p) {
+		environment.logDebug("ParagraphEngine.processParagraph\n"+p.getData());
 		String text = p.getText();
 		IResult r = paragraphModel.putParagraph(p);
 		// store the paragraph to get its Id
+		environment.logDebug("ParagraphEngine.processParagraph-1 "+r.getErrorString());
 		long paragraphId = ((Long)r.getResultObject()).longValue();
+		environment.logDebug("ParagraphEngine.processParagraph-1a "+paragraphId);
+
 		//long paragraphId = p.getId();
 		JsonArray spacyData;
 		// coreferences
 		r = paraHandler.findCoreferences(text);
 		Object a = r.getResultObject(); //corefs
 		Object b = r.getResultObjectA(); //mentions
+		environment.logDebug("ParagraphEngine.processParagraph-2\n"+a+"\n"+b);
+
 		if (a != null)
 			bulletinBoard.setCoreferenceChains((JsonArray)a);
 		if (b != null)
@@ -134,6 +140,8 @@ public class ParagraphEngine {
 		spacyData = (JsonArray)r.getResultObject();
 		// spacyData must now be broken into separate sentences
 		// each sentence must be stored in sentence database to retrieve its id
+		environment.logDebug("ParagraphEngine.processParagraph-3"+spacyData.size());
+
 	}
 	class ParagraphThread extends Thread {
 		
