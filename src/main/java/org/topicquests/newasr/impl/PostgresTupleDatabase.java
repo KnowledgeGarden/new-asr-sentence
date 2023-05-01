@@ -137,7 +137,7 @@ public class PostgresTupleDatabase implements ITupleDataProvicer {
 		    }
 	    } catch (Exception e) {
 		     result.addErrorString("PTD-GT "+id+" "+e.getMessage());
-		     environment.logError("PTD-GT "+id+" "+result.getErrorString(), null);
+		     environment.logError("PTD-GT "+id+" "+result.getErrorString(), e);
 		} finally {
 		    conn.closeConnection(result);
 		}

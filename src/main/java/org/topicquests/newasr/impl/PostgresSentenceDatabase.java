@@ -100,7 +100,7 @@ public class PostgresSentenceDatabase implements ISentenceDataProvider {
 	    
 	    } catch (Exception e) {
 		     result.addErrorString("PSD-GT "+id+" "+e.getMessage());
-		     environment.logError("PDD-GT "+id+" "+result.getErrorString(), null);
+		     environment.logError("PDD-GT "+id+" "+result.getErrorString(), e);
 		} finally {
 		    conn.closeConnection(result);
 		}
@@ -124,7 +124,7 @@ public class PostgresSentenceDatabase implements ISentenceDataProvider {
 				result.addErrorString(rx.getErrorString());
 	    } catch (Exception e) {
 		     result.addErrorString("PSD-US "+id+" "+e.getMessage());
-		     environment.logError("PDD-US "+id+" "+result.getErrorString(), null);
+		     environment.logError("PDD-US "+id+" "+result.getErrorString(), e);
 		} finally {
 		    conn.closeConnection(result);
 		}

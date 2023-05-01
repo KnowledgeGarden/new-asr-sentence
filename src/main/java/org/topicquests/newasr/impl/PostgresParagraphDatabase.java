@@ -100,7 +100,7 @@ public class PostgresParagraphDatabase implements IParagraphDataProvider {
 	    
 	    } catch (Exception e) {
 		     result.addErrorString("PPD-GT "+id+" "+e.getMessage());
-		     environment.logError("PPD-GT "+id+" "+result.getErrorString(), null);
+		     environment.logError("PPD-GT "+id+" "+result.getErrorString(), e);
 		} finally {
 		    conn.closeConnection(result);
 		}
@@ -124,7 +124,7 @@ public class PostgresParagraphDatabase implements IParagraphDataProvider {
 				result.addErrorString(rx.getErrorString());
 	    } catch (Exception e) {
 		     result.addErrorString("PPD-US "+id+" "+e.getMessage());
-		     environment.logError("PPD-US "+id+" "+result.getErrorString(), null);
+		     environment.logError("PPD-US "+id+" "+result.getErrorString(), e);
 		} finally {
 		    conn.closeConnection(result);
 		}
