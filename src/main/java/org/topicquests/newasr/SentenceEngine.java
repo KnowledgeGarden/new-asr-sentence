@@ -38,7 +38,7 @@ public class SentenceEngine {
 	private ASREnvironment environment;
 	private IAsrModel model;
 	private JsonUtil util;
-	private List<JsonObject> sentences;
+	private List<IResult> sentences;
 	private boolean IS_RUNNING = true;
 	private SentenceThread runner;
 	private SpacyDriverEnvironment spacyServerEnvironment;
@@ -67,7 +67,7 @@ public class SentenceEngine {
 		predAssem = environment.getPredicateAssembler();
 		nounAssem = new NounAssembler(environment);
 		builder = environment.getWordGramBuilder();
-		sentences = new ArrayList<JsonObject>();
+		sentences = new ArrayList<IResult>();
 		spacy = new SpacyHttpClient(environment);
 		util = new JsonUtil();
 		spacyServerEnvironment = environment.getSpacyServer();
@@ -85,21 +85,23 @@ public class SentenceEngine {
 		System.out.println("StartingEngine");
 	}
 	
-	public boolean acceptNewSentence(JsonObject newSentence) {
+	public void acceptNewSentence(JsonObject newSentence, BulletinBoard bb) {
 		System.out.println("AcceptingSentence "+newSentence);
 
 		synchronized(sentences) {
-			sentences.add(newSentence);
+			IResult r = new ResultPojo();
+			r.setResultObject(newSentence);
+			r.setResultObjectA(bb);
+			sentences.add(r);
 			sentences.notify();
 		}
-		return true; // default
 	}
 	
 	/**
 	 * <p>Process a {@code sentence}</p>
 	 * @param sentence
 	 */
-	public void processSentence(ISentence sentence) {
+	public void processSentence(ISentence sentence, BulletinBoard bb) {
 		environment.logDebug("SentenceEngineStarting\n"+sentence.getData());
 		JsonObject jo;		
 		JsonArray spacyData = sentence.getSpacyData();
@@ -239,7 +241,7 @@ public class SentenceEngine {
 	class SentenceThread extends Thread {
 		
 		public void run() {
-			JsonObject sent = null;
+			IResult sent = null;
 			while (IS_RUNNING) {
 				synchronized(sentences) {
 					while (sentences.isEmpty()) {
@@ -250,8 +252,10 @@ public class SentenceEngine {
 					sent = sentences.remove(0);
 				}
 				if (sent != null) {
-					ISentence s = new ASRSentence(sent);
-					processSentence(s);
+					JsonObject sentx = (JsonObject)sent.getResultObject();
+					BulletinBoard bb = (BulletinBoard)sent.getResultObjectA();
+					ISentence s = new ASRSentence(sentx);
+					processSentence(s, bb);
 				}
 			}
 		}

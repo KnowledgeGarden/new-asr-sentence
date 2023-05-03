@@ -182,7 +182,11 @@ public class PredicateAssembler {
 				}
 			}
 		}
-		String predPhrase = theAnt+" "+thePred.trim();
+		String predPhrase;
+		if (!thePred.contains(theAnt))
+			predPhrase = theAnt+" "+thePred.trim();
+		else
+			predPhrase =thePred.trim();
 		boolean valid = this.checkPredicate(predPhrase, theSentence);
 		if (!valid)
 			environment.logError("NotValidPred "+predPhrase+"\n"+theSentence, null);

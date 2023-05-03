@@ -5,6 +5,7 @@
  */
 package org.topicquests.newasr.test;
 
+import org.topicquests.newasr.BulletinBoard;
 import org.topicquests.newasr.api.ISentence;
 import org.topicquests.newasr.impl.ASRSentence;
 
@@ -44,7 +45,7 @@ public class FirstSentenceTest extends TestingRoot {
 		sentence = new ASRSentence(); 
 		sentence.setText(S13); //(S9); //(S10); //(S4A);
 		sentence.setId(System.currentTimeMillis());
-		sentenceEngine.acceptNewSentence(sentence.getData());
+		sentenceEngine.acceptNewSentence(sentence.getData(), new BulletinBoard(environment));
 		
 		//environment.shutDown(); // cannot shut down due to thread
 		//System.exit(0);

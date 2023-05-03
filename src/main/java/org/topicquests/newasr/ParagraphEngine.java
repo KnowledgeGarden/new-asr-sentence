@@ -38,7 +38,7 @@ public class ParagraphEngine {
 	private SpacyDriverEnvironment spacyServerEnvironment;
 	private ParagraphHandler paraHandler;
 	private SentenceEngine sentenceEngine;
-	private BulletinBoard bulletinBoard;
+	//private BulletinBoard bulletinBoard;
 	private IParagraphModel paragraphModel;
 	private ISentenceModel sentenceModel;
 	private List<JsonObject> paragraphs;
@@ -58,7 +58,7 @@ public class ParagraphEngine {
 		spacyServerEnvironment = environment.getSpacyServer();
 		sentenceEngine = environment.getSentenceEngine();
 		paraHandler = environment.getParagraphHandler();
-		bulletinBoard = environment.getBulletinBoard();
+		//bulletinBoard = environment.getBulletinBoard();
 		paragraphModel = environment.getParagraphModel();
 		sentenceModel = environment.getSentenceModel();
 		String pTopic = (String)environment.getKafkaTopicProperties().get("SentenceProducerTopic");
@@ -132,11 +132,11 @@ public class ParagraphEngine {
 		Object a = r.getResultObject(); //corefs
 		Object b = r.getResultObjectA(); //mentions
 		environment.logDebug("ParagraphEngine.processParagraph-2\n"+a+"\n"+b);
-
+		BulletinBoard bb = new BulletinBoard(environment);
 		if (a != null)
-			bulletinBoard.setCoreferenceChains((JsonArray)a);
+			bb.setCoreferenceChains((JsonArray)a);
 		if (b != null)
-			bulletinBoard.setMentions((JsonArray)b);
+			bb.setMentions((JsonArray)b);
 		//spacy
 		r = spacyServerEnvironment.processParagraph(text);
 		//environment.logDebug("SentenceEngine-y\n"+r.getResultObject());
@@ -174,9 +174,9 @@ public class ParagraphEngine {
 				sid = itr.next();
 				environment.logDebug("ParagraphEngineProcessing "+sid);
 				sentx = sentences.get(sid).getAsJsonArray();
-				lenx = sentx.size();
+				lenx = sentx.size(); // not all will be same size where model did not break sentences properly
 				if (lenx > 0) {
-					// sanity check
+					// sanity check- in theory,we already did this in SpacyUtil
 					sentObj =sentx.get(0).getAsJsonObject();
 					if (hasVerb(sentObj)) {
 						theSent = sentObj.get("sentence").getAsJsonObject();
@@ -185,7 +185,7 @@ public class ParagraphEngine {
 						theSentence = makeSentence(sentx, txt, paragraphId, documentId);
 						System.out.println("FUUUY "+theSentence.getId()+"\n"+theSentence.getData()+"\n"+p.getData());
 						p.addSentenceId(theSentence.getId());
-						sentenceEngine.processSentence(theSentence);
+						sentenceEngine.acceptNewSentence(theSentence.getData(), bb);
 						
 					} else
 						environment.logDebug("ParagraphEngineRejected\n"+sentObj);
@@ -196,6 +196,7 @@ public class ParagraphEngine {
 	}
 	
 	ISentence makeSentence(JsonArray spacyData, String text, long paragraphId, long documentId) {
+		environment.logDebug("MAKINGSENTENCE "+text);
 		ISentence result = new ASRSentence();
 		result.setText(text);
 		result.setSpacyData(spacyData);

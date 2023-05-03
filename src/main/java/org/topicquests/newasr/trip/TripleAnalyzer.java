@@ -82,6 +82,7 @@ public class TripleAnalyzer {
 		boolean hasDisjuncts = sentence.hasDisjuncts();
 		JsonArray conjuncts = sentence.getConjuncts();
 		JsonArray disjuncts = sentence.getDisjuncts();
+		long sentenceId = sentence.getId();
 		
 		String text = sentence.getText();
 		environment.logDebug("BigDamnTripleAnalysis "+hasConjuncts+" "+hasDisjuncts+" "+"\n"+predicates+"\n"+nouns);
@@ -142,7 +143,7 @@ public class TripleAnalyzer {
 			result = makeTriples(things, predicates);
 		else
 			result.add( makeTriple(0, 0, things, predicates));
-		environment.logDebug("BigDamnTripleAnalysis+\n"+things+"\n"+result);
+		environment.logDebug("BigDamnTripleAnalysis+ "+sentenceId+"\n"+text+"\n"+things+"\n"+result);
 		return result;
 	}
 

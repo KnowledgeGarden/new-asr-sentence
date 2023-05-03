@@ -154,15 +154,22 @@ public class NounAssembler {
 		for (int i=0;i<len;i++) {
 			je = sentences.get(i);
 			environment.logDebug("NounAssemblerFCF\n"+je);
+			//{"model":"en_ner_jnlpba_md","sentence":{"id":"s_3","nodes":[{"dep":"nsubj","i":17,"lemma":"boulardii","pos":"NOUN","start":108,"tag":"NN","text":"boulardii"},{"dep":"cop","i":18,"lemma":"be","pos":"AUX","start":118,"tag":"VBZ","text":"is"},{"dep":"det","i":19,"lemma":"a","pos":"DET","start":121,"tag":"DT","text":"a"},{"dep":"amod","i":20,"lemma":"eukaryotic","pos":"ADJ","start":123,"tag":"JJ","text":"eukaryotic"},{"dep":"ROOT","i":21,"lemma":"organism","pos":"NOUN","start":134,"tag":"NN","text":"organism"},{"dep":"nsubjpass","i":22,"lemma":"that","pos":"PRON","start":143,"tag":"WDT","text":"that"},{"dep":"aux","i":23,"lemma":"have","pos":"AUX","start":148,"tag":"VBZ","text":"has"},{"dep":"auxpass","i":24,"lemma":"be","pos":"AUX","start":152,"tag":"VBN","text":"been"},{"dep":"acl:relcl","i":25,"lemma":"use","pos":"VERB","start":157,"tag":"VBN","text":"used"},{"dep":"case","i":26,"lemma":"in","pos":"ADP","start":162,"tag":"IN","text":"in"},{"dep":"amod","i":27,"lemma":"scientific","pos":"ADJ","start":165,"tag":"JJ","text":"scientific"},{"dep":"nmod","i":28,"lemma":"investigation","pos":"NOUN","start":176,"tag":"NNS","text":"investigations"},{"dep":"case","i":29,"lemma":"since","pos":"SCONJ","start":191,"tag":"IN","text":"since"},{"dep":"det","i":30,"lemma":"the","pos":"DET","start":197,"tag":"DT","text":"the"},{"dep":"nmod","i":31,"lemma":"time","pos":"NOUN","start":201,"tag":"NN","text":"time"},{"dep":"case","i":32,"lemma":"of","pos":"ADP","start":206,"tag":"IN","text":"of"},{"dep":"nmod:poss","i":33,"lemma":"its","pos":"PRON","start":209,"tag":"PRP$","text":"its"},{"dep":"nmod","i":34,"lemma":"discovery","pos":"NOUN","start":213,"tag":"NN","text":"discovery"},{"dep":"punct","i":35,"lemma":"[","pos":"PUNCT","start":223,"tag":"-LRB-","text":"["},{"dep":"appos","i":36,"lemma":"2","pos":"NUM","start":224,"tag":"CD","text":"2"},{"dep":"punct","i":37,"lemma":"]","pos":"PUNCT","start":225,"tag":"-RRB-","text":"]"},{"dep":"punct","i":38,"lemma":".","pos":"PUNCT","start":226,"tag":".","text":"."}],"text":"boulardii is a eukaryotic organism that has been used in scientific investigations since the time of its discovery [2].","tree":{"dep":"ROOT","i":21,"left":[{"dep":"nsubj","i":17,"lemma":"boulardii","pos":"NOUN","start":108,"tag":"NN","text":"boulardii"},{"dep":"cop","i":18,"lemma":"be","pos":"AUX","start":118,"tag":"VBZ","text":"is"},{"dep":"det","i":19,"lemma":"a","pos":"DET","start":121,"tag":"DT","text":"a"},{"dep":"amod","i":20,"lemma":"eukaryotic","pos":"ADJ","start":123,"tag":"JJ","text":"eukaryotic"}],"lemma":"organism","pos":"NOUN","right":[{"dep":"acl:relcl","i":25,"left":[{"dep":"nsubjpass","i":22,"lemma":"that","pos":"PRON","start":143,"tag":"WDT","text":"that"},{"dep":"aux","i":23,"lemma":"have","pos":"AUX","start":148,"tag":"VBZ","text":"has"},{"dep":"auxpass","i":24,"lemma":"be","pos":"AUX","start":152,"tag":"VBN","text":"been"}],"lemma":"use","pos":"VERB","right":[{"dep":"nmod","i":28,"left":[{"dep":"case","i":26,"lemma":"in","pos":"ADP","start":162,"tag":"IN","text":"in"},{"dep":"amod","i":27,"lemma":"scientific","pos":"ADJ","start":165,"tag":"JJ","text":"scientific"}],"lemma":"investigation","pos":"NOUN","start":176,"tag":"NNS","text":"investigations"},{"dep":"nmod","i":31,"left":[{"dep":"case","i":29,"lemma":"since","pos":"SCONJ","start":191,"tag":"IN","text":"since"},{"dep":"det","i":30,"lemma":"the","pos":"DET","start":197,"tag":"DT","text":"the"}],"lemma":"time","pos":"NOUN","right":[{"dep":"nmod","i":34,"left":[{"dep":"case","i":32,"lemma":"of","pos":"ADP","start":206,"tag":"IN","text":"of"},{"dep":"nmod:poss","i":33,"lemma":"its","pos":"PRON","start":209,"tag":"PRP$","text":"its"}],"lemma":"discovery","pos":"NOUN","start":213,"tag":"NN","text":"discovery"},{"dep":"punct","i":35,"lemma":"[","pos":"PUNCT","start":223,"tag":"-LRB-","text":"["},{"dep":"appos","i":36,"lemma":"2","pos":"NUM","right":[{"dep":"punct","i":37,"lemma":"]","pos":"PUNCT","start":225,"tag":"-RRB-","text":"]"}],"start":224,"tag":"CD","text":"2"}],"start":201,"tag":"NN","text":"time"}],"start":157,"tag":"VBN","text":"used"},{"dep":"punct","i":38,"lemma":".","pos":"PUNCT","start":226,"tag":".","text":"."}],"start":134,"tag":"NN","text":"organism"}}}
+			//if(je.isJsonObject())
 			jo =je.getAsJsonObject();
-			_findCons(jo.get("sentence").getAsJsonArray(), result);
+			_findCons(jo, result);
 		}
 		return result;
 	}
-	void _findCons(JsonArray theSentence, JsonArray result) {
+	void _findCons(JsonObject theSentence, JsonArray result) {
 		if (theSentence == null)
 			return;
-		JsonArray nodes = theSentence.get(0).getAsJsonObject().get("nodes").getAsJsonArray();;
+		JsonArray nodes;
+		JsonElement je =theSentence.get("sentence");
+		if (je.isJsonObject())
+			nodes= je.getAsJsonObject().get("nodes").getAsJsonArray();
+		else
+			nodes = je.getAsJsonArray().get(0).getAsJsonObject().get("nodes").getAsJsonArray();;
 		environment.logDebug("NounAssembler-1\n"+nodes);
 		JsonObject jo, conc;
 		int len = nodes.size();
@@ -172,7 +179,6 @@ public class NounAssembler {
 		String theConceptText;
 		String jsonCon;
 		JsonObject cx;
-		JsonElement je;
 		for (int i=0;i<len;i++) {
 			jo = nodes.get(i).getAsJsonObject();
 			je = jo.get("concepts");
@@ -345,9 +351,14 @@ public class NounAssembler {
 	}
 	
 	int findInNodes(String txt, JsonObject spacySentence) {
-		environment.logDebug("FINDNODESX "+txt);
-		JsonArray sx = spacySentence.get("sentences").getAsJsonArray();
-		JsonObject theSent = sx.get(0).getAsJsonObject();
+		environment.logDebug("FINDNODESX "+txt+"\n"+spacySentence);
+		//{"model":"en_ner_jnlpba_md","sentence":{"id":"s_1","nodes":[{"dep":"nsubj","i":4,"lemma":"boulardii","pos":"NOUN","start":30,"tag":"NN","text":"boulardii"},{"dep":"cop","i":5,"lemma":"be","pos":"AUX","start":40,"tag":"VBZ","text":"is"},{"dep":"det","i":6,"lemma":"the","pos":"DET","start":43,"tag":"DT","text":"the"},{"dep":"advmod","i":7,"lemma":"most","pos":"ADV","start":47,"tag":"RBS","text":"most"},{"dep":"amod","i":8,"lemma":"significant","pos":"ADJ","start":52,"tag":"JJ","text":"significant"},{"dep":"amod","i":9,"lemma":"probiotic","pos":"ADJ","start":64,"tag":"JJ","text":"probiotic"},{"dep":"compound","i":10,"lemma":"yeast","pos":"NOUN","start":74,"tag":"NN","text":"yeast"},{"dep":"ROOT","i":11,"lemma":"specie","pos":"NOUN","start":80,"tag":"NNS","text":"species"},{"dep":"punct","i":12,"lemma":".","pos":"PUNCT","start":87,"tag":".","text":"."}],"text":"boulardii is the most significant probiotic yeast species.","tree":{"dep":"ROOT","i":11,"left":[{"dep":"nsubj","i":4,"lemma":"boulardii","pos":"NOUN","start":30,"tag":"NN","text":"boulardii"},{"dep":"cop","i":5,"lemma":"be","pos":"AUX","start":40,"tag":"VBZ","text":"is"},{"dep":"det","i":6,"lemma":"the","pos":"DET","start":43,"tag":"DT","text":"the"},{"dep":"amod","i":8,"left":[{"dep":"advmod","i":7,"lemma":"most","pos":"ADV","start":47,"tag":"RBS","text":"most"}],"lemma":"significant","pos":"ADJ","start":52,"tag":"JJ","text":"significant"},{"dep":"amod","i":9,"lemma":"probiotic","pos":"ADJ","start":64,"tag":"JJ","text":"probiotic"},{"dep":"compound","i":10,"lemma":"yeast","pos":"NOUN","start":74,"tag":"NN","text":"yeast"}],"lemma":"specie","pos":"NOUN","right":[{"dep":"punct","i":12,"lemma":".","pos":"PUNCT","start":87,"tag":".","text":"."}],"start":80,"tag":"NNS","text":"species"}}}
+		JsonObject theSent;
+		if (spacySentence.get("sentences")!= null) {
+			JsonArray sx = spacySentence.get("sentences").getAsJsonArray();
+			theSent = sx.get(0).getAsJsonObject();
+		} else
+			theSent = spacySentence.get("sentence").getAsJsonObject();
 		int where = -1;
 		String [] tA = txt.split(" ");
 		int tlen = tA.length;
@@ -475,16 +486,18 @@ public class NounAssembler {
 					boolean found = true;
 					droppers.add(temp);
 					for (int j = 1; j<numWords;j++) {
-						jo = nouns.get(++i).getAsJsonObject();
-						environment.logDebug("MATCHING-2 "+txt+"\n"+jo);
-						label = jo.get("txt").getAsString().toLowerCase();
-						environment.logDebug("MATCHING-3 "+txt+" "+label);
-						if (containsDBP(temp))
-							droppers.add(jo);
-						if (!comp.contains(label)) {
-							environment.logDebug("MATCHING-4 ");
-							found = false;
-							break;
+						if (i < (len-1)) {
+							jo = nouns.get(++i).getAsJsonObject();
+							environment.logDebug("MATCHING-2 "+txt+"\n"+jo);
+							label = jo.get("txt").getAsString().toLowerCase();
+							environment.logDebug("MATCHING-3 "+txt+" "+label);
+							if (containsDBP(temp))
+								droppers.add(jo);
+							if (!comp.contains(label)) {
+								environment.logDebug("MATCHING-4 ");
+								found = false;
+								break;
+							}
 						}
 
 					}

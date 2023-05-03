@@ -3,6 +3,10 @@
  */
 package org.topicquests.newasr.spacy;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.topicquests.newasr.ASREnvironment;
 import org.topicquests.newasr.json.JsonSet;
 import org.topicquests.support.ResultPojo;
@@ -31,7 +35,17 @@ public class SpacyUtil {
 	//	"concepts" for the entire paragraph
 	//  "model" for each sentence in "sentences"
 	// There are N models and M sentences for each model
-	////////////////////////
+	/////////////////////
+	// SpacyUtil has a monster task:
+	//  we feed a paragraph into nearly a dozen different models
+	//  Some models will not see a whole sentence, meaning you get more sentence
+	//  fragments and not whole sentences. A, say, 3 sentence paragraph might yield 5 sentences,
+	//   one we reject with no verbs and the other a subset of a whole sentence found by another
+	//   model.
+	// So, we must totally study the sentence arrays before processing them, pruning out whole
+	// sentence objects from the array
+	///////////////////////////
+	
 	/**
 	 * <p>Returns two objects:<br/>
 	 * A JsonObject which is indexed on sentenceId, with an array of spacy parses
@@ -55,6 +69,7 @@ public class SpacyUtil {
 		JsonObject je;
 		String model;
 		String id;
+		JsonObject sentenceObserver =new JsonObject();
 		for (int i=0;i<len;i++) {
 			sx = new JsonArray();
 			//for each model
@@ -70,29 +85,146 @@ public class SpacyUtil {
 				jx = new JsonObject();
 				jx.addProperty("model", model);
 				je = sentences.get(j).getAsJsonObject();
-				jx.add("sentence", je);
-				id = je.get("id").getAsString();
-				addToBlob(id, jx, sentenceBlob);
+				if (hasVerb(je)) {
+					jx.add("sentence", je);
+					jx.addProperty("text", je.get("text").getAsString());
+					id = je.get("id").getAsString();
+					addToBlob(id, jx, sentenceBlob, sentenceObserver);
+				} else {
+					environment.logDebug("BADSENTENCE "+model+"\n"+je);
+				}
 				//environment.logDebug("WhatIsThis\n"+je);
 				//{"id":"s_0","nodes":[{"dep":"compound","i":0,"lemma":"saccharomyces","pos":"X","start":0,"tag":"FW","text":"Saccharomyces"},{"dep":"nsubj","i":1,"lemma":"cerevisiae","pos":"X","start":14,"tag":"FW","text":"cerevisiae"},{"dep":"ROOT","i":2,"lemma":"var","pos":"X","start":25,"tag":"FW","text":"var"},{"dep":"punct","i":3,"lemma":".","pos":"PUNCT","start":28,"tag":".","text":"."}],"text":"Saccharomyces cerevisiae var.","tree":{"dep":"ROOT","i":2,"left":[{"dep":"nsubj","i":1,"left":[{"dep":"compound","i":0,"lemma":"saccharomyces","pos":"X","start":0,"tag":"FW","text":"Saccharomyces"}],"lemma":"cerevisiae","pos":"X","start":14,"tag":"FW","text":"cerevisiae"}],"lemma":"var","pos":"X","right":[{"dep":"punct","i":3,"lemma":".","pos":"PUNCT","start":28,"tag":".","text":"."}],"start":25,"tag":"FW","text":"var"}}
 
 			}
 		}
-
+		studySentences(sentenceObserver, sentenceBlob);
+		
+		environment.logDebug("BigSpacy\n"+sentenceBlob+"\n"+sentenceBlob.get("s_0"));
 		return result;
 	}
 	
-	void addToBlob(String id, JsonObject jo, JsonObject blob) {
+	boolean hasVerb(JsonObject sentence) {
+		environment.logDebug("HASVERBS\n"+sentence);
+		//JsonObject s= sentence.get("sentence").getAsJsonObject();
+		JsonArray nodes = sentence.get("nodes").getAsJsonArray();
+		int len = nodes.size();
+		JsonObject n;
+		String pos;
+		for (int i=0;i<len;i++) {
+			n =nodes.get(i).getAsJsonObject();
+			pos = n.get("pos").getAsString();
+			if (pos.equals("VERB")||pos.equals("AUX"))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	void addToBlob(String id, JsonObject jo, JsonObject blob, JsonObject observer) {
 		JsonElement je = blob.get(id);
 		JsonArray array;
+		String text = jo.get("text").getAsString();
 		if (je == null) {
 			array = new JsonArray();
 			blob.add(id, array);
 		} else
 			array = je.getAsJsonArray();
+		//environment.logDebug("SpacyUtil "+id+"\n"+jo+"\n"+blob);
 		array.add(jo);
+		je =observer.get(text);
+		JsonObject foo;
+		if (je == null) {
+			array = new JsonArray();
+			observer.add(text, array);
+		} else
+			array = je.getAsJsonArray();
+		foo = new JsonObject();
+		foo.addProperty("id", id);
+		foo.add("sentence", jo);
+		array.add(foo);
+	}
+	
+	///////////////////////////
+	// we have an NxM array number of models * number of sentences
+	// Some models might make mistakes and create sentences which do not exist
+	// as chunks of other sentences
+	//////////////////////////
+	
+	/**
+	 * 
+	 * @param observer
+	 * @param blob
+	 * @return
+	 */
+	void studySentences(JsonObject observer,JsonObject blob) {
+		//environment.logDebug("STUDYSENT/n"+blob);
+
+		Iterator<String>itr = observer.keySet().iterator();
+		String key;
+		JsonArray val;
+		List<String> allKeys = new ArrayList<String>();
+		// gather the keys
+		while (itr.hasNext()) {
+			key = itr.next();
+			allKeys.add(key);
+		}
+		List<String>badKeys = badKeys(allKeys);
+		if (!badKeys.isEmpty()) {
+			int len;
+			itr = badKeys.iterator();
+			JsonObject found;
+			JsonElement je;
+			JsonObject fo, fox;
+			String id;
+			JsonArray blobArray;
+			int lx;
+			while (itr.hasNext()) {
+				val = observer.get(itr.next()).getAsJsonArray();;
+				len =val.size();
+				for (int i=0;i<len;i++) {
+					fo = val.get(i).getAsJsonObject();
+					id = fo.get("id").getAsString();
+					fox = fo.get("sentence").getAsJsonObject();
+					environment.logDebug("FoundBad "+id+"\n"+fox);
+					blobArray = blob.get(id).getAsJsonArray();
+					lx = blobArray.size();
+					blobArray.remove(fox);
+					environment.logDebug("FixedBad "+lx+" "+blobArray.size());
+				}
+			}
+		}
+	}
+	List<String> badKeys(List<String>keys) {
+		List<String> result = new ArrayList<String>();
+		int len =keys.size();
+		String theKey, localKey;
+		Iterator<String>itr = keys.iterator();
+		for (int i=0;i<len;i++) {
+			theKey = keys.get(i);
+			for(int j=0;j<len;j++) {
+				if (j != i) {
+					localKey = keys.get(j);
+					//environment.logDebug("TESTKEYS\n"+localKey+"\n"+theKey);
+					if (theKey.contains(localKey))
+						result.add(localKey);
+					else if (localKey.contains(theKey))
+						result.add(theKey);
+					else if (localKey.equals(theKey))
+						result.add(theKey);  // anybody's guess which
+				}
+			}
+		}
+		environment.logDebug("BADKEYS "+result);
+		//[boulardii is the most significant probiotic yeast species., 
+		//boulardii is a eukaryotic organism that has been used in scientific investigations since the time of its discovery [2].,
+		//boulardii is the most significant probiotic yeast species., 
+		//boulardii is a eukaryotic organism that has been used in scientific investigations since the time of its discovery [2].]
+
+		return result;
 	}
 }
+
 /**
  * What the sentences look like
  {
