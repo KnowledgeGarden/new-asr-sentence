@@ -5,6 +5,8 @@
  */
 package org.topicquests.newasr;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.topicquests.backside.kafka.consumer.api.IMessageConsumerListener;
@@ -201,6 +203,24 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	//	return tripleDriver;
 	//}
 
+	/////////////////////
+	// paragraph handling support
+	// This is a hack
+	// Don't try this at home
+	/////////////////////
+	/*private List<String> accumulator;
+	public void startParagraph() {
+		accumulator = new ArrayList<String>();
+	}
+	
+	public boolean isSafe(String sentence) {
+		logError("T: "+sentence, null);
+		if (accumulator.contains(sentence))
+			return false;
+		accumulator.add(sentence);
+		return true;
+	}*/
+	/////////////////////
 	@Override
 	public void shutDown() {
 		logDebug("ASREnvironment Shutting down");

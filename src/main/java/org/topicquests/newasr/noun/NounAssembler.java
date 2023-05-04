@@ -582,30 +582,34 @@ public class NounAssembler {
 		for (int i=0;i<len;i++) {
 			temp = nouns.get(i).getAsJsonObject();
 			environment.logDebug("XMATCHING-1 "+txt+"\n"+temp);
-			label = temp.get("txt").getAsString().toLowerCase();
-			strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
-			// exact match
-			if (label.equals(comp) /*&& !containsDBP(temp)*/) {
-				droppers.add(temp);
-				return output;
-			} else { // speculative check - are the next words compatible?
-				if (!isMultiWord && comp.contains(label) /*&& !containsDBP(temp)*/) {
+			if (temp != null && temp.get("txt") != null) {
+				label = temp.get("txt").getAsString().toLowerCase();
+				strt = temp.get("strt").getAsJsonPrimitive().getAsInt();
+				// exact match
+				if (label.equals(comp) /*&& !containsDBP(temp)*/) {
 					droppers.add(temp);
 					return output;
-				} else {
-					for (int j = 0; j<numWords;j++) {
-						lx = textC[j];
-						environment.logDebug("XMATCHING-2 "+lx+" "+label);
-						
-						if (label.contains(lx) /*&& !containsDBP(temp)*/) {
-							environment.logDebug("XMATCHING-3 ");
-							droppers.add(temp);
-							return output;
+				} else { // speculative check - are the next words compatible?
+					if (!isMultiWord && comp.contains(label) /*&& !containsDBP(temp)*/) {
+						droppers.add(temp);
+						return output;
+					} else {
+						for (int j = 0; j<numWords;j++) {
+							lx = textC[j];
+							environment.logDebug("XMATCHING-2 "+lx+" "+label);
+							
+							if (label.contains(lx) /*&& !containsDBP(temp)*/) {
+								environment.logDebug("XMATCHING-3 ");
+								droppers.add(temp);
+								return output;
+							}
+	
 						}
-
+				
 					}
-			
 				}
+			} else {
+				// text and no noun of any kind
 			}
 		}
 		environment.logDebug("MATCHING+ ");

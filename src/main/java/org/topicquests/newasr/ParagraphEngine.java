@@ -116,6 +116,7 @@ public class ParagraphEngine {
 	 * @param p
 	 */
 	void processParagraph(IParagraph p) {
+		//environment.startParagraph();
 		environment.logDebug("ParagraphEngine.processParagraph\n"+p.getData());
 		String text = p.getText();
 		IResult r = paragraphModel.putParagraph(p);

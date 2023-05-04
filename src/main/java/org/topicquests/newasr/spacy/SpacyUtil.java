@@ -70,6 +70,8 @@ public class SpacyUtil {
 		String model;
 		String id;
 		JsonObject sentenceObserver =new JsonObject();
+		List<String> accumulator = new ArrayList<String>();
+		String text;
 		for (int i=0;i<len;i++) {
 			sx = new JsonArray();
 			//for each model
@@ -85,14 +87,19 @@ public class SpacyUtil {
 				jx = new JsonObject();
 				jx.addProperty("model", model);
 				je = sentences.get(j).getAsJsonObject();
-				if (hasVerb(je)) {
-					jx.add("sentence", je);
-					jx.addProperty("text", je.get("text").getAsString());
-					id = je.get("id").getAsString();
-					addToBlob(id, jx, sentenceBlob, sentenceObserver);
-				} else {
-					environment.logDebug("BADSENTENCE "+model+"\n"+je);
-				}
+				text = je.get("text").getAsString();
+				//if (isSafe(text, accumulator)) {
+					if (hasVerb(je)) {
+						jx.add("sentence", je);
+						jx.addProperty("text", text);
+						id = je.get("id").getAsString();
+						addToBlob(id, jx, sentenceBlob, sentenceObserver);
+					} else {
+						environment.logError("BADSENTENCE "+model+"\n"+je+"\n"+text, null);
+					}
+				//} else {
+				//	environment.logError("BADSENTENCE-1 "+model+"\n"+je+"\n"+text, null);
+				//}
 				//environment.logDebug("WhatIsThis\n"+je);
 				//{"id":"s_0","nodes":[{"dep":"compound","i":0,"lemma":"saccharomyces","pos":"X","start":0,"tag":"FW","text":"Saccharomyces"},{"dep":"nsubj","i":1,"lemma":"cerevisiae","pos":"X","start":14,"tag":"FW","text":"cerevisiae"},{"dep":"ROOT","i":2,"lemma":"var","pos":"X","start":25,"tag":"FW","text":"var"},{"dep":"punct","i":3,"lemma":".","pos":"PUNCT","start":28,"tag":".","text":"."}],"text":"Saccharomyces cerevisiae var.","tree":{"dep":"ROOT","i":2,"left":[{"dep":"nsubj","i":1,"left":[{"dep":"compound","i":0,"lemma":"saccharomyces","pos":"X","start":0,"tag":"FW","text":"Saccharomyces"}],"lemma":"cerevisiae","pos":"X","start":14,"tag":"FW","text":"cerevisiae"}],"lemma":"var","pos":"X","right":[{"dep":"punct","i":3,"lemma":".","pos":"PUNCT","start":28,"tag":".","text":"."}],"start":25,"tag":"FW","text":"var"}}
 
@@ -104,6 +111,12 @@ public class SpacyUtil {
 		return result;
 	}
 	
+	boolean isSafe(String text,List<String>accumulator) {
+		if (accumulator.contains(text))
+			return false;
+		accumulator.add(text);
+		return true;
+	}
 	boolean hasVerb(JsonObject sentence) {
 		environment.logDebug("HASVERBS\n"+sentence);
 		//JsonObject s= sentence.get("sentence").getAsJsonObject();
@@ -159,7 +172,6 @@ public class SpacyUtil {
 	 */
 	void studySentences(JsonObject observer,JsonObject blob) {
 		//environment.logDebug("STUDYSENT/n"+blob);
-
 		Iterator<String>itr = observer.keySet().iterator();
 		String key;
 		JsonArray val;
@@ -170,12 +182,12 @@ public class SpacyUtil {
 			allKeys.add(key);
 		}
 		List<String>badKeys = badKeys(allKeys);
+		JsonObject fo, fox;
 		if (!badKeys.isEmpty()) {
 			int len;
 			itr = badKeys.iterator();
 			JsonObject found;
 			JsonElement je;
-			JsonObject fo, fox;
 			String id;
 			JsonArray blobArray;
 			int lx;
@@ -194,6 +206,30 @@ public class SpacyUtil {
 				}
 			}
 		}
+		itr = blob.keySet().iterator();
+		List<String>toremove = new ArrayList<String>();
+		List<String>accumulator = new ArrayList<String>();
+
+		String text;
+		JsonArray ja;
+		while (itr.hasNext()) {
+			key = itr.next();
+			ja = blob.get(key).getAsJsonArray();
+			if (ja.size() == 0)
+				toremove.add(key);
+			else {
+				fo = ja.get(0).getAsJsonObject();
+				fo = fo.get("sentence").getAsJsonObject();
+				text = fo.get("text").getAsString();
+				if (!isSafe(text, accumulator)) {
+					toremove.add(key);
+				}
+			}
+		}
+		environment.logError("FOO\n"+toremove, null);
+		for (int i=0;i<toremove.size();i++)
+			blob.remove(toremove.get(i));
+
 	}
 	List<String> badKeys(List<String>keys) {
 		List<String> result = new ArrayList<String>();

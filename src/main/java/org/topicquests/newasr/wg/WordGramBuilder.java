@@ -159,6 +159,7 @@ public class WordGramBuilder {
 			environment.logDebug("WGBuild-1\n"+trix);
 			strix = processSimpleTriple(sentenceId, trix);
 			environment.logDebug("BigWGBuild\n"+trix+"\n"+strix.getData());
+			environment.logError("TRIP\n"+sentence.getText()+"\n"+strix.getData(), null);
 			them.add(strix.getData());
 		}
 		
