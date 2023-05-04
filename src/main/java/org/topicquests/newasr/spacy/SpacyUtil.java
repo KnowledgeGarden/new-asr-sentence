@@ -95,7 +95,7 @@ public class SpacyUtil {
 						id = je.get("id").getAsString();
 						addToBlob(id, jx, sentenceBlob, sentenceObserver);
 					} else {
-						environment.logError("BADSENTENCE "+model+"\n"+je+"\n"+text, null);
+						environment.logError("BADSENTENCE "+model+"\n"+text, null);
 					}
 				//} else {
 				//	environment.logError("BADSENTENCE-1 "+model+"\n"+je+"\n"+text, null);

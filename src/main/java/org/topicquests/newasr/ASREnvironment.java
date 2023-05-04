@@ -5,8 +5,6 @@
  */
 package org.topicquests.newasr;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.topicquests.backside.kafka.consumer.api.IMessageConsumerListener;
@@ -60,7 +58,6 @@ public class ASREnvironment extends ASRBaseEnvironment {
 	private Map<String,Object>kafkaProps;
 	private IKafkaDispatcher sentenceListener;
 	private IKafkaDispatcher spacyListener;
-	//private SpacyDriverEnvironment spacyServerEnvironment;
 	private SentenceEngine sentenceEngine;
 	private PredicateImporter predImporter;
 	private ITupleModel tripleModel;
@@ -96,11 +93,9 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		String cTopic = (String)kafkaProps.get("SentenceConsumerTopic");
 		sentenceConsumer = new KafkaHandler(this, (IMessageConsumerListener)sentenceListener, cTopic, AGENT_GROUP);
 		cTopic = (String)kafkaProps.get("SentenceSpacyConsumerTopic");
-		//pTopic = (String)kafkaProps.get("SentenceSpacyProducerTopic");
 		spacyConsumer = new KafkaHandler(this, (IMessageConsumerListener)spacyListener, cTopic, AGENT_GROUP);
 		predAssem = new PredicateAssembler(this);
 		builder = new WordGramBuilder(this);
-		//spacyServerEnvironment = new SpacyDriverEnvironment();
 		sentenceDatabase = new PostgresSentenceDatabase(this);
 		sentenceEngine = new SentenceEngine(this);
 		predImporter = new PredicateImporter(this);
@@ -160,16 +155,6 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		return sentenceEngine;
 	}
 	
-	
-	/**
-	 * There are two spaCy systems in the present code:
-	 * one is on an http service, the other is over kafka
-	 * @return
-	 */
-	//public SpacyDriverEnvironment getSpacyServerEnvironment() {
-	//	return spacyServerEnvironment;
-	//}
-	
 	public KafkaHandler getSentenceConsumer () {
 		return sentenceConsumer;
 	}
@@ -199,28 +184,7 @@ public class ASREnvironment extends ASRBaseEnvironment {
 		return dbDriver;
 	}
 
-	//public PostgresConnectionFactory getTripleDatabaseDriver() {
-	//	return tripleDriver;
-	//}
 
-	/////////////////////
-	// paragraph handling support
-	// This is a hack
-	// Don't try this at home
-	/////////////////////
-	/*private List<String> accumulator;
-	public void startParagraph() {
-		accumulator = new ArrayList<String>();
-	}
-	
-	public boolean isSafe(String sentence) {
-		logError("T: "+sentence, null);
-		if (accumulator.contains(sentence))
-			return false;
-		accumulator.add(sentence);
-		return true;
-	}*/
-	/////////////////////
 	@Override
 	public void shutDown() {
 		logDebug("ASREnvironment Shutting down");
