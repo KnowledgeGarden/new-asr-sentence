@@ -63,8 +63,8 @@
 				</configuration>
 				<executions>
 		  		<execution>
-		    	<id>make-assembly</id> 
-		    	<phase>package</phase> 
+		    	<id>make-assembly</id>
+		    	<phase>package</phase>
 		    	<goals>
 		      	<goal>single</goal>
 		    	</goals>
@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>org.topicquests</groupId>
 			<artifactId>new-asr-common</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.2.0-SNAPSHOT</version>
 		</dependency>
 
     </dependencies>
